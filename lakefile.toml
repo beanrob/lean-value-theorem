@@ -1,0 +1,10 @@
+name = "lean-value-theorem"
+version = "0.1.0"
+defaultTargets = ["lean-value-theorem"]
+
+[[lean_lib]]
+name = "LeanValueTheorem"
+
+[[lean_exe]]
+name = "lean-value-theorem"
+root = "Main"
