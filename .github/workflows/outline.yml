@@ -3,7 +3,7 @@ on:
   push:
     paths:
     - '.github/workflows/outline.yml'
-    - 'latex/outline/**'
+    - 'latex/outline.tex'
   pull_request:
   workflow_dispatch:
 jobs:
@@ -21,4 +21,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: outline
-          path: outline.pdf
+          path: latex/outline.pdf
