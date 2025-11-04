@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{parskip}
+\usepackage[a4paper, margin=2cm]{geometry}
+\title{Formalisation Outline}
+\author{Lean Value Theorem}
+\date{November 2025}
+
+\begin{document}
+\maketitle
+
+\section{Formalisation Details}
+
+Our group intends to formalise the Mean Value Theorem:
+
+\bigskip
+
+\begin{center}
+Let $f: [a, b] \to \mathbb{R}$ be continuous, and differentiable on $(a, b)$.
+\newline Then $\exists \, c \in (a, b)$ such that $f'(c) = \frac{f(b) - f(a)}{b
+- a}$.
+\end{center}
+
+\subsection{Assumptions from MathLib}
+
+As a starting point, we will import the following from MathLib:
+
+\begin{itemize}
+    \item ASSUMPTION
+    \item ASSUMPTION
+    \item ASSUMPTION
+\end{itemize}
+
+\subsection{Formalisation Route}
+
+The main necessary step to proving the Mean Value Theorem is proving Rolle's
+Theorem. The MVT should follow naturally from proving Rolle's Theorem and should
+require very little additional work after it is implemented.
+
+Beyond this, we intend to prove the MVT by ...
+
+\subsection{Compared to the MathLib Version}
+
+Compared to the version in MathLib, our formalisation intends to make the steps
+up to proving the MVT more intuitive and closer to how they would actually be
+written.
+
+WRITE MORE ABOUT PROBLEMS WITH MATHLIB VERSION
+
+\section{Project Management}
+
+We will distribute the work amongst team members by ...
+
+All work will be shared remotely via Git to a remote repository on GitHub to
+ensure all members of the group have up-to-date code. Additionally, GitHub's
+built-in features such as Issues and Projects will be used to manage what needs
+to be done and prioritise the implementation of certain things.
+
+\end{document}
