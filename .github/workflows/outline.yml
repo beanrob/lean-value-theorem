@@ -1,0 +1,24 @@
+name: Build formalisation outline
+on:
+  push:
+    paths:
+    - '.github/workflows/outline.yml'
+    - 'latex/outline/**'
+  pull_request:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: outline.tex
+          working_directory: latex/outline
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: outline
+          path: outline.pdf
