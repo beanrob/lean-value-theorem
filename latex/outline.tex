@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage{amsfonts}
 \usepackage{parskip}
-\usepackage[a4paper, margin=2cm]{geometry}
+\usepackage[a4paper, margin=1.5cm]{geometry}
 \pagenumbering{gobble}
 \title{Formalisation Outline}
 \author{Lean Value Theorem}
@@ -12,9 +12,9 @@
 
 \section{Formalisation Details}
 
-Our group intends to formalise the Mean Value Theorem:
+Our group intends to formalise the Lagrange's Mean Value Theorem:
 
-\medskip
+\smallskip
 
 \begin{center}
 Let $f: [a, b] \to \mathbb{R}$ be continuous, and differentiable on $(a, b)$.
@@ -22,16 +22,22 @@ Then $\exists \, c \in (a, b)$ such that $f'(c) = \frac{f(b) - f(a)}{b
 - a}$.
 \end{center}
 
+\smallskip
+
+For the rest of the document, assume that Mean Value Theorem/MVT refers to
+Lagrange's version.
+
 \subsection{Assumptions from MathLib}
 
-As a starting point, we will import the definition of the real numbers. However,
-from there we will take the steps to proving the Mean Value Theorem ourself,
-including formalising notions of continuity and derivatives.
+As a starting point, we will import the definition of the real numbers and
+functions. However, from there we will take the steps to proving the Mean Value
+Theorem ourself, including formalising notions of continuity and derivatives.
 
 If it turns out that this does not prove for a complex enough project, we may
 turn back this assumption and implement the real numbers ourselves. Equally, we
-may extend the project beyond the Mean Value Theorem if we need to. This makes
-the project very flexible with regard to timings and deliverables.
+may extend the project beyond Lagrange's Mean Value Theorem if we need to,
+likely to Cauchy's version of the theorem. This makes the project very flexible
+with regard to timings and deliverables.
 
 \subsection{Formalisation Route}
 
@@ -43,7 +49,7 @@ Because our starting point is the definition of the real numbers, the steps we
 will need to take are as follows:
 
 \begin{itemize}
-    \item Intervals, Limits and algebra of limits
+    \item Intervals, limits and algebra of limits
     \item Continuity, derivatives and differentiation
     \item Rolle's Theorem
     \item Mean Value Theorem
