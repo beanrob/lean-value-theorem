@@ -21,4 +21,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: outline
-          path: outline.pdf
+          path: latex/prog/prog.pdf
