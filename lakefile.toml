@@ -8,3 +8,7 @@ name = "LeanValueTheorem"
 [[lean_exe]]
 name = "lean-value-theorem"
 root = "Main"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
