@@ -1,6 +1,5 @@
 import Mathlib.Data.Real.Basic
-
-def is_interval (I : Set ℝ) : Prop := True
+import LeanValueTheorem.Intervals
 
 def is_cont_at (is_interval I : Set ℝ) (f: I → ℝ) (a : I) : Prop := True
 
