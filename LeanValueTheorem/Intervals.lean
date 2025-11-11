@@ -38,6 +38,3 @@ lemma closed_interval (I : Set ℝ) : is_closed I → is_interval I := by
   use a
   use b
   aesop
-  
-example : is_interval (ooi 0 1) := by
-  exact
