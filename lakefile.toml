@@ -1,6 +1,14 @@
 name = "lean-value-theorem"
 version = "0.1.0"
 defaultTargets = ["lean-value-theorem"]
+keywords = ["math"]
+
+[leanOptions]
+pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+autoImplicit = false
+relaxedAutoImplicit = false
+weak.linter.mathlibStandardSet = true
+maxSynthPendingDepth = 3
 
 [[lean_lib]]
 name = "LeanValueTheorem"
