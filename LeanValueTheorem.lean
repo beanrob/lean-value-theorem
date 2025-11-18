@@ -6,6 +6,7 @@ import LeanValueTheorem.Intervals
 import LeanValueTheorem.Limits
 
 theorem rolle (hfc : is_cont (cci a b) f) (hff' : is_deriv_on f f' (ooi a b))
- (hab : f a = f b) : ∃ c ∈ Ioo a b, f' c = 0 := by
+ (hab : f a = f b) : ∃ c ∈ ooi a b, f' c = 0 := sorry
 
--- theorem mvt ... := by
+theorem mvt (hfc : is_cont (cci a b) f) (hff' : is_deriv_on f f' (ooi a b)) :
+ ∃ c ∈ ooi a b, f' c = (f a - f b) / (b - a) := sorry
