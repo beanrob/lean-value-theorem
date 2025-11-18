@@ -1,5 +1,5 @@
 import Mathlib.Data.Real.Basic
-import LeanValueTheorem.Limits
+-- import LeanValueTheorem.Limits
 import LeanValueTheorem.Intervals
 
 ---------------this should be an import-------------------
