@@ -5,6 +5,7 @@ import LeanValueTheorem.Derivatives
 import LeanValueTheorem.Intervals
 import LeanValueTheorem.Limits
 
--- theorem rolle ... := by
+theorem rolle (hfc : is_cont (cci a b) f) (hff' : is_deriv_on f f' (ooi a b))
+ (hab : f a = f b) : ∃ c ∈ Ioo a b, f' c = 0 := by
 
 -- theorem mvt ... := by
