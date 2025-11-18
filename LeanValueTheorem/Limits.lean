@@ -1,69 +1,82 @@
 import Mathlib.Data.Real.Basic
 import LeanValueTheorem.Sequences
 
-namespace Limits
 
+-- Definition for l being the limit of the sequence a
+def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
+  ∀ ε > 0, ∃ N : ℕ, N > 0 ∧ (∀ n, n ≥ N → abs (a n - l) < ε)
 
-def limit_sequence (s : ℕ → ℝ) (a : ℝ) : Prop := sorry
+-- Definition for l being the limit of the function f at point c
+def is_lim_fun (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x, abs (x - c) < δ → abs (f x - l) < ε
 
-def limit_function (f : ℝ → ℝ) (x0 : ℝ) (L : ℝ) : Prop := sorry
+-- Definition for l being the limit of the function f at point c *from above*
+def is_lim_fun_abv (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x > c, x - c < δ → abs (f x - l) < ε
 
-lemma algebra_of_sequences -- maybe splot it up into 3 results
+-- Algebra of sequences (for sums, products and quotients)
+lemma seq_sum
   (f g : ℕ → ℝ)
   (a b : ℝ)
   (hf : is_sequence f)
   (hg : is_sequence g)
-  (hfa : limit_sequence f a)
-  (hgb : limit_sequence g b) :
-
+  (hfa : is_lim_seq f a)
+  (hgb : is_lim_seq g b) :
   (is_sequence (fun n => f n + g n)) ∧
-  (limit_sequence (fun n => f n + g n) (a + b)) ∧
-
+  (is_lim_seq (fun n => f n + g n) (a + b)) := by sorry
+lemma seq_prod
+  (f g : ℕ → ℝ)
+  (a b : ℝ)
+  (hf : is_sequence f)
+  (hg : is_sequence g)
+  (hfa : is_lim_seq f a)
+  (hgb : is_lim_seq g b) :
   (is_sequence (fun n => f n * g n)) ∧
-  (limit_sequence (fun n => f n * g n) (a * b)) ∧
-
+  (is_lim_seq (fun n => f n * g n) (a * b)) := by sorry
+lemma seq_quot
+  (f g : ℕ → ℝ)
+  (a b : ℝ)
+  (hf : is_sequence f)
+  (hg : is_sequence g)
+  (hfa : is_lim_seq f a)
+  (hgb : is_lim_seq g b) :
   (is_sequence (fun n => f n / g n)) ∧
-  (limit_sequence (fun n => f n / g n) (a + b)):= sorry
+  (is_lim_seq (fun n => f n / g n) (a / b)) := sorry
 
-lemma algebra_of_functions -- maybe splot it up into 3 results
+-- Algebra of limits (for sums, products and quotients)
+lemma limit_sum
   (f g : ℝ → ℝ)
   (x0 L1 L2 : ℝ)
-  (hfa : limit_function f x0 L1)
-  (hgb : limit_function g x0 L2) :
+  (hfa : is_lim_fun f x0 L1)
+  (hgb : is_lim_fun g x0 L2) :
+  (is_lim_fun (fun x => f x + g x) x0 (L1 + L2)) := by sorry
+lemma limit_prod
+  (f g : ℝ → ℝ)
+  (x0 L1 L2 : ℝ)
+  (hfa : is_lim_fun f x0 L1)
+  (hgb : is_lim_fun g x0 L2) :
+  (is_lim_fun (fun x => f x * g x) x0 (L1 * L2)) := by sorry
+lemma limit_quot
+  (f g : ℝ → ℝ)
+  (x0 L1 L2 : ℝ)
+  (hfa : is_lim_fun f x0 L1)
+  (hgb : is_lim_fun g x0 L2) :
+  (is_lim_fun (fun x => f x / g x) x0 (L1 / L2)) := by sorry
 
-  (limit_function (fun x => f x + g x) x0 (L1 + L2)) ∧
-
-  (limit_function (fun x => f x * g x) x0 (L1 * L2)) ∧
-
-  (limit_function (fun x => f x / g x) x0 (L1 / L2)):= sorry
-
+-- Proof that a non-negative sequence has non-negative limit
 lemma limit_non_negative
   (f : ℕ → ℝ)
   (a : ℝ)
   (hf : is_sequence f)
-  (hfa : limit_sequence f a)
+  (hfa : is_lim_seq f a)
   (h_nonneg : ∀ n, f n ≥ 0) :
   a ≥ 0 := sorry
 
+-- Proof that a non-positive sequence has non-positive limit
 lemma limit_non_positive
   (f : ℕ → ℝ)
   (a : ℝ)
   (hf : is_sequence f)
-  (hfa : limit_sequence f a)
-  (h_pos : ∀ n, f n > 0) :
-  a > 0 := sorry
+  (hfa : is_lim_seq f a)
+  (h_pos : ∀ n, f n > 0) : a > 0 := sorry
 
-
-end Limits
-
--- A is the limit of the sequence a_n
-def is_lim (a : ℕ → ℝ) (A : ℝ) : Prop :=
-  ∀ ε > 0, ∃ N : ℕ, N > 0 ∧ (∀ n, n ≥ N → abs (a n - A) < ε)
-
--- L is the limit of the function f at c
-def is_lim_fun (f : ℝ → ℝ) (L : ℝ) (c : ℝ) : Prop :=
-  ∀ ε > 0, ∃ δ > 0, ∀ x, abs (x - c) < δ → abs (f x - L) < ε
-
--- L is the limit of f(x) as x tends to c from above
-def is_lim_fun_abv (f : ℝ → ℝ) (L : ℝ) (c : ℝ) : Prop :=
-  ∀ ε > 0, ∃ δ > 0, ∀ x > c, x - c < δ → abs (f x - L) < ε
