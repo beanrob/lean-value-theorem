@@ -34,3 +34,6 @@
 *.pdfsync
 *.rubbercache
 rubber.cache
+
+# VSCode
+.vscode/
