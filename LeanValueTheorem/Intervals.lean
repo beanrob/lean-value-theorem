@@ -1,11 +1,17 @@
 import Mathlib.Data.Real.Basic
 
+
+-- Definitions for intervals from a to b
+  -- ooi = open-open interval
+  -- cci = closed-closed interval
+  -- oci = open-closed interval
+  -- coi = closed-open interval
 def ooi : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | a < x ∧ x < b })
 def cci : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | a ≤ x ∧ x ≤ b })
-
 def oci : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | a < x ∧ x ≤ b })
 def coi : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | a ≤ x ∧ x < b })
 
+-- Definition for whether a set is an interval
 def is_interval (I : Set ℝ) : Prop :=
   ∃ a b : ℝ,
   I = ooi a b ∨
@@ -13,14 +19,17 @@ def is_interval (I : Set ℝ) : Prop :=
   I = oci a b ∨
   I = coi a b
 
+-- Defintion for whether a set is an open interval
 def is_open (I : Set ℝ) : Prop :=
   ∃ a b : ℝ,
   I = ooi a b
 
+-- Defintion for whether a set is a closed interval
 def is_closed (I : Set ℝ) : Prop :=
   ∃ a b : ℝ,
   I = cci a b
 
+-- Proof that open intervals are open
 lemma open_interval (I : Set ℝ) : is_open I → is_interval I := by
   unfold is_open
   intro h
@@ -30,6 +39,7 @@ lemma open_interval (I : Set ℝ) : is_open I → is_interval I := by
   use b
   aesop
 
+-- Proof that closed intervals are closed
 lemma closed_interval (I : Set ℝ) : is_closed I → is_interval I := by
   unfold is_closed
   intro h
