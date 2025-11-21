@@ -1,9 +1,9 @@
 import LeanValueTheorem.Intervals
 
 
--- Definition for f being a constant function
-def is_const_fun (I : Set ℝ) (f : ℝ → ℝ) : Prop :=
-  ∀ x y : I, f x = f y
+-- Definition for f : D → ℝ being a constant function
+def is_const_fun (D : Set ℝ) (f : ℝ → ℝ) : Prop :=
+  ∀ x y : ℝ, x ∈ D ∧ y ∈ D → f x = f y
 
 -- Definition for a being a
 def is_fun_min (I : Set ℝ) (hI : is_interval I) (f : I → ℝ) (a : ℝ) : Prop := sorry
