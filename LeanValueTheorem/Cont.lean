@@ -42,7 +42,7 @@ lemma cont_quot
   {hgIa : is_cont_at I hI g a} :
   (is_cont_at I hI (fun x => f x / g x) a) := sorry
 
--- Interchangability of ε-δ definition and sequential 
+-- Interchangability of ε-δ definition and sequential
 -- Forwards direction
 lemma cont_ε_δ_imp_cont_seq
   (I : Set ℝ) (hI : is_interval I)
@@ -61,5 +61,5 @@ lemma cont_attains_bounds
   (I : Set ℝ) (hI : is_interval I)
   (f : I → ℝ)
   {hfI : is_cont I hI f} :
-  (∃ a : I, is_fun_min I hI a) ∧
-  (∃ b : I, is_fun_max I hI b) := sorry
+  (∃ a : I, is_fun_min I hI f a) ∧
+  (∃ b : I, is_fun_max I hI f b) := sorry
