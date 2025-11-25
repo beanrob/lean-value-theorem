@@ -35,3 +35,10 @@ lemma fun_with_zero_deriv
         rw [hcon]
         simp only [sub_self, zero_div, abs_zero, gt_iff_lt]
         exact hε
+
+lemma sum_rule
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (hf : is_deriv D f f' D)
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (hg : is_deriv E g g' E) :
+  ∀ a b, is_deriv (D ∩ E) (fun x => a * (f x) + b * (g x))
+  (fun x => a * (f' x) + b * (g' x)) (D ∩ E) := by
+    sorry
