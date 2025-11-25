@@ -42,3 +42,10 @@ lemma sum_rule
   ∀ a b, is_deriv (D ∩ E) (fun x => a * (f x) + b * (g x))
   (fun x => a * (f' x) + b * (g' x)) (D ∩ E) := by
     sorry
+
+lemma product_rule
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (hf : is_deriv D f f' D)
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (hg : is_deriv E g g' E) :
+  is_deriv (D ∩ E) (fun x => (f x) * (g x))
+  (fun x => (f' x) * (g x) + (f x) * (g' x)) (D ∩ E) := by
+    sorry
