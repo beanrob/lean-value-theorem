@@ -27,12 +27,11 @@ lemma fun_with_zero_deriv
       · simp
       · intro h hh1 hh2
         simp only [sub_zero]
-        specialize hcon (a + h) a
         have hah : a + h ∈ D ∧ a ∈ D := by
           constructor
           · exact hh1
           · exact ha
-        specialize hcon hah
+        specialize hcon (a + h) a hah
         rw [hcon]
         simp only [sub_self, zero_div, abs_zero, gt_iff_lt]
         exact hε
