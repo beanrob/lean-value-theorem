@@ -9,8 +9,8 @@ def is_cont_at_ε_δ (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
   a ∈ I → ∀ ε : ℝ, ε > 0 → ∃ δ : ℝ, δ > 0 → ∀ x ∈ I, abs (x - a) < δ → abs (f x - f a) < ε
 
 -- Definition for a function being continuous at one point, using sequences
-def is_cont_at_seq {I : Set ℝ} (f : I → ℝ) (a : I) : Prop :=
-  ∀ seq : ℕ → I, is_lim_seq_rest seq a → is_lim_seq (f ∘ seq) (f a)
+def is_cont_at_seq (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
+  ∀ seq : ℕ → ℝ, is_lim_seq seq a → is_lim_seq (f ∘ seq) (f a)
 
 -- Definition for a function being continuous at a point, using interchangability
 -- of the sequential and ε-δ definitions
@@ -43,20 +43,34 @@ lemma cont_seq_imp_cont_ε_δ
 
 -- Algebra of continuous functions (for sums, products, and quotients)
 lemma cont_sum
-  (I : Set ℝ) (hI : is_interval I)
-  (f g : I → ℝ) (a : I)
-  {hfIa : is_cont_at f a}
-  {hgIa : is_cont_at g a} :
-  (is_cont_at (fun x => f x + g x) a) := by
+  (f g : ℝ → ℝ)
+  (I : Set ℝ)
+  (a : ℝ)
+  {hfIa : is_cont_at f I a}
+  {hgIa : is_cont_at g I a} :
+  (is_cont_at (fun x => f x + g x) I a) := by
+    let sum := fun x => f x + g x
     unfold is_cont_at at hfIa hgIa
-    obtain ⟨hf1, hf2⟩ := hfIa
-    obtain ⟨hg1, hg2⟩ := hgIa
-    unfold is_cont_at_seq at hf2 hg2
+    obtain ⟨_, hf⟩ := hfIa
+    obtain ⟨_, hg⟩ := hgIa
+    unfold is_cont_at_seq at hf hg
     unfold is_cont_at
-    have seq_cont : is_cont_at_seq (fun x => f x + g x) a := by
+    have seq_cont : is_cont_at_seq sum I a := by
+      unfold is_cont_at_seq
+      intros seq hseq
+      unfold is_lim_seq
+      unfold is_lim_seq at hseq
+      intros ε hε
+      unfold is_lim_seq at hf hg
+      specialize hf seq
+      specialize hg seq
+      
+      --existsi 
       sorry
-    sorry
-  -- Need to know how to unfold assumptions and give things names
+    constructor
+    · apply cont_seq_imp_cont_ε_δ
+      exact seq_cont
+    · exact seq_cont
 lemma cont_prod
   (f g : ℝ → ℝ)
   (I : Set ℝ)
