@@ -49,3 +49,11 @@ lemma product_rule
   is_deriv (D ∩ E) (fun x => (f x) * (g x))
   (fun x => (f' x) * (g x) + (f x) * (g' x)) (D ∩ E) := by
     sorry
+
+lemma chain_rule
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (hf : is_deriv D f f' D)
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (hg : is_deriv E g g' E)
+  (hdom : ∀ x ∈ D, (f x) ∈ E) :
+  is_deriv D (fun x => g (f x))
+  (fun x => (g' (f x)) * (f' x)) D := by
+    sorry
