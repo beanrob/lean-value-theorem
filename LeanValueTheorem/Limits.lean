@@ -14,7 +14,7 @@ def is_lim_fun (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
 def is_lim_fun_abv (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x > c, x - c < δ → abs (f x - l) < ε
 
--- Algebra of sequences (for sums, products and quotients)
+-- Algebra of limtis for sequences (for sums, products and quotients)
 lemma seq_sum
   (f g : ℕ → ℝ)
   (a b : ℝ)
@@ -43,7 +43,7 @@ lemma seq_quot
   (is_sequence (fun n => f n / g n)) ∧
   (is_lim_seq (fun n => f n / g n) (a / b)) := sorry
 
--- Algebra of limits (for sums, products and quotients)
+-- Algebra of limits for functions (for sums, products and quotients)
 lemma limit_sum
   (f g : ℝ → ℝ)
   (x0 L1 L2 : ℝ)
@@ -79,4 +79,3 @@ lemma limit_non_positive
   (hf : is_sequence f)
   (hfa : is_lim_seq f a)
   (h_pos : ∀ n, f n > 0) : a > 0 := sorry
-
