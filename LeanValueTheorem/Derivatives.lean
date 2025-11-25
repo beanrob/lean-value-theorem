@@ -1,32 +1,38 @@
 import Mathlib.Data.Real.Basic
--- import LeanValueTheorem.Limits
+import LeanValueTheorem.Misc
+import LeanValueTheorem.Limits
 import LeanValueTheorem.Intervals
 
----------------this should be an import-------------------
-def is_lim_fun_abv (f : ℝ → ℝ) (L : ℝ) (c : ℝ) : Prop :=
-  ∀ ε > 0, ∃ δ > 0, ∀ x > c, x - c < δ → abs (f x - L) < ε
-----------------------------------------------------------
 
--- f' is the derivative of f at a
-def is_deriv (f : ℝ → ℝ) (f' : ℝ → ℝ) (a : ℝ) : Prop :=
-  is_lim_fun_abv (fun h => (f (a + h) - f (a)) / h ) (f' a) 0
+-- Defintion for f' being the derivative of f : D → ℝ at a
+def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (a : ℝ) : Prop :=
+  a ∈ D →
+  is_lim_fun_abv {h : ℝ | a + h ∈ D} (fun h => (f (a + h) - f (a)) / h ) (f' a) 0
 
--- f' is the derivative of f on a set A
-def is_deriv_on (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : Prop :=
-  ∀ a ∈ A, is_deriv f f' a
+-- Defintion for f' being the derivative of f : D → ℝ on a set A
+def is_deriv (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : Prop :=
+  ∀ a ∈ A, is_deriv_at D f f' a
 
-def is_const_fun (f : ℝ → ℝ) (s : Set ℝ) : Prop := sorry
-
-def deriv_on_point (f : ℝ → ℝ) (s : Set ℝ) (x : ℝ) : ℝ := sorry
-
-def is_deriv_on_set (f : ℝ → ℝ) (s : Set ℝ) : Prop := sorry
-
+-- Proof that f : D → ℝ has zero derivative if and only if it is constant
 lemma fun_with_zero_deriv
-  (I : Set ℝ) (hI : is_interval I)
-  (f : ℝ → ℝ) (hf : is_deriv_on_set f I)
-  (hfIx : ∀ x ∈ I, deriv_on_point f I x = (0 : ℝ)) :
-  is_const_fun f I := sorry
-
-
--- Rolles theorem
--- Mean Value theorem
+  (D : Set ℝ) (f : ℝ → ℝ) :
+  is_deriv D f 0 D ↔ is_const_fun D f := by
+    constructor
+    · intro hder x y hD
+      obtain ⟨hx, hy⟩ := hD
+      sorry --I belive this direction requires the Mean Value Theorem
+    · intro hcon a ha _ ε hε
+      use 1
+      constructor
+      · simp
+      · intro h hh1 hh2
+        simp
+        specialize hcon (a + h) a
+        have hah : a + h ∈ D ∧ a ∈ D := by
+          constructor
+          · exact hh1
+          · exact ha
+        specialize hcon hah
+        rw [hcon]
+        simp
+        exact hε
