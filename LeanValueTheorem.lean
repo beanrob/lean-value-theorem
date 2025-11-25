@@ -5,6 +5,10 @@ import LeanValueTheorem.Derivatives
 import LeanValueTheorem.Intervals
 import LeanValueTheorem.Limits
 
--- theorem rolle ... := by
+variable {a b : ℝ} {f f' : ℝ → ℝ} {I : Set ℝ}
 
--- theorem mvt ... := by
+theorem rolle (hfc : is_cont (cci a b) f) (hff' : is_deriv I f f' (ooi a b))
+ (hfab : f a = f b) : ∃ c ∈ ooi a b, f' c = 0 := sorry
+
+theorem mvt (hfc : is_cont (cci a b) f) (hff' : is_deriv I f f' (ooi a b)) :
+ ∃ c ∈ ooi a b, f' c = (f a - f b) / (b - a) := sorry
