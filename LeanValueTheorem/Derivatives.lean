@@ -5,13 +5,13 @@ import LeanValueTheorem.Intervals
 
 
 -- Defintion for f' being the derivative of f : D → ℝ at a
-def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (a : ℝ) : Prop :=
+def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
   a ∈ D →
-  is_lim_fun_abv {h : ℝ | a + h ∈ D} (fun h => (f (a + h) - f (a)) / h ) (f' a) 0
+  is_lim_fun_abv {h : ℝ | a + h ∈ D} (fun h => (f (a + h) - f (a)) / h ) m 0
 
 -- Defintion for f' being the derivative of f : D → ℝ on a set A
 def is_deriv (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : Prop :=
-  ∀ a ∈ A, is_deriv_at D f f' a
+  ∀ a ∈ A, is_deriv_at D f (f' a) a
 
 -- Proof that f : D → ℝ has zero derivative if and only if it is constant
 lemma fun_with_zero_deriv
@@ -26,13 +26,26 @@ lemma fun_with_zero_deriv
       constructor
       · simp
       · intro h hh1 hh2
-        simp
-        specialize hcon (a + h) a
+        simp only [sub_zero]
         have hah : a + h ∈ D ∧ a ∈ D := by
           constructor
           · exact hh1
           · exact ha
-        specialize hcon hah
+        specialize hcon (a + h) a hah
         rw [hcon]
-        simp
+        simp only [sub_self, zero_div, abs_zero, gt_iff_lt]
         exact hε
+
+lemma sum_rule
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (hf : is_deriv D f f' D)
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (hg : is_deriv E g g' E) :
+  ∀ a b, is_deriv (D ∩ E) (fun x => a * (f x) + b * (g x))
+  (fun x => a * (f' x) + b * (g' x)) (D ∩ E) := by
+    sorry
+
+lemma product_rule
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (hf : is_deriv D f f' D)
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (hg : is_deriv E g g' E) :
+  is_deriv (D ∩ E) (fun x => (f x) * (g x))
+  (fun x => (f' x) * (g x) + (f x) * (g' x)) (D ∩ E) := by
+    sorry
