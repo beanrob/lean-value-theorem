@@ -62,15 +62,16 @@ lemma cont_sum
       unfold is_lim_seq at hseq
       intros ε hε
       unfold is_lim_seq at hf hg
+      have hε2 : ε/2 > 0 := by exact half_pos hε
       -- Extract N from continuity of f
       specialize hf seq
       let hf' := hf hseq
-      specialize hf' ε hε
+      specialize hf' (ε/2) hε2
       obtain ⟨Nf, hNf, hf''⟩ := hf' 
       -- Extract N from continuity of g
       specialize hg seq
       let hg' := hg hseq
-      specialize hg' ε hε
+      specialize hg' (ε/2) hε2
       obtain ⟨Ng, hNg, hg''⟩ := hg' 
       -- Solve
       use Nf + Ng
