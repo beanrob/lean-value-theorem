@@ -62,11 +62,24 @@ lemma cont_sum
       unfold is_lim_seq at hseq
       intros ε hε
       unfold is_lim_seq at hf hg
+      -- Extract N from continuity of f
       specialize hf seq
+      let hf' := hf hseq
+      specialize hf' ε hε
+      obtain ⟨Nf, hNf, hf''⟩ := hf' 
+      -- Extract N from continuity of g
       specialize hg seq
-      
-      --existsi 
-      sorry
+      let hg' := hg hseq
+      specialize hg' ε hε
+      obtain ⟨Ng, hNg, hg''⟩ := hg' 
+      -- Solve
+      use Nf + Ng
+      unfold sum
+      simp
+      constructor
+      · exact Or.inr hNg
+      · intros n hn
+        sorry
     constructor
     · apply cont_seq_imp_cont_ε_δ
       exact seq_cont
