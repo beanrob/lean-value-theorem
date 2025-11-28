@@ -1,4 +1,5 @@
 import Mathlib.Data.Real.Basic
+import Mathlib.Algebra.Group.Basic
 import LeanValueTheorem.Intervals
 import LeanValueTheorem.Sequences
 import LeanValueTheorem.Limits
@@ -80,6 +81,13 @@ lemma cont_sum
       constructor
       · exact Or.inr hNg
       · intros n hn
+        rw [sub_eq_neg_add, neg_add, ←add_assoc]
+        nth_rewrite 2 [add_comm]
+        rw [←add_assoc]
+        nth_rewrite 1 [add_assoc]
+        nth_rewrite 1 [←add_assoc]
+        rw [←add_assoc]
+        rw [add_neg_eq_sub]
         sorry
     constructor
     · apply cont_seq_imp_cont_ε_δ
