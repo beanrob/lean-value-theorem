@@ -3,7 +3,6 @@ import LeanValueTheorem.Misc
 import LeanValueTheorem.Limits
 import LeanValueTheorem.Intervals
 
-
 -- Defintion for m being the value of the derivative of f : D → ℝ at a
 def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
   a ∈ D →
@@ -54,7 +53,8 @@ lemma x_one_deriv
 lemma recip_deriv
   (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) :
   is_deriv D (fun x => 1 / x) (fun x => -1 / x ^ 2) D := by
-  sorry
+    intro a ha _
+    sorry --algebra of limits goes here (I think)
 
 -- Proof that the derivative of af + bg is af' + bg'
 lemma sum_rule
@@ -91,8 +91,18 @@ lemma power_rule
       apply product_rule D (fun x ↦ x ^ n) (fun x ↦ ↑n * x ^ (n - 1)) hn
        D (fun x => x) (fun x => 1) _
       exact x_one_deriv D
-    simp at hmul
-    sorry --need to find some rewrites
+    simp only [Set.inter_self, mul_one] at hmul
+    have hf1 : (fun (x : ℝ) ↦ x ^ (n + 1)) = (fun (x : ℝ) ↦ x ^ n * x) := by
+      refine funext ?_
+      intro y
+      exact rfl
+    have hf2 : (fun (x : ℝ) ↦ (↑n + 1) * x ^ n) = (fun (x : ℝ) ↦ ↑n * x ^ (n - 1) * x + x ^ n) := by
+      refine funext ?_
+      intro y
+      sorry --rewrite
+    rw [hf1, hf2]
+    exact hmul
+
 
 -- Proof that the derivative of g(f) is f' * g'(f)
 lemma chain_rule
@@ -107,8 +117,10 @@ lemma chain_rule
 lemma power_rule_neg
   (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) (n : ℕ):
   is_deriv D (fun x => x ^ (-(n : ℤ))) (fun x => -n * x ^ (-(n : ℤ) - 1)) D := by
-    have hrecip : is_deriv D (fun x ↦ 1 / x ^ n) (fun x ↦ -1 / (x ^ n) ^ 2 * (n * x ^ (n - 1))) D :=  by
-     apply chain_rule D (fun x => x ^ n) (fun x => n * x ^ (n - 1)) _ {x | x ≠ 0} (fun x => 1 / x) (fun x => -1 / x ^ 2) _
+    have hrecip : is_deriv D (fun x ↦ 1 / x ^ n)
+     (fun x ↦ -1 / (x ^ n) ^ 2 * (n * x ^ (n - 1))) D :=  by
+     apply chain_rule D (fun x => x ^ n) (fun x => n * x ^ (n - 1)) _
+      {x | x ≠ 0} (fun x => 1 / x) (fun x => -1 / x ^ 2) _
      · intro y hy
        refine Set.mem_setOf.mpr ?_
        apply hD at hy
@@ -116,12 +128,22 @@ lemma power_rule_neg
      · exact power_rule D n
      · apply recip_deriv
        simp
-    have h1 : (fun (x : ℝ) ↦ 1 / x ^ n) = (fun (x : ℝ) ↦ x ^ (-(n : ℤ))) := by
+    have hf1 : (fun (x : ℝ) ↦ x ^ (-(n : ℤ))) = (fun (x : ℝ) ↦ 1 / x ^ n) := by
       refine funext ?_
-      sorry --there must be a theorem somewhere
-    have h2 : (fun (x : ℝ) ↦ -1 / (x ^ n) ^ 2 * (↑n * x ^ (n - 1))) = (fun (x : ℝ) ↦ -(n : ℤ) * x ^ (-(n : ℤ) - 1)) := by
+      intro y
+      simp
+    rw [hf1]
+    simp only [one_div, neg_mul]
+    have hf2 : (fun (x : ℝ) ↦ -(n : ℤ) * x ^ (-(n : ℤ) - 1))
+     = (fun (x : ℝ) ↦ -1 / (x ^ n) ^ 2 * (↑n * x ^ (n - 1))) := by
       refine funext ?_
-      sorry --good god
+      intro y
+      simp only [Int.cast_natCast, neg_mul]
+      sorry --rewrite
+    simp only [Int.cast_natCast, neg_mul] at hf2
+    rw [hf2]
+    simp only [one_div] at hrecip
+    exact hrecip
 
 -- Proof that the derivative of f/g is f'g - fg' / g^2
 lemma quotient_rule
@@ -139,4 +161,4 @@ lemma quotient_rule
      (fun x ↦ f' x * (1 / g x) + f x * (-1 / g x ^ 2 * g' x)) (D ∩ E) := by
       apply product_rule D f f' hf E (fun x => 1 / (g x)) (fun x => (-1 / (g x) ^ 2) * (g' x)) _
       exact hch
-    sorry --this is just rearranging
+    sorry --rewrite
