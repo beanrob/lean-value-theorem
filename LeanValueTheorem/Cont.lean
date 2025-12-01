@@ -1,5 +1,6 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Group.Basic
+import Mathlib.Tactic
 import LeanValueTheorem.Intervals
 import LeanValueTheorem.Sequences
 import LeanValueTheorem.Limits
@@ -66,14 +67,14 @@ lemma cont_sum
       have hε2 : ε/2 > 0 := by exact half_pos hε
       -- Extract N from continuity of f
       specialize hf seq
-      let hf' := hf hseq
-      specialize hf' (ε/2) hε2
-      obtain ⟨Nf, hNf, hf''⟩ := hf' 
+      let hf := hf hseq
+      specialize hf (ε/4) hε2
+      obtain ⟨Nf, hNf, hf⟩ := hf 
       -- Extract N from continuity of g
       specialize hg seq
-      let hg' := hg hseq
-      specialize hg' (ε/2) hε2
-      obtain ⟨Ng, hNg, hg''⟩ := hg' 
+      let hg := hg hseq
+      specialize hg (ε/4) hε2
+      obtain ⟨Ng, hNg, hg⟩ := hg 
       -- Solve
       use Nf + Ng
       unfold sum
@@ -81,13 +82,23 @@ lemma cont_sum
       constructor
       · exact Or.inr hNg
       · intros n hn
-        rw [sub_eq_neg_add, neg_add, ←add_assoc]
-        nth_rewrite 2 [add_comm]
-        rw [←add_assoc]
-        nth_rewrite 1 [add_assoc]
-        nth_rewrite 1 [←add_assoc]
-        rw [←add_assoc]
-        rw [add_neg_eq_sub]
+        have hnf : n ≥ Nf := by exact Nat.le_of_add_right_le hn
+        have hng : n ≥ Ng := by exact Nat.le_of_add_left_le  hn
+        specialize hf n hnf
+        specialize hg n hng
+        simp at hf hg
+        let hfg := le_of_lt (add_lt_add hf hg)
+        let tri := triangle (f (seq n) - f a) (g (seq n) - g a)
+        rw [sub_eq_add_neg, add_assoc]
+        nth_rw 2 [add_comm]
+        rw [←add_assoc, ←sub_eq_add_neg, sub_add_eq_sub_sub]
+        nth_rw 1 [sub_eq_add_neg]
+        rw [←sub_eq_add_neg]
+        --rw [sub_eq_add_neg, sub_eq_add_neg, ←add_assoc] at tri
+        --rw [add_assoc, add_comm] at tri
+        --nth_rw 2 [add_comm] at tri
+        --rw [←two_mul, mul_div_left_comm] at hfg
+        exact le_trans tri hfg
         sorry
     constructor
     · apply cont_seq_imp_cont_ε_δ
