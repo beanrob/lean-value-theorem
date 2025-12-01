@@ -64,7 +64,8 @@ lemma cont_sum
       unfold is_lim_seq at hseq
       intros ε hε
       unfold is_lim_seq at hf hg
-      have hε4 : ε/4 > 0 := by exact half_pos hε
+      have hε4 : (ε/4) > 0 := by linarith
+      have h2ε4ltε : 2 * (ε/4) < ε := by linarith
       -- Extract N from continuity of f
       specialize hf seq
       let hf := hf hseq
@@ -87,19 +88,15 @@ lemma cont_sum
         specialize hf n hnf
         specialize hg n hng
         simp at hf hg
-        let hfg := le_of_lt (add_lt_add hf hg)
-        let tri := triangle (f (seq n) - f a) (g (seq n) - g a)
-        rw [sub_eq_add_neg, add_assoc]
-        nth_rw 2 [add_comm]
-        rw [←add_assoc, ←sub_eq_add_neg, sub_add_eq_sub_sub]
-        nth_rw 1 [sub_eq_add_neg]
-        rw [←sub_eq_add_neg]
-        --rw [sub_eq_add_neg, sub_eq_add_neg, ←add_assoc] at tri
-        --rw [add_assoc, add_comm] at tri
-        --nth_rw 2 [add_comm] at tri
-        --rw [←two_mul, mul_div_left_comm] at hfg
-        exact le_trans tri hfg
-        sorry
+        have hfg   := le_of_lt (add_lt_add hf hg)
+        rw [←two_mul] at hfg
+        have tri   := triangle (f (seq n) - f a) (g (seq n) - g a)
+        have combi := le_trans tri hfg
+        have bound : |f (seq n) - f a + (g (seq n) - g a)| < ε := lt_of_le_of_lt combi h2ε4ltε
+        simp [sub_eq_add_neg, add_assoc, add_left_comm] at bound
+        ring_nf
+        rw [add_assoc]
+        exact bound
     constructor
     · apply cont_seq_imp_cont_ε_δ
       exact seq_cont
@@ -126,7 +123,7 @@ lemma cont_prod
       unfold is_lim_seq at hseq
       intros ε hε
       unfold is_lim_seq at hf hg
-      have hε4 : ε/4 > 0 := by exact half_pos hε
+      have hε4 : ε/4 > 0 := by exact half_pos (half_pos hε)
       -- Extract N from continuity of f
       specialize hf seq
       let hf := hf hseq
