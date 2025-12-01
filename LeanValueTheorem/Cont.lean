@@ -64,16 +64,16 @@ lemma cont_sum
       unfold is_lim_seq at hseq
       intros ε hε
       unfold is_lim_seq at hf hg
-      have hε2 : ε/2 > 0 := by exact half_pos hε
+      have hε4 : ε/4 > 0 := by exact half_pos hε
       -- Extract N from continuity of f
       specialize hf seq
       let hf := hf hseq
-      specialize hf (ε/4) hε2
+      specialize hf (ε/4) hε4
       obtain ⟨Nf, hNf, hf⟩ := hf 
       -- Extract N from continuity of g
       specialize hg seq
       let hg := hg hseq
-      specialize hg (ε/4) hε2
+      specialize hg (ε/4) hε4
       obtain ⟨Ng, hNg, hg⟩ := hg 
       -- Solve
       use Nf + Ng
@@ -104,20 +104,110 @@ lemma cont_sum
     · apply cont_seq_imp_cont_ε_δ
       exact seq_cont
     · exact seq_cont
+
+
 lemma cont_prod
   (f g : ℝ → ℝ)
   (I : Set ℝ)
   (a : I)
   {hfIa : is_cont_at f I a}
   {hgIa : is_cont_at g I a} :
-  is_cont_at (fun x => f x * g x) I a := sorry
+  is_cont_at (fun x => f x * g x) I a := by
+    let prod := fun x => f x * g x
+    unfold is_cont_at at hfIa hgIa
+    obtain ⟨_, hf⟩ := hfIa
+    obtain ⟨_, hg⟩ := hgIa
+    unfold is_cont_at_seq at hf hg
+    unfold is_cont_at
+    have seq_cont : is_cont_at_seq prod I a := by
+      unfold is_cont_at_seq
+      intros seq hseq
+      unfold is_lim_seq
+      unfold is_lim_seq at hseq
+      intros ε hε
+      unfold is_lim_seq at hf hg
+      have hε4 : ε/4 > 0 := by exact half_pos hε
+      -- Extract N from continuity of f
+      specialize hf seq
+      let hf := hf hseq
+      specialize hf (ε/4) hε4
+      obtain ⟨Nf, hNf, hf⟩ := hf 
+      -- Extract N from continuity of g
+      specialize hg seq
+      let hg := hg hseq
+      specialize hg (ε/4) hε4
+      obtain ⟨Ng, hNg, hg⟩ := hg 
+      -- Solve
+      use Nf + Ng
+      unfold prod
+      simp
+      constructor
+      · exact Or.inr hNg
+      · intros n hn
+        have hnf : n ≥ Nf := by exact Nat.le_of_add_right_le hn
+        have hng : n ≥ Ng := by exact Nat.le_of_add_left_le  hn
+        specialize hf n hnf
+        specialize hg n hng
+        simp at hf hg
+        let hfg := le_of_lt (add_lt_add hf hg)
+        -- ...
+        sorry
+    constructor
+    · apply cont_seq_imp_cont_ε_δ
+      exact seq_cont
+    · exact seq_cont
+
+
 lemma cont_quot
   (f g : ℝ → ℝ)
   (I : Set ℝ)
   (a : I)
   {hfIa : is_cont_at f I a}
   {hgIa : is_cont_at g I a} :
-  is_cont_at (fun x => f x / g x) I a := sorry
+  is_cont_at (fun x => f x / g x) I a := by
+    let quot := fun x => f x / g x
+    unfold is_cont_at at hfIa hgIa
+    obtain ⟨_, hf⟩ := hfIa
+    obtain ⟨_, hg⟩ := hgIa
+    unfold is_cont_at_seq at hf hg
+    unfold is_cont_at
+    have seq_cont : is_cont_at_seq quot I a := by
+      unfold is_cont_at_seq
+      intros seq hseq
+      unfold is_lim_seq
+      unfold is_lim_seq at hseq
+      intros ε hε
+      unfold is_lim_seq at hf hg
+      have hε4 : ε/4 > 0 := by exact half_pos hε
+      -- Extract N from continuity of f
+      specialize hf seq
+      let hf := hf hseq
+      specialize hf (ε/4) hε4
+      obtain ⟨Nf, hNf, hf⟩ := hf 
+      -- Extract N from continuity of g
+      specialize hg seq
+      let hg := hg hseq
+      specialize hg (ε/4) hε4
+      obtain ⟨Ng, hNg, hg⟩ := hg 
+      -- Solve
+      use Nf + Ng
+      unfold quot
+      simp
+      constructor
+      · exact Or.inr hNg
+      · intros n hn
+        have hnf : n ≥ Nf := by exact Nat.le_of_add_right_le hn
+        have hng : n ≥ Ng := by exact Nat.le_of_add_left_le  hn
+        specialize hf n hnf
+        specialize hg n hng
+        simp at hf hg
+        let hfg := le_of_lt (add_lt_add hf hg)
+        -- ...
+        sorry
+    constructor
+    · apply cont_seq_imp_cont_ε_δ
+      exact seq_cont
+    · exact seq_cont
 
 -- Proof that continuous functions attain their bounds
 lemma cont_attains_bounds
