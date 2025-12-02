@@ -8,7 +8,7 @@ def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
 
 -- Definition for l being the limit of the function f : D → ℝ at c
 def is_lim_fun {I : Set ℝ} (f : I → ℝ) (c : ℝ) (l : ℝ) : Prop :=
-  ∀ ε > 0, ∃ δ > 0, ∀ x : I, abs (x - c) < δ → abs (f x - l) < ε
+  ∀ ε > 0, ∃ δ > 0, ∀ x : I, |x - c| < δ → |f x - l| < ε
 
 -- Algebra of sequences (for sums, products and quotients)
 lemma seq_sum
