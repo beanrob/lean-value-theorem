@@ -57,7 +57,7 @@ lemma limit_prod
 lemma limit_quot
   (I : Set ℝ)
   (f g : ℝ → ℝ)
-  (hg : ∀ x : I, g x ≠ 0)
+  (hg : ∀ x ∈ I, g x ≠ 0)
   (x L1 L2 : ℝ)
   (hfa : is_lim_fun I f x L1)
   (hgb : is_lim_fun I g x L2) :

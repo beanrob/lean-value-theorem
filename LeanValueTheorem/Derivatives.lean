@@ -56,7 +56,12 @@ lemma recip_deriv
   (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) :
   is_deriv D (fun x => 1 / x) (fun x => -1 / x ^ 2) D := by
     intro a ha _
-    sorry --algebra of limits goes here (I think)
+    have hsimp : (fun h ↦ ((fun x ↦ 1 / x) (a + h) - (fun x ↦ 1 / x) a) / h)
+     = (fun h => -1 / (a * (a + h))) := by
+      refine funext ?_
+      intro h
+      sorry --jesus
+    sorry
 
 -- Proof that the derivative of af + bg is af' + bg'
 lemma sum_rule
