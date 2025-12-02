@@ -62,27 +62,6 @@ lemma cont_sum
     have seq_cont : is_cont_at_seq sum I a := by
       unfold is_cont_at_seq
       intros seq hseq
-<<<<<<< HEAD
-      unfold is_lim_seq
-      unfold is_lim_seq at hseq
-      intros ε hε
-      unfold is_lim_seq at hf hg
-      have hε4 : (ε/4) > 0 := by linarith
-      have h2ε4ltε : 2 * (ε/4) < ε := by linarith
-      -- Extract N from continuity of f
-      specialize hf seq
-      let hf := hf hseq
-      specialize hf (ε/4) hε4
-      obtain ⟨Nf, hNf, hf⟩ := hf
-      -- Extract N from continuity of g
-      specialize hg seq
-      let hg := hg hseq
-      specialize hg (ε/4) hε4
-      obtain ⟨Ng, hNg, hg⟩ := hg
-      -- Solve
-      use Nf + Ng
-=======
->>>>>>> 65075e3267e2770135ef3db5398d51fc8b0403d6
       unfold sum
       specialize hf seq
       specialize hg seq
@@ -112,27 +91,6 @@ lemma cont_prod
     have seq_cont : is_cont_at_seq prod I a := by
       unfold is_cont_at_seq
       intros seq hseq
-<<<<<<< HEAD
-      unfold is_lim_seq
-      unfold is_lim_seq at hseq
-      intros ε hε
-      unfold is_lim_seq at hf hg
-      have hε4 : (ε/4) > 0 := by linarith
-      have h2ε4ltε : 2 * (ε/4) < ε := by linarith
-      -- Extract N from continuity of f
-      specialize hf seq
-      let hf := hf hseq
-      specialize hf (ε/4) hε4
-      obtain ⟨Nf, hNf, hf⟩ := hf
-      -- Extract N from continuity of g
-      specialize hg seq
-      let hg := hg hseq
-      specialize hg (ε/4) hε4
-      obtain ⟨Ng, hNg, hg⟩ := hg
-      -- Solve
-      use Nf + Ng
-=======
->>>>>>> 65075e3267e2770135ef3db5398d51fc8b0403d6
       unfold prod
       specialize hf seq
       specialize hg seq
@@ -162,27 +120,6 @@ lemma cont_quot
     have seq_cont : is_cont_at_seq quot I a := by
       unfold is_cont_at_seq
       intros seq hseq
-<<<<<<< HEAD
-      unfold is_lim_seq
-      unfold is_lim_seq at hseq
-      intros ε hε
-      unfold is_lim_seq at hf hg
-      have hε4 : (ε/4) > 0 := by linarith
-      have h2ε4ltε : 2 * (ε/4) < ε := by linarith
-      -- Extract N from continuity of f
-      specialize hf seq
-      let hf := hf hseq
-      specialize hf (ε/4) hε4
-      obtain ⟨Nf, hNf, hf⟩ := hf
-      -- Extract N from continuity of g
-      specialize hg seq
-      let hg := hg hseq
-      specialize hg (ε/4) hε4
-      obtain ⟨Ng, hNg, hg⟩ := hg
-      -- Solve
-      use Nf + Ng
-=======
->>>>>>> 65075e3267e2770135ef3db5398d51fc8b0403d6
       unfold quot
       specialize hf seq
       specialize hg seq
@@ -196,3 +133,9 @@ lemma cont_quot
     · exact seq_cont
 
 -- Proof that continuous functions attain their bounds
+lemma cont_attains_bounds
+  (f : ℝ → ℝ)
+  (I : Set ℝ)
+  {hfI : is_cont f I} :
+  (∃ a ∈ I, is_fun_min I f a) ∧
+  (∃ b ∈ I, is_fun_max I f b) := sorry

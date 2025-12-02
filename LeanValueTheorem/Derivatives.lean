@@ -8,14 +8,14 @@ import Mathlib.Tactic.Linarith
 -- Defintion for m being the value of the derivative of f : D → ℝ at a
 def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
   a ∈ D →
-  is_lim_fun_abv {h : ℝ | a + h ∈ D} (fun h => (f (a + h) - f (a)) / h ) m 0
+  is_lim_fun {h : ℝ | a + h ∈ D ∧ h ≠ 0} (fun h => (f (a + h) - f (a)) / h ) 0 m
 
 -- Defintion for f' being the derivative of f : D → ℝ on a set A
 def is_deriv (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : Prop :=
   ∀ a ∈ A, is_deriv_at D f (f' a) a
 
--- Proof that f : D → ℝ has zero derivative if and only if it is constant
-lemma fun_with_zero_deriv
+-- Proof that f : D → ℝ has zero derivative if it is constant
+lemma const_zero_deriv
   (D : Set ℝ) (f : ℝ → ℝ) :
   is_const_fun D f → is_deriv D f 0 D := by
   intro hcon a ha _ ε hε
@@ -41,26 +41,16 @@ lemma x_one_deriv
     intro a ha _ ε hε
     use 1
     constructor
-    · intro hder x y hD
-      obtain ⟨hx, hy⟩ := hD
-      sorry --I belive this direction requires the Mean Value Theorem
-    · intro hcon a ha _ ε hε
-      use 1
-      constructor
-      · simp
-      · intro h hh1 hh2
-        simp only [sub_zero]
-        have hah : a + h ∈ D ∧ a ∈ D := by
-          constructor
-          · exact hh1
-          · exact ha
-        specialize hcon (a + h) a hah
-        rw [hcon]
-        simp only [sub_self, zero_div, abs_zero, gt_iff_lt]
-        exact hε
+    · simp
+    · intro h hh12 hh3
+      obtain ⟨hh1, hh2⟩ := hh12
+      simp only [add_sub_cancel_left, Pi.one_apply]
+      have hdiv : h / h = 1 := by
+        exact (div_eq_one_iff_eq hh2).mpr rfl
+      rw [hdiv]
+      simp only [sub_self, abs_zero, gt_iff_lt]
+      exact hε
 
-<<<<<<< HEAD
-=======
 -- Proof that 1/x has derivative -1/x^2
 lemma recip_deriv
   (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) :
@@ -74,7 +64,6 @@ lemma recip_deriv
     sorry
 
 -- Proof that the derivative of af + bg is af' + bg'
->>>>>>> 65075e3267e2770135ef3db5398d51fc8b0403d6
 lemma sum_rule
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :
@@ -83,6 +72,7 @@ lemma sum_rule
     intro a b c hc _
     sorry --algebra of limits goes here
 
+-- Proof that the derivative of f * g is f' * g + f * g'
 lemma product_rule
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :

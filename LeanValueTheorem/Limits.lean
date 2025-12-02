@@ -103,11 +103,7 @@ lemma seq_quot
   (is_sequence (fun n => f n / g n)) ∧
   (is_lim_seq (fun n => f n / g n) (a / b)) := sorry
 
-<<<<<<< HEAD
--- Algebra of limits (for sums, products and quotients)
-=======
 -- Algebra of limits for functions (for sums, products and quotients)
->>>>>>> 65075e3267e2770135ef3db5398d51fc8b0403d6
 lemma limit_sum
   (I : Set ℝ)
   (f g : ℝ → ℝ)
