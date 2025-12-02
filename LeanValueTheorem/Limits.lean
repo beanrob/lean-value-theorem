@@ -1,4 +1,5 @@
 import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.Linarith
 import LeanValueTheorem.Sequences
 
 
@@ -14,6 +15,8 @@ def is_lim_fun (D : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
 def is_lim_fun_abv (D : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x ∈ D, x > c ∧ abs (x - c) < δ → abs (f x - l) < ε
 
+
+
 -- Algebra of limtis for sequences (for sums, products and quotients)
 lemma seq_sum
   (f g : ℕ → ℝ)
@@ -23,7 +26,58 @@ lemma seq_sum
   (hfa : is_lim_seq f a)
   (hgb : is_lim_seq g b) :
   (is_sequence (fun n => f n + g n)) ∧
-  (is_lim_seq (fun n => f n + g n) (a + b)) := by sorry
+  (is_lim_seq (fun n => f n + g n) (a + b)) := by
+
+  constructor
+  · exact hf;
+  · unfold is_lim_seq at hfa hgb
+    intro (ε : ℝ) (hε : ε > 0)
+
+    let ε' := ε / 3
+    -- have zero_sum : (0:ℝ) + 0 + 0 = 0 := by norm_num
+    have hε' : ε' > 0 := div_pos hε (by norm_num)
+
+    rcases hfa ε' hε' with ⟨N1, hN1, hfa_prop⟩
+    rcases hgb ε' hε' with ⟨N2, hN2, hgb_prop⟩
+
+    let N := max N1 N2
+    use N
+
+    have hn1 : N1 ≤ N := le_max_left N1 N2
+    have hn2 : N2 ≤ N := le_max_right N1 N2
+    have hN : 0 < N := le_trans hN1 hn1
+
+    constructor
+    · exact hN;
+    · intro (n : ℕ) (hn : n ≥ N)
+      have hn1' : n ≥ N1 := le_trans hn1 hn
+      have hn2' : n ≥ N2 := le_trans hn2 hn
+      simp
+
+      have h1 : abs (f n - a) < ε' := hfa_prop n hn1'
+      have h2 : abs (g n - b) < ε' := hgb_prop n hn2'
+
+      have h : abs ((f n - a) + (g n - b)) ≤ abs (f n - a) + abs (g n - b) := by
+        exact abs_add_le (f n - a) (g n - b)
+
+      have h' : abs (f n - a) + abs (g n - b) ≤  ε' + ε' := le_of_lt (add_lt_add h1 h2)
+      have last_step : abs ((f n - a) + (g n - b)) ≤ ε' + ε':= le_trans h h'
+
+
+      have last_last_step : ε' + ε' < ε := by
+        calc
+          ε' + ε'
+          _ = (ε / 3) + (ε / 3) := by simp [ε']
+          _ = ((2 / 3) : ℝ) * ε := by linarith
+          _ < (1 : ℝ) * ε := by
+            apply mul_lt_mul_of_pos_right
+            norm_num
+            · exact hε
+          _ = ε := by simp
+
+      exact lt_of_lt_of_le' last_last_step last_step
+
+
 lemma seq_prod
   (f g : ℕ → ℝ)
   (a b : ℝ)
