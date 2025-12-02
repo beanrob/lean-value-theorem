@@ -110,23 +110,27 @@ lemma seq_quot
 
 -- Algebra of limits for functions (for sums, products and quotients)
 lemma limit_sum
+  (I : Set ℝ)
   (f g : ℝ → ℝ)
-  (x0 L1 L2 : ℝ)
-  (hfa : is_lim_fun Set.univ f x0 L1)
-  (hgb : is_lim_fun Set.univ g x0 L2) :
-  (is_lim_fun Set.univ (fun x => f x + g x) x0 (L1 + L2)) := by sorry
+  (x L1 L2 : ℝ)
+  (hfa : is_lim_fun I f x L1)
+  (hgb : is_lim_fun I g x L2) :
+  (is_lim_fun I (fun n => f n + g n) x (L1 + L2)) := by sorry
 lemma limit_prod
+  (I : Set ℝ)
   (f g : ℝ → ℝ)
-  (x0 L1 L2 : ℝ)
-  (hfa : is_lim_fun Set.univ f x0 L1)
-  (hgb : is_lim_fun Set.univ g x0 L2) :
-  (is_lim_fun Set.univ (fun x => f x * g x) x0 (L1 * L2)) := by sorry
+  (x L1 L2 : ℝ)
+  (hfa : is_lim_fun I f x L1)
+  (hgb : is_lim_fun I g x L2) :
+  (is_lim_fun I (fun n => f n * g n) x (L1 * L2)) := by sorry
 lemma limit_quot
+  (I : Set ℝ)
   (f g : ℝ → ℝ)
-  (x0 L1 L2 : ℝ)
-  (hfa : is_lim_fun Set.univ f x0 L1)
-  (hgb : is_lim_fun Set.univ g x0 L2) :
-  (is_lim_fun Set.univ (fun x => f x / g x) x0 (L1 / L2)) := by sorry
+  (hg : ∀ x : I, g x ≠ 0)
+  (x L1 L2 : ℝ)
+  (hfa : is_lim_fun I f x L1)
+  (hgb : is_lim_fun I g x L2) :
+  (is_lim_fun I (fun n => f n / g n) x (L1 / L2)) := by sorry
 
 -- Proof that a non-negative sequence has non-negative limit
 lemma limit_non_negative
