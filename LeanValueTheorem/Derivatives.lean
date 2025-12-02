@@ -59,6 +59,22 @@ lemma x_one_deriv
         simp only [sub_self, zero_div, abs_zero, gt_iff_lt]
         exact hε
 
+<<<<<<< HEAD
+=======
+-- Proof that 1/x has derivative -1/x^2
+lemma recip_deriv
+  (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) :
+  is_deriv D (fun x => 1 / x) (fun x => -1 / x ^ 2) D := by
+    intro a ha _
+    have hsimp : (fun h ↦ ((fun x ↦ 1 / x) (a + h) - (fun x ↦ 1 / x) a) / h)
+     = (fun h => -1 / (a * (a + h))) := by
+      refine funext ?_
+      intro h
+      sorry --jesus
+    sorry
+
+-- Proof that the derivative of af + bg is af' + bg'
+>>>>>>> 65075e3267e2770135ef3db5398d51fc8b0403d6
 lemma sum_rule
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :
