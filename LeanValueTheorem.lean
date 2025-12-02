@@ -30,11 +30,12 @@ theorem mvt {hab : a < b} (hfc : is_cont f (cci a b)) (hff' : is_deriv I f f' (o
   rw [← sub_eq_iff_eq_add']
   rw [← mul_sub]
   unfold r
-  have hz (a b : ℝ) : a / b * b = a := by sorry
-  rw [hz]
- have hgr : ∃ c ∈ (ooi a b), g' c = 0 := by
+  have habb (a b : ℝ) : a / b * b = a := by sorry
+  rw [habb]
+ have hg'r : ∃ c ∈ (ooi a b), g' c = 0 := by
   exact rolle hgc hgg' hgba
- have hfr : ∃ c ∈ (ooi a b), f' c = r := by
-  unfold g' at hgr
+ have hf'r : ∃ c ∈ (ooi a b), f' c = r := by
+  unfold g' at hg'r
+  obtain ⟨c, hg'r⟩ := hg'r
   sorry
- exact hfr
+ exact hf'r
