@@ -7,8 +7,9 @@ def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
   ∀ ε > 0, ∃ N : ℕ, N > 0 ∧ (∀ n, n ≥ N → abs (a n - l) < ε)
 
 -- Definition for l being the limit of the function f : D → ℝ at c
-def is_lim_fun {I : Set ℝ} (f : I → ℝ) (c : ℝ) (l : ℝ) : Prop :=
-  ∀ ε > 0, ∃ δ > 0, ∀ x : I, |x - c| < δ → |f x - l| < ε
+
+def is_lim_fun (D : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x ∈ D, |x - c| < δ → |f x - l| < ε
 
 -- Algebra of sequences (for sums, products and quotients)
 lemma seq_sum
@@ -42,26 +43,26 @@ lemma seq_quot
 -- Algebra of limits (for sums, products and quotients of functions)
 lemma limit_sum
   (I : Set ℝ)
-  (f g : I → ℝ)
+  (f g : ℝ → ℝ)
   (x L1 L2 : ℝ)
-  (hfa : is_lim_fun f x L1)
-  (hgb : is_lim_fun g x L2) :
-  (is_lim_fun (fun n => f n + g n) x (L1 + L2)) := by sorry
+  (hfa : is_lim_fun I f x L1)
+  (hgb : is_lim_fun I g x L2) :
+  (is_lim_fun I (fun n => f n + g n) x (L1 + L2)) := by sorry
 lemma limit_prod
   (I : Set ℝ)
-  (f g : I → ℝ)
+  (f g : ℝ → ℝ)
   (x L1 L2 : ℝ)
-  (hfa : is_lim_fun f x L1)
-  (hgb : is_lim_fun g x L2) :
-  (is_lim_fun (fun n => f n * g n) x (L1 * L2)) := by sorry
+  (hfa : is_lim_fun I f x L1)
+  (hgb : is_lim_fun I g x L2) :
+  (is_lim_fun I (fun n => f n * g n) x (L1 * L2)) := by sorry
 lemma limit_quot
   (I : Set ℝ)
-  (f g : I → ℝ)
+  (f g : ℝ → ℝ)
   (hg : ∀ x : I, g x ≠ 0)
   (x L1 L2 : ℝ)
-  (hfa : is_lim_fun f x L1)
-  (hgb : is_lim_fun g x L2) :
-  (is_lim_fun (fun n => f n / g n) x (L1 / L2)) := by sorry
+  (hfa : is_lim_fun I f x L1)
+  (hgb : is_lim_fun I g x L2) :
+  (is_lim_fun I (fun n => f n / g n) x (L1 / L2)) := by sorry
 
 -- Proof that a non-negative sequence has non-negative limit
 lemma limit_non_negative
