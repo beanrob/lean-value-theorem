@@ -34,7 +34,6 @@ lemma seq_sum
     intro (ε : ℝ) (hε : ε > 0)
 
     let ε' := ε / 3
-    -- have zero_sum : (0:ℝ) + 0 + 0 = 0 := by norm_num
     have hε' : ε' > 0 := div_pos hε (by norm_num)
 
     rcases hfa ε' hε' with ⟨N1, hN1, hfa_prop⟩
@@ -61,21 +60,30 @@ lemma seq_sum
         exact abs_add_le (f n - a) (g n - b)
 
       have h' : abs (f n - a) + abs (g n - b) ≤  ε' + ε' := le_of_lt (add_lt_add h1 h2)
-      have last_step : abs ((f n - a) + (g n - b)) ≤ ε' + ε':= le_trans h h'
-
+      have last_step : |f n + g n - (a + b)| ≤ ε' + ε':=
+        have r : (f n - a) + (g n - b) = f n + g n - (a + b) := by linarith
+        calc
+          |f n + g n - (a + b)|
+          _ = |(f n - a) + (g n - b)| := by rw [r]
+          _ ≤ abs (f n - a) + abs (g n - b) := h
+          _ ≤ ε' + ε' := h'
 
       have last_last_step : ε' + ε' < ε := by
         calc
           ε' + ε'
           _ = (ε / 3) + (ε / 3) := by simp [ε']
-          _ = ((2 / 3) : ℝ) * ε := by linarith
-          _ < (1 : ℝ) * ε := by
-            apply mul_lt_mul_of_pos_right
-            norm_num
-            · exact hε
-          _ = ε := by simp
+          _ < ε := by linarith
 
       exact lt_of_lt_of_le' last_last_step last_step
+
+
+lemma seq_scalar_prod
+  (f : ℕ → ℝ)
+  (a b : ℝ)
+  (hf : is_sequence f)
+  (hfa : is_lim_seq f a) :
+  (is_sequence (fun n => b * f n)) ∧
+  (is_lim_seq (fun n => b * f n) (b * a)) := by sorry
 
 
 lemma seq_prod
@@ -87,6 +95,9 @@ lemma seq_prod
   (hgb : is_lim_seq g b) :
   (is_sequence (fun n => f n * g n)) ∧
   (is_lim_seq (fun n => f n * g n) (a * b)) := by sorry
+
+
+
 lemma seq_quot
   (f g : ℕ → ℝ)
   (a b : ℝ)
