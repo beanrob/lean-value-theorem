@@ -3,6 +3,8 @@ import LeanValueTheorem.Misc
 import LeanValueTheorem.Limits
 import LeanValueTheorem.Intervals
 
+import Mathlib.Tactic.Linarith
+
 -- Defintion for m being the value of the derivative of f : D → ℝ at a
 def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
   a ∈ D →
@@ -20,8 +22,8 @@ lemma const_zero_deriv
   use 1
   constructor
   · simp
-  · intro h hh hh3
-    obtain ⟨hh1, hh2⟩ := hh
+  · intro h hh12 hh3
+    obtain ⟨hh1, hh2⟩ := hh12
     simp only [Pi.zero_apply, sub_zero]
     have hah : a + h ∈ D ∧ a ∈ D := by
       constructor
@@ -58,19 +60,19 @@ lemma recip_deriv
 
 -- Proof that the derivative of af + bg is af' + bg'
 lemma sum_rule
-  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (hf : is_deriv D f f' D)
-  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (hg : is_deriv E g g' E) :
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :
   ∀ a b, is_deriv (D ∩ E) (fun x => a * (f x) + b * (g x))
-  (fun x => a * (f' x) + b * (g' x)) (D ∩ E) := by
+  (fun x => a * (f' x) + b * (g' x)) (A ∩ B) := by
     intro a b c hc _
     sorry --algebra of limits goes here
 
 -- Proof that the derivative of f * g is f' * g + f * g'
 lemma product_rule
-  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (hf : is_deriv D f f' D)
-  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (hg : is_deriv E g g' E) :
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :
   is_deriv (D ∩ E) (fun x => (f x) * (g x))
-  (fun x => (f' x) * (g x) + (f x) * (g' x)) (D ∩ E) := by
+  (fun x => (f' x) * (g x) + (f x) * (g' x)) (A ∩ B) := by
     intro a ha _
     sorry --algebra of limits goes here
 
@@ -88,8 +90,8 @@ lemma power_rule
     simp only [Nat.cast_add, Nat.cast_one, add_tsub_cancel_right]
     have hmul : is_deriv (D ∩ D) (fun x ↦ x ^ n * x)
      (fun x ↦ n * x ^ (n - 1) * x + x ^ n * 1) (D ∩ D) := by
-      apply product_rule D (fun x ↦ x ^ n) (fun x ↦ ↑n * x ^ (n - 1)) hn
-       D (fun x => x) (fun x => 1) _
+      apply product_rule D (fun x ↦ x ^ n) (fun x ↦ ↑n * x ^ (n - 1)) D hn
+       D (fun x => x) (fun x => 1) D _
       exact x_one_deriv D
     simp only [Set.inter_self, mul_one] at hmul
     have hf1 : (fun (x : ℝ) ↦ x ^ (n + 1)) = (fun (x : ℝ) ↦ x ^ n * x) := by
@@ -99,18 +101,21 @@ lemma power_rule
     have hf2 : (fun (x : ℝ) ↦ (↑n + 1) * x ^ n) = (fun (x : ℝ) ↦ ↑n * x ^ (n - 1) * x + x ^ n) := by
       refine funext ?_
       intro y
-      sorry --rewrite
+      calc
+        (n + 1) * y ^ n = n * y ^ n + y ^ n := by exact add_one_mul (↑n) (y ^ n)
+                     _  = n * y ^ (n - 1) * y + y ^ n := by
+                      refine (add_left_inj (y ^ n)).mpr ?_
+                      sorry --"failed to synthesize IsLeftCancelMul ℝ"
     rw [hf1, hf2]
     exact hmul
 
-
 -- Proof that the derivative of g(f) is f' * g'(f)
 lemma chain_rule
-  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (hf : is_deriv D f f' D)
-  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (hg : is_deriv E g g' E)
-  (hdom : ∀ x ∈ D, (f x) ∈ E) :
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ -> ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ -> ℝ) (B : Set ℝ) (hg : is_deriv E g g' B)
+  (hdom : ∀ x ∈ D, (f x) ∈ B) :
   is_deriv D (fun x => g (f x))
-  (fun x => (g' (f x)) * (f' x)) D := by
+  (fun x => (g' (f x)) * (f' x)) A := by
     intro a ha _
     sorry --algebra of limits goes here
 
@@ -119,8 +124,8 @@ lemma power_rule_neg
   is_deriv D (fun x => x ^ (-(n : ℤ))) (fun x => -n * x ^ (-(n : ℤ) - 1)) D := by
     have hrecip : is_deriv D (fun x ↦ 1 / x ^ n)
      (fun x ↦ -1 / (x ^ n) ^ 2 * (n * x ^ (n - 1))) D :=  by
-     apply chain_rule D (fun x => x ^ n) (fun x => n * x ^ (n - 1)) _
-      {x | x ≠ 0} (fun x => 1 / x) (fun x => -1 / x ^ 2) _
+     apply chain_rule D (fun x => x ^ n) (fun x => n * x ^ (n - 1)) D _
+      {x | x ≠ 0} (fun x => 1 / x) (fun x => -1 / x ^ 2) {x | x ≠ 0} _
      · intro y hy
        refine Set.mem_setOf.mpr ?_
        apply hD at hy
@@ -139,7 +144,7 @@ lemma power_rule_neg
       refine funext ?_
       intro y
       simp only [Int.cast_natCast, neg_mul]
-      sorry --rewrite
+      sorry --I think dividing by n is the issue here again
     simp only [Int.cast_natCast, neg_mul] at hf2
     rw [hf2]
     simp only [one_div] at hrecip
@@ -153,12 +158,23 @@ lemma quotient_rule
   is_deriv (D ∩ E) (fun x => (f x) / (g x))
   (fun x => ((f' x) * (g x) - (f x) * (g' x)) / (g x) ^ 2) (D ∩ E) := by
     have hch : is_deriv E (fun x => 1 / (g x)) (fun x => (-1 / (g x) ^ 2) * (g' x)) E := by
-      apply chain_rule E g g' hg {x : ℝ | x ≠ 0} (fun x => 1 / x) (fun x => -1 / x^2) _ _
+      apply chain_rule E g g' E hg
+       {x : ℝ | x ≠ 0} (fun x => 1 / x) (fun x => -1 / x^2) {x : ℝ | x ≠ 0} _ _
       · apply recip_deriv
         simp
       · exact hnz
     have hpr : is_deriv (D ∩ E) (fun x ↦ f x * (1 / g x))
      (fun x ↦ f' x * (1 / g x) + f x * (-1 / g x ^ 2 * g' x)) (D ∩ E) := by
-      apply product_rule D f f' hf E (fun x => 1 / (g x)) (fun x => (-1 / (g x) ^ 2) * (g' x)) _
+      apply product_rule D f f' D hf E (fun x => 1 / (g x)) (fun x => (-1 / (g x) ^ 2) * (g' x)) E _
       exact hch
-    sorry --rewrite
+    have hf1 : (fun x ↦ f x / g x) = (fun x ↦ f x * (1 / g x)) := by
+      refine funext ?_
+      intro y
+      exact div_eq_mul_one_div (f y) (g y)
+    have hf2 : (fun x ↦ (f' x * g x - f x * g' x) / g x ^ 2)
+     = (fun x ↦ f' x * (1 / g x) + f x * (-1 / g x ^ 2 * g' x)) := by
+      refine funext ?_
+      intro y
+      sorry --pain and suffering
+    rw [hf1, hf2]
+    exact hpr
