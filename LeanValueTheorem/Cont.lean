@@ -30,21 +30,24 @@ def is_cont (f : ℝ → ℝ) (I : Set ℝ) : Prop :=
 lemma cont_sum
   (f g : ℝ → ℝ)
   (I : Set ℝ)
-  (a : I)
+  (a : ℝ)
+  {ha : a ∈ I}
   {hfIa : is_cont_at f I a}
   {hgIa : is_cont_at g I a} :
   is_cont_at (fun x => f x + g x) I a := sorry
 lemma cont_prod
   (f g : ℝ → ℝ)
   (I : Set ℝ)
-  (a : I)
+  (a : ℝ)
+  {ha : a ∈ I}
   {hfIa : is_cont_at f I a}
   {hgIa : is_cont_at g I a} :
   is_cont_at (fun x => f x * g x) I a := sorry
 lemma cont_quot
   (f g : ℝ → ℝ)
   (I : Set ℝ)
-  (a : I)
+  (a : ℝ)
+  {ha : a ∈ I}
   {hfIa : is_cont_at f I a}
   {hgIa : is_cont_at g I a} :
   is_cont_at (fun x => f x / g x) I a := sorry
@@ -66,9 +69,3 @@ lemma cont_seq_imp_cont_ε_δ
   is_cont_at_ε_δ f I a := sorry
 
 -- Proof that continuous functions attain their bounds
-lemma cont_attains_bounds
-  (f : ℝ → ℝ)
-  (I : Set ℝ)
-  {hfI : is_cont f I} :
-  (∃ a ∈ I, is_fun_min f I a) ∧
-  (∃ b ∈ I, is_fun_max f I b) := sorry
