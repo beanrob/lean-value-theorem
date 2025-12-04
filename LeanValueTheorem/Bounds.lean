@@ -27,4 +27,16 @@ theorem cont_attains_bounds (f : ℝ → ℝ) (I : Set ℝ) {cont : is_cont f I}
     obtain ⟨hupper, hlower⟩ := boundedness
     obtain ⟨U, hupper⟩ := hupper 
     obtain ⟨L, hlower⟩ := hlower 
-    sorry
+    constructor
+    · use U
+      intro hupper
+      by_contra h
+      apply forall_not_of_not_exists at h
+      -- ...
+      sorry
+    · use L
+      intro hlower
+      by_contra h
+      apply forall_not_of_not_exists at h
+      -- ...
+      sorry
