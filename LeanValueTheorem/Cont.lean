@@ -132,10 +132,30 @@ lemma cont_quot
       exact seq_cont
     · exact seq_cont
 
--- Proof that continuous functions attain their bounds
-lemma cont_attains_bounds
+
+lemma reciprocal_cont
   (f : ℝ → ℝ)
   (I : Set ℝ)
   {hfI : is_cont f I} :
-  (∃ a ∈ I, is_fun_min f I a) ∧
-  (∃ b ∈ I, is_fun_max f I b) := sorry
+  is_cont (fun x => 1 / f x) I := by
+    let recip := fun x : ℝ => 1 / f x
+    unfold is_cont
+    intros a haI
+    unfold is_cont at hfI
+    specialize hfI a haI
+    have const_cont : is_cont_at (fun x : ℝ => (1 : ℝ)) I a := by
+      unfold is_cont_at
+      have e_d_cont : is_cont_at_ε_δ (fun x : ℝ => (1 : ℝ)) I a := by
+        unfold is_cont_at_ε_δ
+        intros haI ε hε
+        use 1
+        intros h1 x hxI hdiff
+        simp
+        exact hε
+      constructor
+      · exact e_d_cont
+      · apply cont_ε_δ_imp_cont_seq
+        exact e_d_cont
+    apply cont_quot (fun x : ℝ => (1 : ℝ)) f I a
+    · exact const_cont
+    · exact hfI
