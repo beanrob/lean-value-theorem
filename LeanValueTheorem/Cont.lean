@@ -74,6 +74,16 @@ lemma cont_sum
       exact seq_cont
     · exact seq_cont
 
+lemma cont_on_sum
+  (f g : ℝ → ℝ)
+  (I : Set ℝ)
+  {hfIa : is_cont f I}
+  {hgIa : is_cont g I} :
+  (is_cont (fun x => f x + g x) I) := by
+   unfold is_cont
+   apply fun a a_1 ↦ cont_sum f g I a
+   · exact fun a a_1 ↦ hfIa a a_1
+   · exact fun a a_1 ↦ hgIa a a_1
 
 lemma cont_prod
   (f g : ℝ → ℝ)
@@ -103,6 +113,16 @@ lemma cont_prod
       exact seq_cont
     · exact seq_cont
 
+lemma cont_on_prod
+  (f g : ℝ → ℝ)
+  (I : Set ℝ)
+  {hfIa : is_cont f I}
+  {hgIa : is_cont g I} :
+  is_cont (fun x => f x * g x) I := by
+   unfold is_cont
+   apply fun a a_1 ↦ cont_prod f g I a
+   · exact fun a a_1 ↦ hfIa a a_1
+   · exact fun a a_1 ↦ hgIa a a_1
 
 lemma cont_quot
   (f g : ℝ → ℝ)
@@ -131,6 +151,17 @@ lemma cont_quot
     · apply cont_seq_imp_cont_ε_δ
       exact seq_cont
     · exact seq_cont
+
+lemma cont_on_quot
+  (f g : ℝ → ℝ)
+  (I : Set ℝ)
+  {hfIa : is_cont f I}
+  {hgIa : is_cont g I} :
+  is_cont (fun x => f x / g x) I := by
+   unfold is_cont
+   apply fun a a_1 ↦ cont_quot f g I a
+   · exact fun a a_1 ↦ hfIa a a_1
+   · exact fun a a_1 ↦ hgIa a a_1
 
 -- Proof that continuous functions attain their bounds
 lemma cont_attains_bounds
