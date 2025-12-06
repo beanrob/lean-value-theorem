@@ -162,11 +162,3 @@ lemma cont_on_quot
    apply fun a a_1 ↦ cont_quot f g I a
    · exact fun a a_1 ↦ hfIa a a_1
    · exact fun a a_1 ↦ hgIa a a_1
-
--- Proof that continuous functions attain their bounds
-lemma cont_attains_bounds
-  (f : ℝ → ℝ)
-  (I : Set ℝ)
-  {hfI : is_cont f I} :
-  (∃ a ∈ I, is_fun_min I f a) ∧
-  (∃ b ∈ I, is_fun_max I f b) := sorry
