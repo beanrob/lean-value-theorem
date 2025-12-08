@@ -183,3 +183,13 @@ lemma quotient_rule
       sorry --pain and suffering
     rw [hf1, hf2]
     exact hpr
+
+-- Proof that the derivative of a function on an interval is unique
+lemma deriv_unique (D : Set ℝ) (f f' g': ℝ → ℝ) (A : Set ℝ) :
+ is_deriv D f f' A ∧ is_deriv D f g' A → ∀ x ∈ A, f' x = g' x := by
+ intro h
+ unfold is_deriv at h
+ unfold is_deriv_at at h
+ cases h; expose_names
+ --pain
+ sorry
