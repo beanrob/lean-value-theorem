@@ -25,7 +25,7 @@ def is_cont_on (f : ℝ → ℝ) (I : Set ℝ) (C : Set ℝ) {hC : C ⊆ I} : Pr
 -- Definition for a function being continuous on its whole domain
 def is_cont (f : ℝ → ℝ) (I : Set ℝ) : Prop :=
   ∀ a ∈ I, is_cont_at f I a
-  
+
 -- Interchangability of ε-δ definition and sequential
 -- Forwards direction
 lemma cont_ε_δ_imp_cont_seq
@@ -137,5 +137,5 @@ lemma cont_attains_bounds
   (f : ℝ → ℝ)
   (I : Set ℝ)
   {hfI : is_cont f I} :
-  (∃ a ∈ I, is_fun_min f I a) ∧
-  (∃ b ∈ I, is_fun_max f I b) := sorry
+  (∃ a ∈ I, is_fun_min I sorry f a) ∧
+  (∃ b ∈ I, is_fun_max I sorry f b) := sorry
