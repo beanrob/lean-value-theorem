@@ -5,7 +5,7 @@ import LeanValueTheorem.Sequences
 
 -- Definition for l being the limit of the sequence a
 def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
-  ∀ ε > 0, ∃ N : ℕ, N > 0 ∧ (∀ n, n ≥ N → abs (a n - l) < ε)
+  ∀ ε > 0, ∃ N : ℕ, N > 0 ∧ (∀ n, n ≥ N → |a n - l| < ε)
 
 -- Definition for l being the limit of the function f : D → ℝ at c
 
