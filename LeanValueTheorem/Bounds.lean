@@ -25,8 +25,8 @@ theorem cont_attains_bounds (f : ℝ → ℝ) (I : Set ℝ) {cont : is_cont f I}
     have boundedness := cont_imp_bounded f I cont
     unfold is_bounded at boundedness
     obtain ⟨hupper, hlower⟩ := boundedness
-    obtain ⟨U, hupper⟩ := hupper 
-    obtain ⟨L, hlower⟩ := hlower 
+    obtain ⟨U, hupper⟩ := hupper
+    obtain ⟨L, hlower⟩ := hlower
     constructor
     · use U
       intro hupper
