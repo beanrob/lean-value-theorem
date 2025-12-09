@@ -23,7 +23,16 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
    obtain ⟨c,hc⟩ := non_empty a b hab
    exact ⟨c, hc, hf'zero c hc⟩
  -- Now suppose f is not constant
- · sorry
+ ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f h
+    have hcdiff : f c < f a ∨ f c > f a := by
+     apply lt_or_gt_of_ne
+     apply hc.right
+    have hbound:
+    (∃ c ∈ (ooi a b), least_upper_bound f (cci a b) c) ∨
+    (∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) c) := by sorry
+
+    sorry
+
 
 
 theorem mvt {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b) f f' (ooi a b)} :
