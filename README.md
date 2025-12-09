@@ -1,8 +1,6 @@
 # lean-value-theorem
 
 ## Need To Do
-- Formalisation & Proof of "constant functions are continuous"
-- Formalisation & Proof of "fun x => x is continuous"
 - Proof of "continuous functions are bounded"
 - Proof of "sequential continuity implies epsilon delta continuity"
 - Proof of "epsilon delta continuity implies sequential continuity"
