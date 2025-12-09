@@ -16,14 +16,14 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
  -- First suppose f is a constant function
  · have hzero : is_deriv (ooi a b) f 0 (ooi a b) := by
     refine const_zero_deriv (ooi a b) f ?_
-    exact const_closed_const_open a b f h
+    exact const_closed_imp_const_open a b f h
    have hf'zero : ∀ c ∈ (ooi a b), f' c = 0 := by
     apply deriv_unique (ooi a b) f f' 0 (ooi a b) --still need to prove deriv_unique
     exact ⟨hff', hzero⟩
    obtain ⟨c,hc⟩ := non_empty a b hab
    exact ⟨c, hc, hf'zero c hc⟩
  -- Now suppose f is not constant
- ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f h
+ ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f hab h
     have hcdiff : f c < f a ∨ f c > f a := by
      apply lt_or_gt_of_ne
      apply hc.right

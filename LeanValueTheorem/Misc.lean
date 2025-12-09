@@ -45,7 +45,7 @@ lemma closed_const (a b : ℝ) (f : ℝ → ℝ) {hab : a < b} :
    exact Eq.symm right
 
 -- If f is NOT constant on [a,b] then f(x) differs from f(a) for some x in [a,b]
-lemma not_const_imp_diff (a b : ℝ) (f : ℝ → ℝ) {hab : a < b}:
+lemma not_const_imp_diff (a b : ℝ) (f : ℝ → ℝ) (hab : a < b):
  ¬is_const_fun (cci a b) f → ∃ x : ℝ, x ∈ (cci a b) ∧ f x ≠ f a := by
  contrapose
  intro h
