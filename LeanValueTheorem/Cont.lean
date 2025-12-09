@@ -159,3 +159,38 @@ lemma reciprocal_cont
     apply cont_quot (fun x : ℝ => (1 : ℝ)) f I a
     · exact const_cont
     · exact hfI
+
+lemma id_cont
+  (I : Set ℝ) :
+  is_cont (fun x => x) I := by
+    let id := fun x : ℝ => x
+    unfold is_cont
+    intros a haI
+    unfold is_cont_at
+    have seq_cont : is_cont_at_seq id I a := by
+      unfold is_cont_at_seq
+      aesop
+    constructor
+    · apply cont_seq_imp_cont_ε_δ
+      exact seq_cont
+    · exact seq_cont
+
+lemma const_cont
+  (c : ℝ)
+  (I : Set ℝ) :
+  is_cont (fun x => c) I := by
+    let const := fun x : ℝ => c
+    unfold is_cont
+    intros a haI
+    unfold is_cont_at
+    have seq_cont : is_cont_at_seq const I a := by
+      unfold is_cont_at_seq
+      intros seq hseq
+      unfold is_lim_seq const
+      intros ε hε
+      use 1
+      aesop
+    constructor
+    · apply cont_seq_imp_cont_ε_δ
+      exact seq_cont
+    · exact seq_cont
