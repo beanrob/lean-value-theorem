@@ -106,9 +106,10 @@ lemma power_rule
     have hf2 : (fun (x : ℝ) ↦ (↑n + 1) * x ^ n) = (fun (x : ℝ) ↦ ↑n * x ^ (n - 1) * x + x ^ n) := by
       refine funext ?_
       intro y
-      rw [mul_assoc (↑n) (y ^ (n - 1)) y, pow_sub_one_mul ?_ y]
-      · rw [← add_one_mul (↑n) (y ^ n)]
-      · sorry --this should be obvious as we are doing induction
+      rcases Or.symm (ne_or_eq n 0) with hz | hnz
+      · rw [hz]
+        simp
+      · rw [mul_assoc (↑n) (y ^ (n - 1)) y, pow_sub_one_mul hnz y, ← add_one_mul (↑n) (y ^ n)]
     rw [hf1, hf2]
     exact hmul
 
@@ -126,14 +127,15 @@ lemma power_rule_neg
   (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) (n : ℕ):
   is_deriv D (fun x ↦ x ^ (-(n : ℤ))) (fun x ↦ -n * x ^ (-(n : ℤ) - 1)) D := by
     have hrecip : is_deriv D (fun x ↦ 1 / x ^ n)
-     (fun x ↦ -1 / (x ^ n) ^ 2 * (n * x ^ (n - 1))) D :=  by
-     apply chain_rule D (fun x ↦ x ^ n) (fun x ↦ n * x ^ (n - 1)) D _
+     (fun x ↦ -1 / (x ^ n) ^ 2 * (n * x ^ ((n : ℤ) - 1))) D :=  by
+     apply chain_rule D (fun x ↦ x ^ n) (fun x ↦ n * x ^ ((n : ℤ) - 1)) D _
       {x | x ≠ 0} (fun x ↦ 1 / x) (fun x ↦ -1 / x ^ 2) {x | x ≠ 0} _
      · intro y hy
        refine Set.mem_setOf.mpr ?_
        apply hD at hy
        exact pow_ne_zero n hy
-     · exact power_rule D n
+     · sorry --this has stopped working as need to cast n back to ℕ
+      --exact power_rule D n
      · apply recip_deriv
        simp
     have hf1 : (fun (x : ℝ) ↦ x ^ (-(n : ℤ))) = (fun (x : ℝ) ↦ 1 / x ^ n) := by
@@ -143,15 +145,24 @@ lemma power_rule_neg
     rw [hf1]
     simp only [one_div, neg_mul]
     have hf2 : (fun (x : ℝ) ↦ -(n : ℤ) * x ^ (-(n : ℤ) - 1))
-     = (fun (x : ℝ) ↦ -1 / (x ^ n) ^ 2 * (↑n * x ^ (n - 1))) := by
+     = (fun (x : ℝ) ↦ -1 / (x ^ n) ^ 2 * (↑n * x ^ ((n : ℤ) - 1))) := by
       refine funext ?_
       intro y
       simp only [Int.cast_natCast, neg_mul]
-      rw [show -1 / (y ^ n) ^ 2 = -1 * ((y ^ n) ^ 2)⁻¹ from rfl]
-      rw [← pow_mul' y 2 n]
-      sorry --pain and suffering
-      --rw [← zpow_neg_coe_of_pos y ?_]
-      --rw [mul_mul_mul_comm]
+      rw [show -1 / (y ^ n) ^ 2 = -1 * ((y ^ n) ^ 2)⁻¹ from rfl, ← pow_mul' y 2 n]
+      rcases Or.symm (ne_or_eq n 0) with hz | hnz
+      · rw [hz]
+        simp
+      · simp only [neg_mul, one_mul, neg_inj]
+        rw [← zpow_neg_coe_of_pos y ?_]
+        · rw [mul_rotate']
+          congr
+          rw [← zpow_add' ?_]
+          · rw [sub_add_eq_add_sub]
+            sorry --need to show n - 2n = -n for god's sake
+          · sorry --need y ≠ 0 but should have this
+        · refine Nat.succ_mul_pos 1 ?_
+          exact Nat.zero_lt_of_ne_zero hnz
     simp only [Int.cast_natCast, neg_mul] at hf2
     rw [hf2]
     simp only [one_div] at hrecip
