@@ -314,6 +314,10 @@ lemma seq_recip
     · intro (n : ℕ) (hn : n ≥ N)
       simp
       have hcz : 2/b^2 ≠ 0 := by linarith
+      -- do i have to define my own example group where 0 doesn't count for stuff or something
+      -- there is an example for something similar in Mathlib.Algebra.GroupWithZero.Defs
+      -- can't think of any other way rn
+      have someresult (a : ℝ) (b : ℝ) : (a/b) * (a/b)⁻¹ = 1 := by sorry
       calc
         |(g n)⁻¹ - b⁻¹|
         _ = |(1 / g n) - (1 / b)| := by simp [one_div, one_div]
@@ -331,8 +335,7 @@ lemma seq_recip
         _ = (((2 / b^2) * (b^2 / 2)) * (1/2)) * ε := by linarith
         _ = (((2 / b^2) * (1 / (2 / b^2))) * (1/2)) * ε := by rw [(one_div_div 2 (b^2)).symm]
         _ = (((2 / b^2) * (2 / b^2)⁻¹) * (1/2)) * ε := by simp [div_eq_mul_inv]
-        -- _ = (((2 / b^2)⁻¹ * (2 / b^2)) * (1/2)) * ε := by simp [mul_comm]
-        _ = (1) * (1 / 2) * ε := by sorry
+        _ = ((1) * (1/2)) * ε := by rw [someresult 2 (b^2)]
         _ < ε := by linarith
 
 
