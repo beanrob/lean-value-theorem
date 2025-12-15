@@ -12,7 +12,6 @@ def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
 def is_lim_fun (D : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x ∈ D, |x - c| < δ → |f x - l| < ε
 
-
 -- Algebra of limtis for sequences (for sums, products and quotients)
 lemma seq_sum
   (f g : ℕ → ℝ)
@@ -163,10 +162,6 @@ lemma seq_prod_special
         _ = ε^(1/2) * ε^(1/2) := by simp [ε']
         _ = ε := sorry -- exponentiation properties
 
--- I can think of two different ways to prove this
--- The first is to unfold all sequence and limit defintions and do a long epsilon-delta proof
--- The second is a bit tricky but would involve attempting to use previos lemmas and prove without
--- any unfolding, this way seems significantly trickier
 lemma seq_prod
   (f g : ℕ → ℝ)
   (a b : ℝ)
@@ -180,41 +175,166 @@ lemma seq_prod
   · exact hf;
   · unfold is_lim_seq at hfa hgb
 
-    have shuffle (n) : (f n) * (g n) - (a * b) =
-                       (f n - a) * (g n - b) + a * (g n - b) + b * (f n - a) :=
-                       by linarith
+    have reverse_trivial_limit
+      (f : ℕ → ℝ) (a : ℝ)
+      (hf : is_sequence (fun n => f n - a))
+      (hfa : is_lim_seq (fun n => f n - a) 0) :
+      (is_sequence f) ∧
+      (is_lim_seq f a) := by sorry
+
+    have trivial_limit
+      (f : ℕ → ℝ) (a : ℝ)
+      (hf : is_sequence f)
+      (hfa : is_lim_seq f a) :
+      (is_sequence (fun n => f n - a)) ∧
+      (is_lim_seq (fun n => f n - a) 0) := by
+
+      have hc : is_sequence (fun n => -a) := by trivial
+      have hca : is_lim_seq (fun n => -a) (-a) := by sorry
+      have h := (seq_sum f (fun n => -a) a (-a) hf hc hfa hca).2
+
+      constructor
+      · trivial
+      · simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using h
 
     let seq1 := fun n => (f n - a)
     let seq2 := fun n => (g n - b)
-    have seq1_seq : is_sequence seq1 := sorry
-    have seq2_seq : is_sequence seq2 := sorry
 
 
+    have shuffle : (fun n => f n * g n - a * b) =
+     (fun n => seq1 n * seq2 n) +
+     (fun n => a * seq2 n) +
+     (fun n => b * seq1 n) := by sorry
+      -- funext n
+      -- simp [sub_mul, mul_sub, mul_comm, mul_left_comm, mul_assoc]
 
-    have seq1_lim : is_lim_seq seq1 0 := sorry
-    have seq2_lim : is_lim_seq seq2 0 := sorry
+    have seq1_lim : is_lim_seq seq1 0 := by
+      exact (trivial_limit f a hf hfa).2
+    have seq2_lim : is_lim_seq seq2 0 := by
+      exact (trivial_limit g b hg hgb).2
 
     have seq_mul_12 : is_lim_seq (fun n => (seq1 n  * seq2 n)) 0 := by
-      rcases (seq_prod_special seq1 seq2 seq1_seq seq2_seq seq1_lim seq2_lim)
-      -- exact
+      exact (seq_prod_special seq1 seq2 (by trivial) (by trivial) seq1_lim seq2_lim).2
 
-    have seq_mul_a2 : is_lim_seq (fun n => a * (seq2 n)) 0 := sorry
-    have seq_mul_1b : is_lim_seq (fun n => b * (seq1 n)) 0 := sorry
-
-    -- unfold is_lim_seq at seq_mul_12 seq_mul_a2 seq_mul_1b
+    have seq_mul_a2 : is_lim_seq (fun n => a * (seq2 n)) 0 := by
+      simpa [mul_zero] using (seq_scalar_prod seq2 0 a (by trivial) seq2_lim).2
 
 
-    have hypo (n : ℕ) :=
+    have seq_mul_1b : is_lim_seq (fun n => b * (seq1 n)) 0 := by
+      simpa [mul_zero] using (seq_scalar_prod seq1 0 b (by trivial) seq1_lim).2
+
+    -- : is_lim_seq (fun n => (seq1 n * seq2 n) + (a * seq2 n) + (b * seq1 n)) 0
+    have hshuffle_lim := by
+      have h12 := by
+        simpa using (
+          seq_sum
+            (fun n => seq1 n * seq2 n)
+            (fun n => a * seq2 n)
+            0 0 (by trivial) (by trivial)
+            seq_mul_12 seq_mul_a2
+        ).2
+
+      simpa using (
+        seq_sum
+          (fun n => (seq1 n * seq2 n + a * seq2 n))
+          (fun n => b * seq1 n)
+          0 0 (by trivial) (by trivial)
+          h12 seq_mul_1b
+      ).2
+
+    have limit_equality := congrArg (fun x => is_lim_seq x 0) shuffle
+    have last_step : is_lim_seq (fun n => f n * g n - a * b) 0 := by
+      simpa [limit_equality] using hshuffle_lim
+
+    exact (reverse_trivial_limit (fun n => f n * g n) (a * b) (by trivial) last_step).2
+
+lemma seq_recip
+  (g : ℕ → ℝ) (b : ℝ)
+  (hg : is_sequence g)
+  (hgb : is_lim_seq g b)
+  (hbz : b ≠ 0) :
+  (is_sequence (fun n => 1 / g n)) ∧
+  (is_lim_seq (fun n => 1 / g n) (1 / b)) := by
+  constructor
+  · trivial
+  · unfold is_lim_seq at hgb
+    intro (ε : ℝ) (hψ : ε > 0)
+
+    let ε1 := (b ^ 2) / 2
+    have constantpos : (b^2) / 2 > 0 := by sorry
+    have recippos : 2 / (b^2) > 0 := by sorry
+    have hε1 : ε1 > 0 := by sorry
+
+    have bgn := (seq_scalar_prod g b b hg hgb).2
+    rcases bgn ε1 hε1 with ⟨N1, hN1, hgb_prop1⟩
+
+    have sub (n : ℕ)  (hnN1 : n ≥ N1) : b^2 / 2 < b * g n := by
+      linarith [(abs_lt.mp (by simpa [ε1] using hgb_prop1 n hnN1)).1]
+
+    have shuffle1 (n : ℕ) : |(1 / (g n)) - (1 / b)| = |b - g n| / |b * g n| := by
+      have somehow (n : ℕ) : g n ≠ 0 := by sorry
+      have hnbz : -b ≠ 0 := (neg_ne_zero.mpr) hbz
+      have this := one_div_add_one_div (somehow n) hnbz
       calc
-        |(f n) * (g n) - (a * b)|
-        _ = |(f n - a) * (g n - b) + a * (g n - b) + b * (f n - a)| := by rw [shuffle]
-        _ = |((f n - a) * (g n - b)) + (a * (g n - b) + b * (f n - a))| := by rw [add_assoc]
-        _ ≤ |(f n - a) * (g n - b)| + |a * (g n - b) + b * (f n - a)| := by
-          exact abs_add_le ((f n - a) * (g n - b)) (a * (g n - b) + b * (f n - a))
-        _ = |seq1 n * seq2 n| + |a * seq2 n + b * seq1 n| := by simp [seq1, seq2]
-        _ = 0 + |a * seq2 n + b * seq1 n| := sorry
-        _ < ε := sorry
-    done
+      |(1 / (g n)) - (1 / b)|
+      _ = |(1 / (g n)) + (-(1 / b))| := by simp [sub_eq_add_neg]
+      _ = |(1 / (g n)) + (1 / -b)| := by simp [div_neg]
+      _ = |(g n + -b) / (g n * -b)| := by rw [this]
+      _ = |(g n + -b)| / |(g n * -b)| := by rw [abs_div]
+      _ = |-(b - g n)| / |(g n * -b)| := by rw [show (g n + -b) = -(b - g n) by linarith]
+      _ = |-(b - g n)| / |-(g n * b)| := by rw [show (g n * -b) = -(g n * b) by linarith]
+      _ = |b - g n| / |g n * b| := by rw [abs_neg, abs_neg]
+      _ = |b - g n| / |b * g n| := by rw [mul_comm (g n) b]
+
+    have shuffle2 (n : ℕ) (hnN1 : n ≥ N1) : |b - g n| / |b * g n| ≤ (2 / b ^ 2) * |g n - b| := by
+      have shufflesub := sub n hnN1
+      have ineq1 : (b^2) / 2 < |b * g n| := lt_of_lt_of_le shufflesub (le_abs_self (b * g n))
+      have ineq2 : 1 / |b * g n| < 2 / b^2 := by
+        simpa [one_div_div] using (one_div_lt_one_div_of_lt constantpos ineq1)
+
+      calc
+        |b - g n| / |b * g n|
+        _ ≤ |b - g n| * (1 / |b * g n|) := by rw [div_eq_mul_one_div |b - g n| |b * g n|]
+        _ ≤ |b - g n| * (2 / b^2) :=
+          mul_le_mul_of_nonneg_left (le_of_lt ineq2) (abs_nonneg (b - g n))
+        _ = |-(g n - b)| * (2 / b ^ 2) := by rw [show b - g n = -(g n - b) by linarith]
+        _ = |g n - b| * (2 / b ^ 2) := by rw [abs_neg]
+        _ = (2 / b ^ 2) * |g n - b| := by simp [mul_comm]
+
+    let ε2 := ε * ((b ^ 2) / 4)
+    have hε2 : ε2 > 0 := by sorry
+    rcases hgb ε2 hε2 with ⟨N2, hN2, hgb_prop2⟩
+
+    let N := max N1 N2
+    have hN : N > 0 := lt_of_lt_of_le hN1 (le_max_left N1 N2)
+    use N
+
+    constructor
+    · exact hN
+    · intro (n : ℕ) (hn : n ≥ N)
+      simp
+      have hcz : 2/b^2 ≠ 0 := by linarith
+      calc
+        |(g n)⁻¹ - b⁻¹|
+        _ = |(1 / g n) - (1 / b)| := by simp [one_div, one_div]
+        _ = |b - g n| / |b * g n| := shuffle1 n
+        _ ≤ (2 / b ^ 2) * |g n - b| := shuffle2 n (le_trans (le_max_left N1 N2) hn)
+        _ ≤ (2 / b ^ 2) * ε2 := by
+          have ineq1 := le_of_lt (hgb_prop2 n (le_trans (le_max_right N1 N2) hn))
+          exact mul_le_mul_of_nonneg_left ineq1 (le_of_lt recippos)
+        _ = (2 / b^2) * (ε * ((b ^ 2) / 4)) := by simp [ε2]
+        _ = (2 / b^2) * (((b ^ 2) / 4) * ε) := by simp [mul_comm]
+        _ = ((2 / b^2) * ((b ^ 2) / 4)) * ε := by simp [mul_assoc]
+        _ = ((2 / b^2) * ((b ^ 2) / (2 * 2))) * ε := by linarith
+        _ = ((2 / b^2) * ((b^2 / 2) * (1/2))) * ε := by
+          simp [div_mul_eq_div_mul_one_div (b^2) 2 2]
+        _ = (((2 / b^2) * (b^2 / 2)) * (1/2)) * ε := by linarith
+        _ = (((2 / b^2) * (1 / (2 / b^2))) * (1/2)) * ε := by rw [(one_div_div 2 (b^2)).symm]
+        _ = (((2 / b^2) * (2 / b^2)⁻¹) * (1/2)) * ε := by simp [div_eq_mul_inv]
+        -- _ = (((2 / b^2)⁻¹ * (2 / b^2)) * (1/2)) * ε := by simp [mul_comm]
+        _ = (1) * (1 / 2) * ε := by sorry
+        _ < ε := by linarith
+
 
 lemma seq_quot
   (f g : ℕ → ℝ)
@@ -225,7 +345,7 @@ lemma seq_quot
   (hgb : is_lim_seq g b)
   (hbz : b ≠ 0) :
   (is_sequence (fun n => f n / g n)) ∧
-  (is_lim_seq (fun n => f n / g n) (a / b)) := sorry
+  (is_lim_seq (fun n => f n / g n) (a / b)) := by sorry
 
 -- Algebra of limits for functions (for sums, products and quotients)
 lemma limit_sum
