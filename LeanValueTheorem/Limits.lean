@@ -8,7 +8,6 @@ def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
   ∀ ε > 0, ∃ N : ℕ, N > 0 ∧ (∀ n, n ≥ N → |a n - l| < ε)
 
 -- Definition for l being the limit of the function f : D → ℝ at c
-
 def is_lim_fun (D : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x ∈ D, |x - c| < δ → |f x - l| < ε
 
@@ -338,7 +337,6 @@ lemma seq_recip
         _ = ((1) * (1/2)) * ε := by rw [someresult 2 (b^2)]
         _ < ε := by linarith
 
-
 lemma seq_quot
   (f g : ℕ → ℝ)
   (a b : ℝ)
@@ -348,7 +346,15 @@ lemma seq_quot
   (hgb : is_lim_seq g b)
   (hbz : b ≠ 0) :
   (is_sequence (fun n => f n / g n)) ∧
-  (is_lim_seq (fun n => f n / g n) (a / b)) := by sorry
+  (is_lim_seq (fun n => f n / g n) (a / b)) := by
+
+  -- have :=  mul_div_right_comm a 1 b
+  have sub := seq_recip g b hg hgb hbz
+  have sub2 := seq_prod f (fun n => 1 / g n) a (1 / b) hf sub.1 hfa sub.2
+  constructor
+  · exact sub2.1
+  · have h := by simpa [mul_div_right_comm a 1 b] using sub2.2
+    simpa [inv_eq_one_div]
 
 -- Algebra of limits for functions (for sums, products and quotients)
 lemma limit_sum
