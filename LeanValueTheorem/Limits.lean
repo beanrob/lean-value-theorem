@@ -195,7 +195,7 @@ lemma seq_prod
 
     have seq_mul_12 : is_lim_seq (fun n => (seq1 n  * seq2 n)) 0 := by
       rcases (seq_prod_special seq1 seq2 seq1_seq seq2_seq seq1_lim seq2_lim)
-      -- exact
+      · sorry
 
     have seq_mul_a2 : is_lim_seq (fun n => a * (seq2 n)) 0 := sorry
     have seq_mul_1b : is_lim_seq (fun n => b * (seq1 n)) 0 := sorry
@@ -212,8 +212,8 @@ lemma seq_prod
           exact abs_add_le ((f n - a) * (g n - b)) (a * (g n - b) + b * (f n - a))
         _ = |seq1 n * seq2 n| + |a * seq2 n + b * seq1 n| := by simp [seq1, seq2]
         _ = 0 + |a * seq2 n + b * seq1 n| := sorry
-        _ < ε := sorry
-    done
+        -- _ < ε := sorry
+    sorry
 
 lemma seq_quot
   (f g : ℕ → ℝ)
