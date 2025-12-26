@@ -1,7 +1,6 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith
 import LeanValueTheorem.Sequences
-import Mathlib.Algebra.Group.Basic
 
 -- Definition for l being the limit of the sequence a
 def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
@@ -96,6 +95,50 @@ lemma seq_scalar_prod
       _ < |b| * ε' := mul_lt_mul_of_pos_left (hfa_prop n hn) abs_b_pos
       _ = |b| * ε * |b|⁻¹ := by simp only [ε', div_eq_mul_inv, mul_assoc]
       _ = ε := by simp [mul_comm, hb]
+
+-- Proof that a non-negative sequence has non-negative limit
+lemma seq_non_negative
+  (f : ℕ → ℝ)
+  (a : ℝ)
+  (hf : is_sequence f)
+  (hfa : is_lim_seq f a)
+  (h_nonneg : ∀ n, f n ≥ 0) :
+  a ≥ 0 := by
+
+  by_contra! ha
+  let ε := -a
+  rcases hfa ε (neg_pos.mpr ha) with ⟨N, hf_prop⟩
+
+  have h_neg (n : ℕ) (hn : n ≥ N) := by
+    have ineq1 := (lt_of_le_of_lt (le_abs_self (f n - a)) (hf_prop n hn))
+    calc
+      f n = f n - a + a := by linarith
+      _ < ε + a := add_lt_add_of_lt_of_le ineq1 (le_rfl)
+      _ = 0 := by simp [ε]
+
+  have side1 := h_neg N (by norm_num)
+  have side2 := h_nonneg N
+  exact not_lt_of_ge side2 side1
+
+-- Proof that a non-positive sequence has non-positive limit
+lemma seq_non_positive
+  (f : ℕ → ℝ)
+  (a : ℝ)
+  (hf : is_sequence f)
+  (hfa : is_lim_seq f a)
+  (h_nonpos : ∀ n, f n ≤ 0) :
+  a ≤ 0 := by
+
+  have hnf := seq_scalar_prod f a (-1) hf hfa
+  have h_nonneg := fun (n : ℕ) => by
+    calc
+      -1 * f n = -f n := (neg_eq_neg_one_mul (f n)).symm
+      _ ≥ -0 := (neg_le_neg (h_nonpos n))
+      _ = 0 := by simp
+
+  have ha_neg :=  seq_non_negative (fun n => -1 * f n) (-1 * a) hnf.1 hnf.2 h_nonneg
+  rw [←neg_eq_neg_one_mul] at ha_neg
+  exact (neg_nonneg.mp ha_neg)
 
 lemma seq_prod_special
   (f g : ℕ → ℝ)
@@ -272,7 +315,7 @@ lemma seq_quot
   have h := by simpa [mul_div_right_comm a 1 b] using this.2
   exact ⟨this.1, h⟩
 
-
+-- Limit of a Constant Function
 lemma const_fun_limit (I : Set ℝ) (a c : ℝ) : (is_lim_fun I (fun n => a) c a) := by
   exact fun ε hε => ⟨1, by norm_num, fun x hxI hxcδ => by simp [sub_self, abs_zero, hε]⟩
 
@@ -437,7 +480,7 @@ lemma fun_quot
   (I : Set ℝ)
   (f g : ℝ → ℝ)
   (c a b : ℝ)
-  (hbz: b ≠ 0)
+  (hbz : b ≠ 0)
   (hfa : is_lim_fun I f c a)
   (hgb : is_lim_fun I g c b) :
   (is_lim_fun I (fun n => f n / g n) c (a / b)) := by
@@ -447,17 +490,47 @@ lemma fun_quot
   simpa [mul_div_right_comm a 1 b] using this
 
 -- Proof that a non-negative sequence has non-negative limit
-lemma limit_non_negative
-  (f : ℕ → ℝ)
-  (a : ℝ)
-  (hf : is_sequence f)
-  (hfa : is_lim_seq f a)
-  (h_nonneg : ∀ n, f n ≥ 0) :
-  a ≥ 0 := sorry
+lemma fun_non_negative
+  (I : Set ℝ)
+  (f : ℝ → ℝ)
+  (c a : ℝ)
+  (hfa : is_lim_fun I f c a)
+  (h_nonneg : ∀ x ∈ I, f x ≥ 0) :
+  a ≥ 0 := by
+
+  by_contra! ha
+  let ε := -a
+  rcases hfa ε (neg_pos.mpr ha) with ⟨δ, hδ, hf_prop⟩
+
+  have proof (x : ℝ) (hxI : x ∈ I) (hxcδ : |x - c| < δ) := by
+    have ineq1 := (lt_of_le_of_lt (le_abs_self (f x - a)) (hf_prop x hxI hxcδ))
+    have side1 := by
+      calc
+        f x = f x - a + a := by linarith
+        _ < ε + a := add_lt_add_of_lt_of_le ineq1 (le_rfl)
+        _ = 0 := by simp [ε]
+
+    have side2 := h_nonneg x hxI
+    exact not_lt_of_ge side2 side1
+
+  exact proof (sorry) (sorry) (sorry)
+
 -- Proof that a non-positive sequence has non-positive limit
-lemma limit_non_positive
-  (f : ℕ → ℝ)
-  (a : ℝ)
-  (hf : is_sequence f)
-  (hfa : is_lim_seq f a)
-  (h_pos : ∀ n, f n > 0) : a > 0 := sorry
+lemma fun_non_positive
+  (I : Set ℝ)
+  (f : ℝ → ℝ)
+  (c a : ℝ)
+  (hfa : is_lim_fun I f c a)
+  (h_nonpos : ∀ n, f n ≤ 0) :
+  a ≤ 0 := by
+
+  have hnf := fun_scalar_prod I f (-1) a c hfa
+  have h_nonneg := fun (x : ℝ) (hxI : x ∈ I) => by
+    calc
+      -1 * f x = -f x := (neg_eq_neg_one_mul (f x)).symm
+      _ ≥ -0 := (neg_le_neg (h_nonpos x))
+      _ = 0 := by simp
+
+  have ha_neg := fun_non_negative I (fun n => -1 * f n) c (-1 * a) hnf h_nonneg
+  rw [←neg_eq_neg_one_mul] at ha_neg
+  exact (neg_nonneg.mp ha_neg)
