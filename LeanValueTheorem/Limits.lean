@@ -489,7 +489,7 @@ lemma fun_quot
   have := fun_prod I f (fun n => 1 / g n) c a (1 / b) hfa this
   simpa [mul_div_right_comm a 1 b] using this
 
--- Proof that a non-negative sequence has non-negative limit
+-- Proof that a non-negative function has non-negative limit
 lemma fun_non_negative
   (I : Set ℝ)
   (f : ℝ → ℝ)
@@ -515,7 +515,7 @@ lemma fun_non_negative
 
   exact proof (sorry) (sorry) (sorry)
 
--- Proof that a non-positive sequence has non-positive limit
+-- Proof that a non-positive function has non-positive limit
 lemma fun_non_positive
   (I : Set ℝ)
   (f : ℝ → ℝ)
