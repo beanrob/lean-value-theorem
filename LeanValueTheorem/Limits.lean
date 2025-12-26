@@ -2,7 +2,6 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith
 import LeanValueTheorem.Sequences
 
-
 -- Definition for l being the limit of the sequence a
 def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
   ∀ ε > 0, ∃ N : ℕ, N > 0 ∧ (∀ n, n ≥ N → |a n - l| < ε)
@@ -22,53 +21,30 @@ lemma seq_sum
   (is_sequence (fun n => f n + g n)) ∧
   (is_lim_seq (fun n => f n + g n) (a + b)) := by
 
-  constructor
-  · exact hf;
-  · unfold is_lim_seq at hfa hgb
-    intro (ε : ℝ) (hε : ε > 0)
+  refine ⟨by trivial, ?_⟩
+  simp [is_lim_seq] at hfa hgb
+  intro ε hε
+  let ε' := ε / 3
+  have hε' : ε' > 0 := div_pos hε (by norm_num)
 
-    let ε' := ε / 3
-    have hε' : ε' > 0 := div_pos hε (by norm_num)
+  rcases hfa ε' hε' with ⟨N1, hN1, hfa_prop⟩
+  rcases hgb ε' hε' with ⟨N2, hN2, hgb_prop⟩
 
-    rcases hfa ε' hε' with ⟨N1, hN1, hfa_prop⟩
-    rcases hgb ε' hε' with ⟨N2, hN2, hgb_prop⟩
+  refine ⟨max N1 N2, le_trans hN1 (le_max_left N1 N2), ?_⟩
+  intro n hn
+  have hn1 : n ≥ N1 := le_trans (le_max_left N1 N2) hn
+  have hn2 : n ≥ N2 := le_trans (le_max_right N1 N2) hn
+  have r : (f n - a) + (g n - b) = f n + g n - (a + b) := by linarith
 
-    let N := max N1 N2
-    use N
+  calc
+  |f n + g n - (a + b)|
+  _ = |(f n - a) + (g n - b)| := by rw [r]
+  _ ≤ |f n - a| + |g n - b| := abs_add_le (f n - a) (g n - b)
+  _ < ε' + ε' := add_lt_add (hfa_prop n hn1) (hgb_prop n hn2)
+  _ = (ε / 3) + (ε / 3) := by rfl
+  _ < ε := by linarith
 
-    have hn1 : N1 ≤ N := le_max_left N1 N2
-    have hn2 : N2 ≤ N := le_max_right N1 N2
-    have hN : 0 < N := le_trans hN1 hn1
 
-    constructor
-    · exact hN;
-    · intro (n : ℕ) (hn : n ≥ N)
-      have hn1' : n ≥ N1 := le_trans hn1 hn
-      have hn2' : n ≥ N2 := le_trans hn2 hn
-      simp
-
-      have h1 : abs (f n - a) < ε' := hfa_prop n hn1'
-      have h2 : abs (g n - b) < ε' := hgb_prop n hn2'
-
-      have h : abs ((f n - a) + (g n - b)) ≤ abs (f n - a) + abs (g n - b) := by
-        exact abs_add_le (f n - a) (g n - b)
-
-      have h' : abs (f n - a) + abs (g n - b) ≤  ε' + ε' := le_of_lt (add_lt_add h1 h2)
-      have last_step : |f n + g n - (a + b)| ≤ ε' + ε':=
-        have r : (f n - a) + (g n - b) = f n + g n - (a + b) := by linarith
-        calc
-          |f n + g n - (a + b)|
-          _ = |(f n - a) + (g n - b)| := by rw [r]
-          _ ≤ abs (f n - a) + abs (g n - b) := h
-          _ ≤ ε' + ε' := h'
-
-      have last_last_step : ε' + ε' < ε := by
-        calc
-          ε' + ε'
-          _ = (ε / 3) + (ε / 3) := by simp [ε']
-          _ < ε := by linarith
-
-      exact lt_of_lt_of_le' last_last_step last_step
 
 lemma seq_scalar_prod
   (f : ℕ → ℝ)
@@ -77,43 +53,39 @@ lemma seq_scalar_prod
   (hfa : is_lim_seq f a) :
   (is_sequence (fun n => b * f n)) ∧
   (is_lim_seq (fun n => b * f n) (b * a)) := by
-  constructor
-  · exact hf;
-  · by_cases hb : b = 0
-    · unfold is_lim_seq at hfa
-      intro (ε : ℝ) (hε : ε > 0)
-      use 1
+
+  refine ⟨by trivial, ?_⟩
+  intro ε hε
+  by_cases hb : b = 0
+  · refine ⟨1, by norm_num, ?_⟩
+    intro n hn
+    simp [hb, hε]
+
+  · let ε' := ε /|b|
+    have abs_b_nonzero : |b| ≠ 0 := by simp [hb]
+    have abs_b_pos : |b| > 0 := lt_of_le_of_ne' (abs_nonneg b) abs_b_nonzero
+    have hε' : ε' > 0 := div_pos hε abs_b_pos
+    rcases hfa ε' hε' with ⟨N, hN, hfa_prop⟩
+    use N
+
+    constructor
+    · exact hN;
+    · intro (n : ℕ) (hn : n ≥ N)
       simp
-      intro (n : ℕ) (hn : n ≥ 1)
-      simp [hb]
-      exact hε
+      have h : |f n - a| < ε' := hfa_prop n hn
 
-    · intro (ε : ℝ) (hε : ε > 0)
-      let ε' := ε /|b|
-      have abs_b_nonzero : |b| ≠ 0 := by simp [hb]
-      have abs_b_pos : |b| > 0 := lt_of_le_of_ne' (abs_nonneg b) abs_b_nonzero
-      have hε' : ε' > 0 := div_pos hε abs_b_pos
-      rcases hfa ε' hε' with ⟨N, hN, hfa_prop⟩
-      use N
-
-      constructor
-      · exact hN;
-      · intro (n : ℕ) (hn : n ≥ N)
-        simp
-        have h : |f n - a| < ε' := hfa_prop n hn
-
-        have shuffle : b * f n - b * a = b * (f n - a) := by linarith
-        calc
-          |b * f n - b * a|
-          _ = |b * (f n - a)| := by simp [shuffle]
-          _ = |b| * |f n - a| := by apply abs_mul
-          _ < |b| * ε' := mul_lt_mul_of_pos_left h abs_b_pos
-          _ = |b| * (ε / |b|) := by simp [ε']
-          _ = |b| * (ε * |b|⁻¹) := by simp [div_eq_mul_inv]
-          _ = |b| * ε * |b|⁻¹ := by simp [mul_assoc]
-          _ = ε * |b| * |b|⁻¹ := by simp [mul_comm]
-          _ = ε * (1 : ℝ) := by simp [abs_b_nonzero]
-          _ = ε := by simp
+      have shuffle : b * f n - b * a = b * (f n - a) := by linarith
+      calc
+        |b * f n - b * a|
+        _ = |b * (f n - a)| := by simp [shuffle]
+        _ = |b| * |f n - a| := by apply abs_mul
+        _ < |b| * ε' := mul_lt_mul_of_pos_left h abs_b_pos
+        _ = |b| * (ε / |b|) := by simp [ε']
+        _ = |b| * (ε * |b|⁻¹) := by simp [div_eq_mul_inv]
+        _ = |b| * ε * |b|⁻¹ := by simp [mul_assoc]
+        _ = ε * |b| * |b|⁻¹ := by simp [mul_comm]
+        _ = ε * (1 : ℝ) := by simp [abs_b_nonzero]
+        _ = ε := by simp
 
 lemma seq_prod_special
   (f g : ℕ → ℝ)
