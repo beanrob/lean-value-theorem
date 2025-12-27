@@ -151,11 +151,11 @@ lemma seq_prod_special
 
   refine ⟨by trivial, ?_⟩
   intro ε hε
-  let ε' := ε^(1/2)
-  have hε' : ε' > 0 := sorry -- exponentiation properties
+  let ε' := ε / 3
+  have hε' : ε' > 0 := div_pos hε (by norm_num)
 
   rcases hfa ε' hε' with ⟨N1, hfa_prop⟩
-  rcases hgb ε' hε' with ⟨N2, hgb_prop⟩
+  rcases hgb 1 (by norm_num) with ⟨N2, hgb_prop⟩
   refine ⟨max N1 N2, ?_⟩
 
   intro n hn
@@ -164,9 +164,9 @@ lemma seq_prod_special
 
   calc
     |(fun n ↦ f n * g n) n - 0| = |f n| * |g n| := by simp
-    _ < ε' * ε' := mul_lt_mul_of_nonneg h1 h2 (abs_nonneg (f n)) (abs_nonneg (g n))
-    _ = ε^(1/2) * ε^(1/2) := by simp [ε']
-    _ = ε := sorry -- exponentiation properties
+    _ < ε' * 1 := mul_lt_mul_of_nonneg h1 h2 (abs_nonneg (f n)) (abs_nonneg (g n))
+    _ = ε/3 := by simp [ε']
+    _ < ε := by linarith
 
 lemma seq_prod
   (f g : ℕ → ℝ)
@@ -401,11 +401,11 @@ lemma fun_prod_special
   (is_lim_fun I (fun n => f n * g n) c (0)) := by
 
   intro ε hε
-  let ε' := ε^(1/2)
-  have hε' : ε' > 0 := sorry -- exponentiation properties
+  let ε' := ε/3
+  have hε' : ε' > 0 := div_pos hε (by norm_num)
 
   rcases hfa ε' hε' with ⟨δ1, hδ1, hfa_prop⟩
-  rcases hgb ε' hε' with ⟨δ2, hδ2, hgb_prop⟩
+  rcases hgb 1 (by norm_num) with ⟨δ2, hδ2, hgb_prop⟩
   refine ⟨min δ1 δ2, lt_min hδ1 hδ2 , ?_⟩
 
   intro x hxI hxcδ
@@ -414,9 +414,9 @@ lemma fun_prod_special
 
   calc
     |(fun n ↦ f n * g n) x - 0| = |f x| * |g x| := by simp
-    _ < ε' * ε' := mul_lt_mul_of_nonneg h1 h2 (abs_nonneg (f x)) (abs_nonneg (g x))
-    _ = ε^(1/2) * ε^(1/2) := by simp [ε']
-    _ = ε := sorry -- exponentiation properties
+    _ < ε' * 1 := mul_lt_mul_of_nonneg h1 h2 (abs_nonneg (f x)) (abs_nonneg (g x))
+    _ = ε/3 := by simp [ε']
+    _ < ε := by linarith
 
 lemma fun_prod
   (I : Set ℝ)
