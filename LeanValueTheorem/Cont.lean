@@ -12,6 +12,8 @@ def is_cont_at_ε_δ (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
 -- Definition for a function being continuous at one point, using sequences
 def is_cont_at_seq (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
   ∀ seq : ℕ → ℝ, is_lim_seq seq a → is_lim_seq (f ∘ seq) (f a)
+  -- May need to be changed to:
+  -- a ∈ I → ∀ seq : ℕ → ℝ, (∀ n ∈ ℕ, seq n ∈ I) → is_lim_seq seq a → is_lim_seq (f ∘ seq) (f a)
 
 -- Definition for a function being continuous at a point, using interchangability
 -- of the sequential and ε-δ definitions
