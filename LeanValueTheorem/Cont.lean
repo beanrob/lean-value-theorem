@@ -7,7 +7,7 @@ import LeanValueTheorem.Misc
 
 -- Definition for a function being continuous at one point, using ε-δ
 def is_cont_at_ε_δ (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
-  a ∈ I → ∀ ε : ℝ, ε > 0 → ∃ δ : ℝ, δ > 0 → ∀ x ∈ I, abs (x - a) < δ → abs (f x - f a) < ε
+  a ∈ I → ∀ ε : ℝ, ε > 0 → ∃ δ > 0, ∀ x ∈ I, abs (x - a) < δ → abs (f x - f a) < ε
 
 -- Definition for a function being continuous at one point, using sequences
 def is_cont_at_seq (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
@@ -33,14 +33,49 @@ lemma cont_ε_δ_imp_cont_seq
   (I : Set ℝ)
   (a : ℝ)
   {hfIa : is_cont_at_ε_δ f I a} :
-  is_cont_at_seq f I a := sorry
+  is_cont_at_seq f I a := by
+    unfold is_cont_at_ε_δ at hfIa
+    unfold is_cont_at_seq
+    intros seq hseq
+    unfold is_lim_seq
+    intros ε hε
+    unfold is_lim_seq at hseq
+    specialize hseq ε hε
+    obtain ⟨Nseq, hNseq, hseq⟩ := hseq
+    -- Need to know a ∈ I
+    have haI : a ∈ I := by
+      sorry
+    specialize hfIa haI ε hε
+    obtain ⟨δf, hδf, hfIa⟩ := hfIa
+    use Nseq
+    constructor
+    · exact hNseq
+    · intros n hn
+      specialize hseq n hn
+      specialize hfIa (seq n)
+      -- Need to know that the codomain of the sequences used in is_cont_at_seq is a subset of I
+      have hseqnI : seq n ∈ I := by
+        sorry
+      specialize hfIa hseqnI
+      -- I just don't know how to do this one ???
+      have hεδ : ε < δf := by
+        sorry
+      have hdiff : |seq n - a| < δf := lt_trans hseq hεδ
+      specialize hfIa hdiff
+      simp
+      exact hfIa
+
 -- Backwards direction
 lemma cont_seq_imp_cont_ε_δ
   (f : ℝ → ℝ)
   (I : Set ℝ)
   (a : ℝ)
   {hfIa : is_cont_at_seq f I a} :
-  is_cont_at_ε_δ f I a := sorry
+  is_cont_at_ε_δ f I a := by
+    unfold is_cont_at_ε_δ
+    unfold is_cont_at_seq at hfIa
+    intros haI ε hε
+    sorry
 
 -- Algebra of continuous functions (for sums, products, and quotients)
 lemma cont_sum
@@ -188,8 +223,8 @@ lemma reciprocal_cont
         unfold is_cont_at_ε_δ
         intros haI ε hε
         use 1
-        intros h1 x hxI hdiff
         simp
+        intros x hxI hdiff
         exact hε
       constructor
       · exact e_d_cont
