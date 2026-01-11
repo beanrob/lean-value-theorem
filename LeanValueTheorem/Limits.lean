@@ -140,7 +140,7 @@ lemma seq_non_positive
       _ ≥ -0 := (neg_le_neg (h_nonpos n))
       _ = 0 := by simp
 
-  have ha_neg :=  seq_non_negative (fun n => -1 * f n) (-1 * a) hnf.1 hnf.2 h_nonneg
+  have ha_neg := seq_non_negative (fun n => -1 * f n) (-1 * a) hnf.1 hnf.2 h_nonneg
   rw [←neg_eq_neg_one_mul] at ha_neg
   exact (neg_nonneg.mp ha_neg)
 
@@ -222,7 +222,16 @@ lemma seq_neq_zero_of_lim_neq_zero
   (hgb : is_lim_seq g b)
   (hbz : b ≠ 0) :
   ∃N : ℕ, ∀ n ≥ N, g n ≠ 0 := by
-  sorry
+
+  have hbp: |b| > 0 := abs_pos.mpr hbz
+  rcases hgb (|b|/2) (div_pos hbp (by norm_num)) with ⟨N, h_prop⟩
+  refine ⟨N, ?_⟩
+  intro n hn
+
+  by_contra! h
+  have : |g n - b| = |b| := by simp [h]
+  have : |b| < |b| / 2 := by simpa [this] using (h_prop n hn)
+  linarith
 
 lemma seq_recip
   (g : ℕ → ℝ) (b : ℝ)
@@ -451,7 +460,16 @@ lemma fun_neq_zero_of_lim_neq_zero
   (hgb : is_lim_fun I g c b)
   (hbz : b ≠ 0) :
   ∃δ > 0, ∀ x ∈ I, |x - c| < δ → g x ≠ 0 := by
-  sorry
+
+  have hbp: |b| > 0 := abs_pos.mpr hbz
+  rcases hgb (|b|/2) (div_pos hbp (by norm_num)) with ⟨δ, hδ, h_prop⟩
+  refine ⟨δ, hδ, ?_⟩
+  intro x hxI hxcδ
+
+  by_contra! h
+  have : |g x - b| = |b| := by simp [h]
+  have : |b| < |b| / 2 := by simpa [this] using (h_prop x hxI hxcδ)
+  linarith
 
 lemma fun_recip
   (I : Set ℝ)
