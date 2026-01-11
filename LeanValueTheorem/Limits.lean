@@ -82,7 +82,7 @@ lemma seq_scalar_prod
   · refine ⟨0, fun n _ => by simp [hb, hε]⟩
 
   · have abs_b_pos : |b| > 0 := (lt_of_le_of_ne' (abs_nonneg b) (by simp [hb]))
-    let ε' := ε /|b|
+    let ε' := ε * (|b|)⁻¹
     have hε' : ε' > 0 := div_pos hε abs_b_pos
 
     rcases hfa ε' hε' with ⟨N, hfa_prop⟩
@@ -93,7 +93,7 @@ lemma seq_scalar_prod
       |b * f n - b * a|
       _ = |b| * |f n - a| := by rw [←mul_sub, abs_mul]
       _ < |b| * ε' := mul_lt_mul_of_pos_left (hfa_prop n hn) abs_b_pos
-      _ = |b| * ε * |b|⁻¹ := by simp only [ε', div_eq_mul_inv, mul_assoc]
+      _ = |b| * ε * |b|⁻¹ := by simp only [ε', mul_assoc]
       _ = ε := by simp [mul_comm, hb]
 
 -- Proof that a non-negative sequence has non-negative limit
@@ -112,7 +112,7 @@ lemma seq_non_negative
   have h_neg (n : ℕ) (hn : n ≥ N) := by
     have ineq1 := (lt_of_le_of_lt (le_abs_self (f n - a)) (hf_prop n hn))
     calc
-      f n = f n - a + a := by linarith
+      f n = f n - a + a := by ring1
       _ < ε + a := add_lt_add_of_lt_of_le ineq1 (le_rfl)
       _ = 0 := by simp [ε]
 
@@ -220,84 +220,48 @@ lemma seq_recip
   (is_lim_seq (fun n => 1 / g n) (1 / b)) := by
   refine ⟨by trivial, ?_⟩
   intro ε hε
+  simp [one_div]
 
   let ε1 := (b ^ 2) / 2
-  have constantpos : (b ^ 2) / 2 > 0 := div_pos (sq_pos_of_ne_zero hbz) (by norm_num)
-  have recippos : 2 / (b ^ 2) > 0 := by simp [div_eq_mul_inv, sq_pos_of_ne_zero hbz]
-  have hε1 : ε1 > 0 := by simp [ε1, constantpos]
+  have hε1 : (b ^ 2) / 2 > 0 := div_pos (sq_pos_of_ne_zero hbz) (by norm_num)
 
-  have bgn := (seq_scalar_prod g b b hg hgb).2
-  rcases bgn ε1 hε1 with ⟨N1, hgb_prop1⟩
+  rcases (seq_scalar_prod g b b hg hgb).2 ε1 hε1 with ⟨N1, hgb_prop1⟩
 
-  have sub (n : ℕ)  (hnN1 : n ≥ N1) : b^2 / 2 < b * g n := by
-    linarith [(abs_lt.mp (by simpa [ε1] using hgb_prop1 n hnN1)).1]
+  have sub (n : ℕ)  (hnN1 : n ≥ N1) : b^2 / 2 < g n * b := by
+    linarith [(abs_lt.1 (by simpa [ε1] using hgb_prop1 n hnN1)).1]
 
-  have shuffle1 (n : ℕ) : |(1 / (g n)) - (1 / b)| = |b - g n| / |b * g n| := by
-    have somehow (n : ℕ) : g n ≠ 0 := sorry
-    have hnbz : -b ≠ 0 := (neg_ne_zero.mpr) hbz
-    have this := one_div_add_one_div (somehow n) hnbz
-    calc
-    |(1 / (g n)) - (1 / b)|
-    _ = |(1 / (g n)) + (-(1 / b))| := by simp [sub_eq_add_neg]
-    _ = |(1 / (g n)) + (1 / -b)| := by simp [div_neg]
-    _ = |(g n + -b) / (g n * -b)| := by rw [this]
-    _ = |(g n + -b)| / |(g n * -b)| := by rw [abs_div]
-    _ = |-(b - g n)| / |(g n * -b)| := by rw [show (g n + -b) = -(b - g n) by ring1]
-    _ = |-(b - g n)| / |-(g n * b)| := by rw [show (g n * -b) = -(g n * b) by ring1]
-    _ = |b - g n| / |g n * b| := by rw [abs_neg, abs_neg]
-    _ = |b - g n| / |b * g n| := by rw [mul_comm (g n) b]
+  have shuffle1 (n : ℕ) : |(g n)⁻¹ - b⁻¹| = |b - g n| / |g n * b| := by
+    simpa [abs_div] using congrArg (fun x => |x|) (inv_sub_inv (by sorry) hbz)
 
-  have shuffle2 (n : ℕ) (hnN1 : n ≥ N1) : |b - g n| / |b * g n| ≤ (2 / b ^ 2) * |g n - b| := by
-    have shufflesub := sub n hnN1
-    have ineq1 : (b^2) / 2 < |b * g n| := lt_of_lt_of_le shufflesub (le_abs_self (b * g n))
-    have ineq2 : 1 / |b * g n| < 2 / b^2 := by
-      simpa [one_div_div] using (one_div_lt_one_div_of_lt constantpos ineq1)
+  have shuffle2 (n : ℕ) (hnN1 : n ≥ N1) : |g n - b| / |g n * b| ≤ |g n - b| * (2 / b ^ 2) := by
+    have ineq1 := lt_of_lt_of_le (sub n hnN1) (le_abs_self (g n * b))
+    have ineq2 : (|g n * b|)⁻¹ < 2 / b^2 := by
+      simpa [one_div_div] using (one_div_lt_one_div_of_lt hε1 ineq1)
+    apply mul_le_mul_of_nonneg_left (le_of_lt ineq2) (abs_nonneg (g n - b))
 
-    calc
-      |b - g n| / |b * g n|
-      _ ≤ |b - g n| * (1 / |b * g n|) := by rw [div_eq_mul_one_div |b - g n| |b * g n|]
-      _ ≤ |b - g n| * (2 / b^2) :=
-        mul_le_mul_of_nonneg_left (le_of_lt ineq2) (abs_nonneg (b - g n))
-      _ = |-(g n - b)| * (2 / b ^ 2) := by rw [show b - g n = -(g n - b) by ring1]
-      _ = |g n - b| * (2 / b ^ 2) := by rw [abs_neg]
-      _ = (2 / b ^ 2) * |g n - b| := by simp [mul_comm]
-
-  let ε2 := ε * ((b ^ 2) / 4)
-  have hε2 : ε2 > 0 := mul_pos hε (div_pos (sq_pos_of_ne_zero hbz) (by norm_num))
-
+  set ε2 := ε * (2 / b ^ 2)⁻¹ with hε2eq
+  have h1ε1 : 2 / (b ^ 2) > 0 := div_pos (by norm_num) (sq_pos_of_ne_zero hbz)
+  have hε2 : ε2 > 0 := mul_pos hε (inv_pos.mpr h1ε1)
   rcases hgb ε2 hε2 with ⟨N2, hgb_prop2⟩
 
-  let N := max N1 N2
-  use N
+  refine ⟨max N1 N2, ?_⟩
   intro n hn
-  simp
-  have hcz : 2/b^2 ≠ 0 := by linarith
-  -- do i have to define my own example group where 0 doesn't count for stuff or something
-  -- there is an example for something similar in Mathlib.Algebra.GroupWithZero.Defs
-  -- can't think of any other way rn
-  have someresult (a : ℝ) (b : ℝ) (ha : a ≠ 0) (hb : b ≠ 0): (a/b) * (a/b)⁻¹ = (1:ℝ) := by
-    refine GroupWithZero.mul_inv_cancel (a / b) (div_ne_zero ha hb)
+  rw [shuffle1 n]
 
+  have shuffle3 := GroupWithZero.mul_inv_cancel
+    (2 / b^2)
+    (div_ne_zero (by norm_num) (ne_of_gt (sq_pos_of_ne_zero hbz)))
 
   calc
-    |(g n)⁻¹ - b⁻¹|
-    _ = |(1 / g n) - (1 / b)| := by simp [one_div, one_div]
-    _ = |b - g n| / |b * g n| := shuffle1 n
-    _ ≤ (2 / b ^ 2) * |g n - b| := shuffle2 n (le_trans (le_max_left N1 N2) hn)
-    _ ≤ (2 / b ^ 2) * ε2 := by
-      have ineq1 := le_of_lt (hgb_prop2 n (le_trans (le_max_right N1 N2) hn))
-      exact mul_le_mul_of_nonneg_left ineq1 (le_of_lt recippos)
-    _ = (2 / b^2) * (ε * ((b ^ 2) / 4)) := by simp [ε2]
-    _ = (2 / b^2) * (((b ^ 2) / 4) * ε) := by simp [mul_comm]
-    _ = ((2 / b^2) * ((b ^ 2) / 4)) * ε := by simp [mul_assoc]
-    _ = ((2 / b^2) * ((b ^ 2) / (2 * 2))) * ε := by ring1
-    _ = ((2 / b^2) * ((b^2 / 2) * (1/2))) * ε := by simp [div_mul_eq_div_mul_one_div (b^2) 2 2]
-    _ = (((2 / b^2) * (b^2 / 2)) * (1/2)) * ε := by ring1
-    _ = (((2 / b^2) * (1 / (2 / b^2))) * (1/2)) * ε := by rw [(one_div_div 2 (b^2)).symm]
-    _ = (((2 / b^2) * (2 / b^2)⁻¹) * (1/2)) * ε := by simp [div_eq_mul_inv]
-    _ = ((1) * (1/2)) * ε := by
-      rw [someresult 2 (b^2) (by norm_num) (ne_of_gt (sq_pos_of_ne_zero hbz))]
-    _ < ε := by linarith
+    |b - g n| / |g n * b| = |g n - b| / |g n * b| := by simp [abs_sub_comm]
+    _ ≤ |g n - b| * (2 / b ^ 2) := shuffle2 n (le_trans (le_max_left N1 N2) hn)
+    _ < ε2 * (2 / b ^ 2) :=
+      mul_lt_mul_of_pos_right (hgb_prop2 n (le_trans (le_max_right N1 N2) hn)) h1ε1
+    _ = ε * (2 / b ^ 2)⁻¹ * (2 / b ^ 2) := by rw [hε2eq]
+    _ = ε * ((2 / b ^ 2) * (2 / b ^ 2)⁻¹) := by linarith
+    _ = ε * 1 := by rw [shuffle3]
+    _ = ε := by simp
+
 
 lemma seq_quot
   (f g : ℕ → ℝ)
