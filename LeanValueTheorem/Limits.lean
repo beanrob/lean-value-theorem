@@ -233,7 +233,10 @@ lemma seq_recip
   have shuffle1 (n : ℕ) : |(g n)⁻¹ - b⁻¹| = |b - g n| / |g n * b| := by
     simpa [abs_div] using congrArg (fun x => |x|) (inv_sub_inv (by sorry) hbz)
 
-  have shuffle2 (n : ℕ) (hnN1 : n ≥ N1) : |g n - b| / |g n * b| ≤ |g n - b| * (2 / b ^ 2) := by
+  have shuffle2
+    (n : ℕ) (hnN1 : n ≥ N1) :
+    |g n - b| / |g n * b| ≤ |g n - b| * (2 / b ^ 2) := by
+
     have ineq1 := lt_of_lt_of_le (sub n hnN1) (le_abs_self (g n * b))
     have ineq2 : (|g n * b|)⁻¹ < 2 / b^2 := by
       simpa [one_div_div] using (one_div_lt_one_div_of_lt hε1 ineq1)
@@ -431,14 +434,50 @@ lemma fun_recip
   (is_lim_fun I (fun n => 1 / g n) c (1 / b)) := by
 
   intro ε hε
-  let ε1 := (b ^ 2) / 2
-  have constantpos : (b ^ 2) / 2 > 0 := div_pos (sq_pos_of_ne_zero hbz) (by norm_num)
-  have recippos : 2 / (b ^ 2) > 0 := by simp [div_eq_mul_inv, sq_pos_of_ne_zero hbz]
-  have hε1 : ε1 > 0 := by simp [ε1, constantpos]
+  simp [one_div]
 
-  have bgn := fun_scalar_prod I g b b c hgb
-  rcases bgn ε1 hε1 with ⟨δ1, hδ1, hgb_prop1⟩
-  sorry
+  let ε1 := (b ^ 2) / 2
+  have hε1 : (b ^ 2) / 2 > 0 := div_pos (sq_pos_of_ne_zero hbz) (by norm_num)
+  rcases (fun_scalar_prod I g b b c hgb) ε1 hε1 with ⟨δ1, hδ1, hgb_prop1⟩
+
+  have sub (x : ℝ) (hxI : x ∈ I) (hxcδ : |x - c| < δ1) : b^2 / 2 < g x * b := by
+    linarith [(abs_lt.1 (by simpa [ε1] using hgb_prop1 x hxI hxcδ)).1]
+
+  have shuffle1 (x : ℝ) : |(g x)⁻¹ - b⁻¹| = |b - g x| / |g x * b| := by
+    simpa [abs_div] using congrArg (fun x => |x|) (inv_sub_inv (by sorry) hbz)
+
+  have shuffle2
+    (x : ℝ) (hxI : x ∈ I) (hxcδ : |x - c| < δ1) :
+    |g x - b| / |g x * b| ≤ |g x - b| * (2 / b ^ 2) := by
+
+    have ineq1 := lt_of_lt_of_le (sub x hxI hxcδ) (le_abs_self (g x * b))
+    have ineq2 : (|g x * b|)⁻¹ < 2 / b^2 := by
+      simpa [one_div_div] using (one_div_lt_one_div_of_lt hε1 ineq1)
+    apply mul_le_mul_of_nonneg_left (le_of_lt ineq2) (abs_nonneg (g x - b))
+
+  set ε2 := ε * (2 / b ^ 2)⁻¹ with hε2eq
+  have h1ε1 : 2 / (b ^ 2) > 0 := div_pos (by norm_num) (sq_pos_of_ne_zero hbz)
+  have hε2 : ε2 > 0 := mul_pos hε (inv_pos.mpr h1ε1)
+  rcases hgb ε2 hε2 with ⟨δ2, hδ2, hgb_prop2⟩
+
+  refine ⟨min δ1 δ2, lt_min hδ1 hδ2 , ?_⟩
+
+  intro x hxI hxcδ
+  rw [shuffle1 x]
+
+  have shuffle3 := GroupWithZero.mul_inv_cancel
+    (2 / b^2)
+    (div_ne_zero (by norm_num) (ne_of_gt (sq_pos_of_ne_zero hbz)))
+
+  calc
+    |b - g x| / |g x * b| = |g x - b| / |g x * b| := by simp [abs_sub_comm]
+    _ ≤ |g x - b| * (2 / b ^ 2) := shuffle2 x hxI (lt_of_lt_of_le hxcδ (min_le_left δ1 δ2))
+    _ < ε2 * (2 / b ^ 2) :=
+      mul_lt_mul_of_pos_right (hgb_prop2 x hxI (lt_of_lt_of_le hxcδ (min_le_right δ1 δ2))) h1ε1
+    _ = ε * (2 / b ^ 2)⁻¹ * (2 / b ^ 2) := by rw [hε2eq]
+    _ = ε * ((2 / b ^ 2) * (2 / b ^ 2)⁻¹) := by linarith
+    _ = ε * 1 := by rw [shuffle3]
+    _ = ε := by simp
 
 lemma fun_quot
   (I : Set ℝ)
