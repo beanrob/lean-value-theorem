@@ -12,7 +12,6 @@
 
 ## In Progress
 
-- Proof of Algebra of Limits (Saumya)
 - Proof of "non neg sequences tend to non neg values/non pos coounterpart" (Saumya)
 - Proof of Product, Chain, Sum and Quotient Rule (Odysseas)
 - Proof of Rolle's Theorem (Chris)
