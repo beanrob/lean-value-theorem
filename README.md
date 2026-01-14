@@ -7,7 +7,6 @@
 - Proof of "continuous functions are bounded"
 - Proof of "sequential continuity implies epsilon delta continuity"
 - Proof of "epsilon delta continuity implies sequential continuity"
-- Custom Linarith Stuff "Saumya" wants to dabble in
 - Implementing Saumya's traversible sequences stuff?
 
 ## In Progress
