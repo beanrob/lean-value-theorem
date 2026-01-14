@@ -128,6 +128,8 @@ lemma cont_quot
   (f g : ℝ → ℝ)
   (I : Set ℝ)
   (a : ℝ)
+  {ha : a ∈ I}
+  {hg0 : ∀ x ∈ I, g x ≠ 0}
   {hfIa : is_cont_at f I a}
   {hgIa : is_cont_at g I a} :
   is_cont_at (fun x => f x / g x) I a := by
@@ -145,7 +147,8 @@ lemma cont_quot
       specialize hg seq
       have hf := hf hseq
       have hg := hg hseq
-      obtain ⟨_, limit⟩ := seq_quot (f ∘ seq) (g ∘ seq) (f a) (g a) sorry sorry hf hg
+      specialize hg0 a ha
+      obtain ⟨_, limit⟩ := seq_quot (f ∘ seq) (g ∘ seq) (f a) (g a) sorry sorry hf hg hg0
       exact limit
     constructor
     · apply cont_seq_imp_cont_ε_δ
@@ -155,18 +158,24 @@ lemma cont_quot
 lemma cont_on_quot
   (f g : ℝ → ℝ)
   (I : Set ℝ)
+  {hg0 : ∀ x ∈ I, g x ≠ 0}
   {hfIa : is_cont f I}
   {hgIa : is_cont g I} :
   is_cont (fun x => f x / g x) I := by
    unfold is_cont
    apply fun a a_1 ↦ cont_quot f g I a
+   · intros a ha
+     exact ha
+   · intros a ha
+     exact hg0
    · exact fun a a_1 ↦ hfIa a a_1
    · exact fun a a_1 ↦ hgIa a a_1
 
 lemma reciprocal_cont
   (f : ℝ → ℝ)
   (I : Set ℝ)
-  {hfI : is_cont f I} :
+  {hfI : is_cont f I}
+  {hf0 : ∀ x ∈ I, f x ≠ 0} :
   is_cont (fun x => 1 / f x) I := by
     let recip := fun x : ℝ => 1 / f x
     unfold is_cont
@@ -187,6 +196,8 @@ lemma reciprocal_cont
       · apply cont_ε_δ_imp_cont_seq
         exact e_d_cont
     apply cont_quot (fun x : ℝ => (1 : ℝ)) f I a
+    · exact haI
+    · exact hf0
     · exact const_cont
     · exact hfI
 
