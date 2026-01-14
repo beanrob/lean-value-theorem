@@ -44,24 +44,22 @@ lemma cont_ε_δ_imp_cont_seq
     intros ε hε
     unfold is_lim_seq at hseq
     specialize hseq ε hε
-    obtain ⟨Nseq, hNseq, hseq⟩ := hseq
+    obtain ⟨Nseq, hseq⟩ := hseq
     specialize hfIa haI ε hε
     obtain ⟨δf, hδf, hfIa⟩ := hfIa
     use Nseq
-    constructor
-    · exact hNseq
-    · intros n hn
-      specialize hseq n hn
-      specialize hfIa (seq n)
-      specialize hseqI n
-      specialize hfIa hseqI
-      -- I just don't know how to do this one ???
-      have hεδ : ε < δf := by
-        sorry
-      have hdiff : |seq n - a| < δf := lt_trans hseq hεδ
-      specialize hfIa hdiff
-      simp only [Function.comp_apply, gt_iff_lt]
-      exact hfIa
+    intros n hn
+    specialize hseq n hn
+    specialize hfIa (seq n)
+    specialize hseqI n
+    specialize hfIa hseqI
+    -- I just don't know how to do this one ???
+    have hεδ : ε < δf := by
+      sorry
+    have hdiff : |seq n - a| < δf := lt_trans hseq hεδ
+    specialize hfIa hdiff
+    simp only [Function.comp_apply, gt_iff_lt]
+    exact hfIa
 
 -- Backwards direction
 lemma cont_seq_imp_cont_ε_δ
