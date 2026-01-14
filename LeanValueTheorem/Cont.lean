@@ -72,10 +72,9 @@ lemma cont_seq_imp_cont_ε_δ
   is_cont_at_ε_δ f I a := by
     unfold is_cont_at_ε_δ
     unfold is_cont_at_seq at hfIa
+    intros haI ε hε
+    specialize hfIa haI
     by_contra h
-
-    -- intros haI ε hε
-    -- intro seq at hfIa
     sorry
 
 -- Algebra of continuous functions (for sums, products, and quotients)
