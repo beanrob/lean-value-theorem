@@ -11,9 +11,10 @@ def is_cont_at_ε_δ (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
 
 -- Definition for a function being continuous at one point, using sequences
 def is_cont_at_seq (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
-  ∀ seq : ℕ → ℝ, is_lim_seq seq a → is_lim_seq (f ∘ seq) (f a)
+  -- Old version:
+  -- ∀ seq : ℕ → ℝ, is_lim_seq seq a → is_lim_seq (f ∘ seq) (f a)
   -- May need to be changed to:
-  -- a ∈ I → ∀ seq : ℕ → ℝ, (∀ n ∈ ℕ, seq n ∈ I) → is_lim_seq seq a → is_lim_seq (f ∘ seq) (f a)
+  a ∈ I → ∀ seq : ℕ → ℝ, (∀ n : ℕ, seq n ∈ I) → is_lim_seq seq a → is_lim_seq (f ∘ seq) (f a)
 
 -- Definition for a function being continuous at a point, using interchangability
 -- of the sequential and ε-δ definitions
@@ -38,15 +39,12 @@ lemma cont_ε_δ_imp_cont_seq
   is_cont_at_seq f I a := by
     unfold is_cont_at_ε_δ at hfIa
     unfold is_cont_at_seq
-    intros seq hseq
+    intros haI seq hseqI hseq
     unfold is_lim_seq
     intros ε hε
     unfold is_lim_seq at hseq
     specialize hseq ε hε
     obtain ⟨Nseq, hNseq, hseq⟩ := hseq
-    -- Need to know a ∈ I
-    have haI : a ∈ I := by
-      sorry
     specialize hfIa haI ε hε
     obtain ⟨δf, hδf, hfIa⟩ := hfIa
     use Nseq
@@ -55,16 +53,14 @@ lemma cont_ε_δ_imp_cont_seq
     · intros n hn
       specialize hseq n hn
       specialize hfIa (seq n)
-      -- Need to know that the codomain of the sequences used in is_cont_at_seq is a subset of I
-      have hseqnI : seq n ∈ I := by
-        sorry
-      specialize hfIa hseqnI
+      specialize hseqI n
+      specialize hfIa hseqI
       -- I just don't know how to do this one ???
       have hεδ : ε < δf := by
         sorry
       have hdiff : |seq n - a| < δf := lt_trans hseq hεδ
       specialize hfIa hdiff
-      simp
+      simp only [Function.comp_apply, gt_iff_lt]
       exact hfIa
 
 -- Backwards direction
@@ -76,7 +72,10 @@ lemma cont_seq_imp_cont_ε_δ
   is_cont_at_ε_δ f I a := by
     unfold is_cont_at_ε_δ
     unfold is_cont_at_seq at hfIa
-    intros haI ε hε
+    by_contra h
+
+    -- intros haI ε hε
+    -- intro seq at hfIa
     sorry
 
 -- Algebra of continuous functions (for sums, products, and quotients)
@@ -98,13 +97,15 @@ lemma cont_sum
     -- Show sequential continuity of sum:
     have seq_cont : is_cont_at_seq sum I a := by
       unfold is_cont_at_seq
-      intros seq hseq
+      intros ha seq hseqI hseq
+      -- intros seq hseq
       unfold sum
-      specialize hf seq
-      specialize hg seq
-      have hf := hf hseq
-      have hg := hg hseq
-      obtain ⟨_, limit⟩ := seq_sum (f ∘ seq) (g ∘ seq) (f a) (g a) sorry sorry hf hg
+      specialize hf ha seq
+      specialize hg ha seq
+      have hf := hf hseqI hseq
+      have hg := hg hseqI hseq
+      obtain ⟨_, limit⟩ :=
+        seq_sum (f ∘ seq) (g ∘ seq) (f a) (g a) (by trivial) (by trivial) hf hg
       exact limit
     constructor
     · apply cont_seq_imp_cont_ε_δ
@@ -137,13 +138,14 @@ lemma cont_prod
     unfold is_cont_at
     have seq_cont : is_cont_at_seq prod I a := by
       unfold is_cont_at_seq
-      intros seq hseq
+      intros ha seq hseqI hseq
       unfold prod
-      specialize hf seq
-      specialize hg seq
-      have hf := hf hseq
-      have hg := hg hseq
-      obtain ⟨_, limit⟩ := seq_prod (f ∘ seq) (g ∘ seq) (f a) (g a) sorry sorry hf hg
+      specialize hf ha seq
+      specialize hg ha seq
+      have hf := hf hseqI hseq
+      have hg := hg hseqI hseq
+      obtain ⟨_, limit⟩ :=
+        seq_prod (f ∘ seq) (g ∘ seq) (f a) (g a) (by trivial) (by trivial) hf hg
       exact limit
     constructor
     · apply cont_seq_imp_cont_ε_δ
@@ -178,14 +180,15 @@ lemma cont_quot
     unfold is_cont_at
     have seq_cont : is_cont_at_seq quot I a := by
       unfold is_cont_at_seq
-      intros seq hseq
+      intros ha seq hseqI hseq
       unfold quot
-      specialize hf seq
-      specialize hg seq
-      have hf := hf hseq
-      have hg := hg hseq
+      specialize hf ha seq
+      specialize hg ha seq
+      have hf := hf hseqI hseq
+      have hg := hg hseqI hseq
       specialize hg0 a ha
-      obtain ⟨_, limit⟩ := seq_quot (f ∘ seq) (g ∘ seq) (f a) (g a) sorry sorry hf hg hg0
+      obtain ⟨_, limit⟩ :=
+        seq_quot (f ∘ seq) (g ∘ seq) (f a) (g a) (by trivial) (by trivial) hf hg hg0
       exact limit
     constructor
     · apply cont_seq_imp_cont_ε_δ
@@ -225,7 +228,7 @@ lemma reciprocal_cont
         unfold is_cont_at_ε_δ
         intros haI ε hε
         use 1
-        simp
+        simp only [gt_iff_lt, zero_lt_one, sub_self, abs_zero, true_and]
         intros x hxI hdiff
         exact hε
       constructor
@@ -265,7 +268,7 @@ lemma const_cont
       unfold is_cont_at_seq
       intros seq hseq
       unfold is_lim_seq const
-      intros ε hε
+      intros ha seq hseqI hseq
       use 1
       aesop
     constructor
