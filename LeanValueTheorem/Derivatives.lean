@@ -124,46 +124,59 @@ lemma chain_rule
     sorry --algebra of limits goes here
 
 lemma power_rule_neg
-  (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) (n : ℕ):
-  is_deriv D (fun x ↦ x ^ (-(n : ℤ))) (fun x ↦ -n * x ^ (-(n : ℤ) - 1)) D := by
+  (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) (n : ℤ) (hn : n > 0):
+  is_deriv D (fun x ↦ x ^ (-n)) (fun x ↦ -n * x ^ (-n - 1)) D := by
     have hrecip : is_deriv D (fun x ↦ 1 / x ^ n)
-     (fun x ↦ -1 / (x ^ n) ^ 2 * (n * x ^ ((n : ℤ) - 1))) D :=  by
-     apply chain_rule D (fun x ↦ x ^ n) (fun x ↦ n * x ^ ((n : ℤ) - 1)) D _
+     (fun x ↦ -1 / (x ^ n) ^ 2 * (n * x ^ (n - 1))) D :=  by
+     apply chain_rule D (fun x ↦ x ^ n) (fun x ↦ n * x ^ (n - 1)) D _
       {x | x ≠ 0} (fun x ↦ 1 / x) (fun x ↦ -1 / x ^ 2) {x | x ≠ 0} _
      · intro y hy
        refine Set.mem_setOf.mpr ?_
        apply hD at hy
-       exact pow_ne_zero n hy
-     · sorry --this has stopped working as need to cast n back to ℕ
-      --exact power_rule D n
+       exact zpow_ne_zero n hy
+     · have hpos : n = n.toNat := by
+        refine Eq.symm (Int.toNat_of_nonneg ?_)
+        exact Int.le_of_lt hn
+       rw [hpos]
+       have hder : is_deriv D (fun x ↦ x ^ n.toNat) (fun x ↦ ↑n.toNat * x ^ (n.toNat - 1)) D := by
+        exact power_rule D n.toNat
+       convert hder
+       rename ℝ => z
+       rw [← Int.natCast_pred_of_pos ?_]
+       · simp
+       · simp only [Int.lt_toNat, Nat.cast_zero]
+         exact hn
      · apply recip_deriv
        simp
-    have hf1 : (fun (x : ℝ) ↦ x ^ (-(n : ℤ))) = (fun (x : ℝ) ↦ 1 / x ^ n) := by
+    have hf1 : (fun (x : ℝ) ↦ x ^ (-n)) = (fun (x : ℝ) ↦ 1 / x ^ n) := by
       refine funext ?_
       intro y
       simp
     rw [hf1]
     simp only [one_div, neg_mul]
-    have hf2 : (fun (x : ℝ) ↦ -(n : ℤ) * x ^ (-(n : ℤ) - 1))
-     = (fun (x : ℝ) ↦ -1 / (x ^ n) ^ 2 * (↑n * x ^ ((n : ℤ) - 1))) := by
+    have hf2 : (fun (x : ℝ) ↦ -n * x ^ (-n - 1))
+     = (fun (x : ℝ) ↦ -1 / (x ^ n) ^ 2 * (↑n * x ^ (n - 1))) := by
       refine funext ?_
       intro y
-      simp only [Int.cast_natCast, neg_mul]
-      rw [show -1 / (y ^ n) ^ 2 = -1 * ((y ^ n) ^ 2)⁻¹ from rfl, ← pow_mul' y 2 n]
-      rcases Or.symm (ne_or_eq n 0) with hz | hnz
-      · rw [hz]
-        simp
-      · simp only [neg_mul, one_mul, neg_inj]
-        rw [← zpow_neg_coe_of_pos y ?_]
-        · rw [mul_rotate']
-          congr
-          rw [← zpow_add' ?_]
-          · rw [sub_add_eq_add_sub]
-            sorry --need to show n - 2n = -n for god's sake
-          · sorry --need y ≠ 0 but should have this
-        · refine Nat.succ_mul_pos 1 ?_
-          exact Nat.zero_lt_of_ne_zero hnz
-    simp only [Int.cast_natCast, neg_mul] at hf2
+      simp only [neg_mul]
+      rw [show -1 / (y ^ n) ^ 2 = -1 * ((y ^ n) ^ 2)⁻¹ from rfl]
+      simp only [neg_mul, one_mul, neg_inj]
+      rw [mul_rotate' ((y ^ n) ^ 2)⁻¹ (↑n) (y ^ (n - 1)), mul_right_inj' ?_]
+      · rw [← zpow_neg_coe_of_pos (y ^ n) Nat.zero_lt_two, ← zpow_mul', ← zpow_add' ?_]
+        · rw [Int.ofNat_two, sub_add_eq_add_sub, ← one_add_mul]
+          simp only [Int.reduceNeg, Int.reduceAdd, neg_mul, one_mul]
+        · right
+          left
+          rw [sub_add_eq_add_sub, ← one_add_mul]
+          simp
+          rw [Int.sub_eq_zero, @neg_eq_iff_eq_neg, ← ne_eq n (-1)]
+          refine Ne.symm (Int.ne_of_lt ?_)
+          have hneg : -1 < 0 := by
+            exact neg_one_lt_zero
+          exact Int.lt_trans hneg hn
+      · simp only [ne_eq, Int.cast_eq_zero]
+        exact Int.ne_of_gt hn
+    simp only [neg_mul] at hf2
     rw [hf2]
     simp only [one_div] at hrecip
     exact hrecip
