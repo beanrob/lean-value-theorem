@@ -123,8 +123,9 @@ lemma chain_rule
     intro a ha _
     sorry --algebra of limits goes here
 
+-- Proof that the derivative of x ^ -n is -n * x ^ (-n - 1) for n ∈ ℤ
 lemma power_rule_neg
-  (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) (n : ℤ) (hn : n > 0):
+  (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) (n : ℤ) (hn : n > 0) :
   is_deriv D (fun x ↦ x ^ (-n)) (fun x ↦ -n * x ^ (-n - 1)) D := by
     have hrecip : is_deriv D (fun x ↦ 1 / x ^ n)
      (fun x ↦ -1 / (x ^ n) ^ 2 * (n * x ^ (n - 1))) D :=  by
@@ -185,7 +186,7 @@ lemma power_rule_neg
 lemma quotient_rule
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (hf : is_deriv D f f' D)
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ → ℝ) (hg : is_deriv E g g' E)
-  (hnz : ∀ x ∈ E, (g x) ≠ 0) :
+  (hnz : ∀ x, (g x) ≠ 0) :
   is_deriv (D ∩ E) (fun x ↦ (f x) / (g x))
   (fun x ↦ ((f' x) * (g x) - (f x) * (g' x)) / (g x) ^ 2) (D ∩ E) := by
     have hch : is_deriv E (fun x ↦ 1 / (g x)) (fun x ↦ (-1 / (g x) ^ 2) * (g' x)) E := by
@@ -193,7 +194,8 @@ lemma quotient_rule
        {x : ℝ | x ≠ 0} (fun x ↦ 1 / x) (fun x ↦ -1 / x^2) {x : ℝ | x ≠ 0} _ _
       · apply recip_deriv
         simp
-      · exact hnz
+      · intro y hy
+        apply hnz
     have hpr : is_deriv (D ∩ E) (fun x ↦ f x * (1 / g x))
      (fun x ↦ f' x * (1 / g x) + f x * (-1 / g x ^ 2 * g' x)) (D ∩ E) := by
       apply product_rule D f f' D hf E (fun x ↦ 1 / (g x)) (fun x ↦ (-1 / (g x) ^ 2) * (g' x)) E _
@@ -206,12 +208,12 @@ lemma quotient_rule
      = (fun x ↦ f' x * (1 / g x) + f x * (-1 / g x ^ 2 * g' x)) := by
       refine funext ?_
       intro y
-      rw [div_mul_eq_mul_div (-1) (g y ^ 2) (g' y)]
-      rw [mul_div (f y) (-1 * g' y) (g y ^ 2)]
-      rw [mul_div (f' y) 1 (g y)]
-      rw [div_eq_mul_one_div (f y * (-1 * g' y)) (g y ^ 2)]
-      rw [← one_div_pow (g y) 2]
-      sorry --pain and suffering
+      rw [sub_div, sub_eq_add_neg]
+      congr
+      · rw [mul_div_assoc, ← zpow_one_sub_natCast₀ ?_]
+        · simp only [Nat.cast_ofNat, Int.reduceSub, zpow_neg, zpow_one, one_div]
+        · apply hnz
+      · rw [← div_neg, mul_div_assoc, ← one_div_mul_eq_div, div_neg_eq_neg_div']
     rw [hf1, hf2]
     exact hpr
 
