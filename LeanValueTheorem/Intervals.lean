@@ -71,3 +71,14 @@ lemma non_empty (a b : ℝ) : a < b → ∃ c : ℝ, c ∈ (ooi a b) := by
   unfold ooi
   exact Set.mem_sep ha hb
  exact Exists.intro c hc
+
+lemma closed_not_bounds_open (a b c : ℝ) (ha : c ≠ a) (hb : c ≠ b) (hab : c ∈ cci a b) :
+ c ∈ ooi a b := by
+ unfold ooi
+ unfold cci at hab
+ refine Set.mem_setOf.mpr ?_
+ rw [Set.mem_setOf] at hab
+ cases hab; expose_names
+ and_intros
+ · exact Std.lt_of_le_of_ne left (id (Ne.symm ha))
+ · exact Std.lt_of_le_of_ne right hb

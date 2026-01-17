@@ -15,6 +15,22 @@ def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
 def is_deriv (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : Prop :=
   ∀ a ∈ A, is_deriv_at D f (f' a) a
 
+lemma deriv_at_unique (D : Set ℝ) (f : ℝ → ℝ) (m n: ℝ) (a : ℝ) (ha : a ∈ D) :
+ (is_deriv_at D f m a ∧ is_deriv_at D f n a) → m = n := by
+ let ha_1 := ha
+ refine fun b ↦ ?_
+ unfold is_deriv_at at b
+ apply b.left at ha
+ apply b.right at ha_1
+ sorry
+
+lemma deriv_at_deriv (D : Set ℝ) (m a : ℝ) (f f': ℝ → ℝ) (ha : a ∈ D)
+ (hf' : is_deriv D f f' D) (hf : is_deriv_at D f m a) : f' a = m := by
+ unfold is_deriv at hf'
+ have hderiv : is_deriv_at D f (f' a) a := by exact hf' a ha
+ have hand : is_deriv_at D f m a ∧ is_deriv_at D f (f' a) a := by exact ⟨hf, hf' a ha⟩
+ exact deriv_at_unique D f (f' a) m a ha (id (And.symm hand))
+
 -- Proof that f : D → ℝ has zero derivative if it is constant
 lemma const_zero_deriv
   (D : Set ℝ) (f : ℝ → ℝ) :

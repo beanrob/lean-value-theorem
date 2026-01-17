@@ -47,7 +47,7 @@ theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) :
  is_cont f (cci a b) → is_bounded f (cci a b) := by
   sorry
 
-theorem cont_closed_attains_bounds (f : ℝ → ℝ) (a b : ℝ) {cont : is_cont f (cci a b)} :
- (∃ x ∈ (cci a b),    least_upper_bound f (cci a b) x) ∧
- (∃ x ∈ (cci a b), greatest_lower_bound f (cci a b) x) := by
+theorem cont_closed_attains_bounds (f : ℝ → ℝ) (a b : ℝ) (cont : is_cont f (cci a b)) :
+ (∃ x ∈ (cci a b),    least_upper_bound f (cci a b) (f x)) ∧
+ (∃ x ∈ (cci a b), greatest_lower_bound f (cci a b) (f x)) := by
  sorry

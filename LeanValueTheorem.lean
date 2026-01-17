@@ -24,19 +24,67 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
    exact ⟨c, hc, hf'zero c hc⟩
  -- Now suppose f is not constant
  ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f hab h
+    have hcbounds :
+    (∃ c ∈ (cci a b), least_upper_bound f (cci a b) (f c)) ∧
+    (∃ c ∈ (cci a b), greatest_lower_bound f (cci a b) (f c)) := by
+     exact cont_closed_attains_bounds f a b hfc
+    -- Prove that f attains its bounds within the open interval
     have hbound:
     (∃ c ∈ (ooi a b), least_upper_bound f (cci a b) (f c)) ∨
     (∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c)) := by
      by_cases h1 : f c < f a
-     · have hmin : ∃ c ∈ (ooi a b), least_upper_bound f (cci a b) (f c) := by
-        sorry
-       exact Or.symm (Or.inr hmin)
+     · have hmin : ∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c) := by
+        obtain ⟨c, hc⟩ := hcbounds.right; expose_names
+        have hfcleqfc1 : f c ≤ f c_1 := by
+         cases hc; expose_names
+         unfold greatest_lower_bound at right
+         cases right; expose_names
+         unfold lower_bound at left_1
+         exact left_1 c_1 hc_1.left
+        have hfclessfa : f c < f a := by
+         exact Std.lt_of_le_of_lt hfcleqfc1 h1
+        have hfcnotfa : f c ≠ f a := by
+         exact ne_of_lt hfclessfa
+        have hfcnotfb : f c ≠ f b := by
+         exact Ne.symm (ne_of_eq_of_ne hfba (id (Ne.symm hfcnotfa)))
+        have hcnota : c ≠ a := by
+         exact fun a_1 ↦ hfcnotfa (congrArg f a_1)
+        have hcnotb : c ≠ b := by
+         exact fun a ↦ hfcnotfb (congrArg f a)
+        have hcopen : c ∈ ooi a b := by
+         exact closed_not_bounds_open a b c hcnota hcnotb hc.left
+        have hcand : (c ∈ ooi a b) ∧ greatest_lower_bound f (cci a b) (f c) := by
+         exact And.imp_left (fun a ↦ hcopen) hc
+        exact Exists.intro c hcand
+       exact Or.inr hmin
      · rw [not_lt] at h1
        have hlt : f a < f c := by
         cases hc; expose_names; exact Std.lt_of_le_of_ne h1 (Ne.symm right)
-       have hmax : ∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c) := by
-        sorry
-       exact Or.inr hmax
+       have hmax : ∃ c ∈ (ooi a b), least_upper_bound f (cci a b) (f c) := by
+        obtain ⟨c, hc⟩ := hcbounds.left; expose_names
+        have hfcgeqfc1 : f c_1 ≤ f c := by
+         cases hc; expose_names
+         unfold least_upper_bound at right
+         cases right; expose_names
+         unfold upper_bound at left_1
+         exact left_1 c_1 hc_1.left
+        have hfcgreaterfa : f a < f c:= by
+         exact Std.lt_of_lt_of_le hlt hfcgeqfc1
+        have hfcnotfa : f c ≠ f a := by
+         exact Ne.symm (ne_of_lt hfcgreaterfa)
+        have hfcnotfb : f c ≠ f b := by
+         exact Ne.symm (ne_of_eq_of_ne hfba (id (Ne.symm hfcnotfa)))
+        have hcnota : c ≠ a := by
+         exact fun a_1 ↦ hfcnotfa (congrArg f a_1)
+        have hcnotb : c ≠ b := by
+         exact fun a ↦ hfcnotfb (congrArg f a)
+        have hcopen : c ∈ ooi a b := by
+         exact closed_not_bounds_open a b c hcnota hcnotb hc.left
+        have hcand : (c ∈ ooi a b) ∧ least_upper_bound f (cci a b) (f c) := by
+         exact And.imp_left (fun a ↦ hcopen) hc
+        exact Exists.intro c hcand
+       exact Or.symm (Or.inr hmax)
+    -- Now prove that f'(c) = 0 at the bounds
     cases hbound; expose_names
     · obtain ⟨d, hd⟩ := h_1
       let diff : ℝ → ℝ := fun x => (f (d + x) - f d) / x
@@ -65,12 +113,21 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
        exact hxn_1
        exact Std.le_of_lt right_1
       have hlim : is_lim_fun (ooi a b) diff 0 0 := by
-       unfold is_lim_fun
        sorry
-      sorry
+      have hderiv : is_deriv_at (ooi a b) f 0 d := by
+       unfold diff at hlim
+       unfold is_deriv_at
+       refine fun a ↦ ?_
+       expose_names
+       sorry
+      have hfderiv : is_deriv_at (ooi a b) f (f' d) d := by exact hff' d left
+      have hunique: f' d = 0 := by
+       exact deriv_at_deriv (ooi a b) 0 d f f' left hff' hderiv
+      have hand : (d ∈ (ooi a b)) ∧ (f' d = 0) := by exact And.symm ⟨hunique, left⟩
+      exact Exists.intro d hand
     · expose_names
       obtain ⟨d, hd⟩ := h_1
-      sorry
+      sorry -- should be basically identical to above
 
 
 
