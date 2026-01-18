@@ -16,9 +16,9 @@ def is_deriv (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : 
 
 -- Proof that f : D → ℝ has zero derivative if it is constant
 lemma const_zero_deriv
-  (D : Set ℝ) (f : ℝ → ℝ) :
-  is_const_fun D f → is_deriv D f 0 D := by
-  intro hcon a ha _ ε hε
+  (D : Set ℝ) (f : ℝ → ℝ) (A : Set ℝ) :
+  is_const_fun D f → is_deriv D f 0 A := by
+  intro hcon a haA haD ε hε
   use 1
   constructor
   · simp
@@ -28,7 +28,7 @@ lemma const_zero_deriv
     have hah : a + h ∈ D ∧ a ∈ D := by
       constructor
       · exact hh1
-      · exact ha
+      · exact haD
     specialize hcon (a + h) a hah
     rw [hcon]
     simp only [sub_self, zero_div, abs_zero, gt_iff_lt]
@@ -63,13 +63,19 @@ lemma recip_deriv
       sorry
     sorry
 
--- Proof that the derivative of af + bg is af' + bg'
+-- Proof that the derivative of f + g is f' + g'
 lemma sum_rule
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ → ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :
-  ∀ a b, is_deriv (D ∩ E) (fun x ↦ a * (f x) + b * (g x))
-  (fun x ↦ a * (f' x) + b * (g' x)) (A ∩ B) := by
-    intro a b c hc _
+  is_deriv (D ∩ E) (fun x ↦ (f x) + (g x))
+  (fun x ↦ (f' x) + (g' x)) (A ∩ B) := by
+    intro a ha1 ha2
+    obtain ⟨haA, haB⟩ := ha1
+    obtain ⟨haD, haE⟩ := ha2
+    unfold is_deriv at hf hg
+    unfold is_deriv_at at hf hg
+    specialize hf a haA haD
+    specialize hg a haB haE
     sorry --algebra of limits goes here
 
 -- Proof that the derivative of f * g is f' * g + f * g'
@@ -80,6 +86,19 @@ lemma product_rule
   (fun x ↦ (f' x) * (g x) + (f x) * (g' x)) (A ∩ B) := by
     intro a ha _
     sorry --algebra of limits goes here
+
+-- Proof that the derivative of rf is rf'
+lemma scale_rule
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
+  (r : ℝ) : is_deriv D (fun x ↦ r * (f x)) (fun x ↦ r * (f' x)) A := by
+    have hconst : is_deriv D (fun y ↦ r) 0 A := by
+      apply const_zero_deriv
+      intro x y hxy
+      simp
+    have hprod : is_deriv (D ∩ D) (fun x ↦ r * f x) (fun x ↦ 0 * f x + r * f' x) (A ∩ A) := by
+      exact product_rule D (fun y ↦ r) 0 A hconst D f f' A hf
+    simp at hprod
+    exact hprod
 
 --Proof that the derivative of x ^ n is n * x ^ (n + 1) for n ∈ ℕ
 lemma power_rule
