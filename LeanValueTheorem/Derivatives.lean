@@ -114,7 +114,7 @@ lemma scale_rule
       simp
     have hprod : is_deriv (D ∩ D) (fun x ↦ r * f x) (fun x ↦ 0 * f x + r * f' x) (A ∩ A) := by
       exact product_rule D (fun y ↦ r) 0 A hconst D f f' A hf
-    simp at hprod
+    simp only [Set.inter_self, zero_mul, zero_add] at hprod
     exact hprod
 
 --Proof that the derivative of x ^ n is n * x ^ (n + 1) for n ∈ ℕ
@@ -263,31 +263,14 @@ lemma deriv_unique (D : Set ℝ) (f f' g' : ℝ → ℝ) (A : Set ℝ) :
  --pain
  sorry
 
---simpler version of sum rule
-lemma simple_sum_rule (D : Set ℝ) (f f' g g': ℝ → ℝ)
-                      (hf : is_deriv D f f' D) (hg : is_deriv D g g' D) :
- is_deriv D (fun x => f x + g x) (fun x => f' x + g' x) D := by
- have hx : is_deriv (D ∩ D) (fun x => 1 * f x + 1 * g x)
-           (fun x => 1 * f' x + 1 * g' x) (D ∩ D) := by
-  exact sum_rule D f f' D hf D g g' D hg 1 1
- rw [Set.inter_self D] at hx
- have hf1 : (fun x => 1 * f x + 1 * g x) = (fun x => f x + g x) := by
-  funext; expose_names
-  rw [one_mul (f x)]; rw [one_mul (g x)]
- have hf2 : (fun x => 1 * f' x + 1 * g' x) = (fun x => f' x + g' x) := by
-  funext; expose_names
-  rw [one_mul (f' x)]; rw [one_mul (g' x)]
- rw [hf1] at hx; rw [hf2] at hx
- exact hx
-
 --some specific derivative computations to simplify the proof in LeanValueTheorem
-lemma const_x_const_deriv (D : Set ℝ) (c : ℝ): is_deriv D (fun x => c*x) (fun x => c) D := by
+lemma const_x_const_deriv (D : Set ℝ) (c : ℝ) : is_deriv D (fun x => c*x) (fun x => c) D := by
  let fc : ℝ → ℝ := (fun x => c)
  let f0 : ℝ → ℝ := (fun x => 0)
  let fx : ℝ → ℝ := (fun x => x)
  let f1 : ℝ → ℝ := (fun x => 1)
  have hc : is_deriv D fc f0 D := by
-  exact const_zero_deriv D (fun x ↦ c) fun x y ↦ congrFun rfl
+  exact const_zero_deriv D (fun x ↦ c) D fun x y ↦ congrFun rfl
  have hx : is_deriv D fx f1 D := by
   exact x_one_deriv D
  have hf1 : (fun x => fc x * fx x) = (fun x => c * x) := by exact rfl
@@ -306,20 +289,21 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ): is_deriv D (fun x => c*x) (fu
 
 lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f f' D) :
  is_deriv D (fun x => f x - c * x) (fun x => f' x - c) D := by
- let fx : ℝ → ℝ := fun x => f x
- let fx' : ℝ → ℝ := fun x => f' x
  let fc : ℝ → ℝ := fun x => -c * x
  let fc' : ℝ → ℝ := fun x => -c
  have hc : is_deriv D fc fc' D := by exact const_x_const_deriv D (-c)
- have hf1 : (fun x ↦ fx x + fc x) = (fun x => f x - c * x) := by
+ have hf1 : (fun x ↦ f x + fc x) = (fun x => f x - c * x) := by
   funext; expose_names
-  unfold fx; unfold fc
+  unfold fc
   rw [← sub_neg_eq_add (f x) (-c * x)]
   rw [neg_mul_eq_neg_mul (-c) x]
   rw [neg_neg c]
- have hf2 : (fun x ↦ fx' x + fc' x) = (fun x => f' x - c) := by
+ have hf2 : (fun x ↦ f' x + fc' x) = (fun x => f' x - c) := by
   funext; expose_names
-  unfold fx'; unfold fc'
+  unfold fc'
   exact rfl
  rw [← hf1]; rw [← hf2]
- refine simple_sum_rule D fx fx' fc fc' hff' hc
+ have hf3 : is_deriv (D ∩ D) (fun x ↦ f x + fc x) (fun x ↦ f' x + fc' x) (D ∩ D) := by
+  apply sum_rule D f f' D hff' D fc fc' D hc
+ simp only [Set.inter_self] at hf3
+ exact hf3
