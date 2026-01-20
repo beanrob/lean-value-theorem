@@ -1,6 +1,8 @@
 import Mathlib.Data.Real.Basic
-import LeanValueTheorem.Sequences
 import Mathlib.Tactic.Ring
+import LeanValueTheorem.Sequences
+import LeanValueTheorem.Intervals
+
 
 -- Definition for l being the limit of the sequence a
 def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
@@ -577,11 +579,13 @@ lemma fun_non_negative
   (f : ℝ → ℝ)
   (c a : ℝ)
   (hfa : is_lim_fun I f c a)
+  (hoI : is_open I)
   (h_nonneg : ∀ x ∈ I, f x ≥ 0) :
   a ≥ 0 := by
 
   by_contra! ha
   rcases hfa (-a) (neg_pos.mpr ha) with ⟨δ, hδ, hf_prop⟩
+  rcases hoI with ⟨l, r, prop⟩
 
   have proof (x : ℝ) (hxI : x ∈ I) (hxcδ : |x - c| < δ) := by
     have ineq1 := (lt_of_le_of_lt (le_abs_self (f x - a)) (hf_prop x hxI hxcδ))
@@ -594,7 +598,11 @@ lemma fun_non_negative
     have side2 := h_nonneg x hxI
     exact (not_lt_of_ge side2) side1
 
-  exact proof (sorry) (sorry) (sorry)
+  apply proof
+  · let x := (l + r) / 2
+    have hx : l < x ∧ x < r := by sorry
+    simpa [prop, ooi] using hx
+  · sorry
 
 -- Proof that a non-positive function has non-positive limit
 lemma fun_non_positive
@@ -602,6 +610,7 @@ lemma fun_non_positive
   (f : ℝ → ℝ)
   (c a : ℝ)
   (hfa : is_lim_fun I f c a)
+  (hoI : is_open I)
   (h_nonpos : ∀ n, f n ≤ 0) :
   a ≤ 0 := by
 
@@ -612,6 +621,6 @@ lemma fun_non_positive
       _ ≥ -0 := (neg_le_neg (h_nonpos x))
       _ = 0 := by simp
 
-  have ha_neg := fun_non_negative I (fun n => -1 * f n) c (-1 * a) hnf h_nonneg
+  have ha_neg := fun_non_negative I (fun n => -1 * f n) c (-1 * a) hnf hoI h_nonneg
   rw [←neg_eq_neg_one_mul] at ha_neg
   exact (neg_nonneg.mp ha_neg)
