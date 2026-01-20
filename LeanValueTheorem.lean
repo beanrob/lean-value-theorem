@@ -20,7 +20,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
    have hf'zero : ∀ c ∈ (ooi a b), f' c = 0 := by
     apply deriv_unique (ooi a b) f f' 0 (ooi a b)
     exact ⟨hff', hzero⟩
-   obtain ⟨c,hc⟩ := non_empty a b hab
+   obtain ⟨c,hc⟩ := non_empty a b (ne_of_lt hab)
    exact ⟨c, hc, hf'zero c hc⟩
  -- Now suppose f is not constant
  ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f hab h

@@ -31,7 +31,7 @@ lemma closed_const (a b : ℝ) (f : ℝ → ℝ) {hab : a < b} :
    have ha : a ∈ (cci a b) := by
     have hz : a ≤ a := by exact Std.IsPreorder.le_refl a
     have hb : a ≤ b := by exact Std.le_of_lt hab
-    exact Set.mem_sep hz hb
+    exact Set.mem_sep (min_le_left a b) (le_max_left a b)
    refine fun x a ↦ ?_
    apply h
    exact ⟨a, ha⟩
