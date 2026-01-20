@@ -43,25 +43,19 @@ lemma cont_ε_δ_imp_cont_seq
     unfold is_lim_seq
     intros ε hε
     unfold is_lim_seq at hseq
-    specialize hseq ε hε
-    obtain ⟨Nseq, hNseq, hseq⟩ := hseq
     specialize hfIa haI ε hε
     obtain ⟨δf, hδf, hfIa⟩ := hfIa
+    specialize hseq δf hδf
+    obtain ⟨Nseq, hseq⟩ := hseq
     use Nseq
-    constructor
-    · exact hNseq
-    · intros n hn
-      specialize hseq n hn
-      specialize hfIa (seq n)
-      specialize hseqI n
-      specialize hfIa hseqI
-      -- I just don't know how to do this one ???
-      have hεδ : ε < δf := by
-        sorry
-      have hdiff : |seq n - a| < δf := lt_trans hseq hεδ
-      specialize hfIa hdiff
-      simp only [Function.comp_apply, gt_iff_lt]
-      exact hfIa
+    intros n hn
+    specialize hseq n hn
+    specialize hfIa (seq n)
+    specialize hseqI n
+    specialize hfIa hseqI
+    specialize hfIa hseq
+    simp only [Function.comp_apply]
+    exact hfIa
 
 -- Backwards direction
 lemma cont_seq_imp_cont_ε_δ
@@ -70,11 +64,6 @@ lemma cont_seq_imp_cont_ε_δ
   (a : ℝ)
   {hfIa : is_cont_at_seq f I a} :
   is_cont_at_ε_δ f I a := by
-    unfold is_cont_at_ε_δ
-    unfold is_cont_at_seq at hfIa
-    intros haI ε hε
-    specialize hfIa haI
-    by_contra h
     sorry
 
 -- Algebra of continuous functions (for sums, products, and quotients)
