@@ -43,21 +43,17 @@ lemma cont_ε_δ_imp_cont_seq
     unfold is_lim_seq
     intros ε hε
     unfold is_lim_seq at hseq
-    specialize hseq ε hε
-    obtain ⟨Nseq, hseq⟩ := hseq
     specialize hfIa haI ε hε
     obtain ⟨δf, hδf, hfIa⟩ := hfIa
+    specialize hseq δf hδf
+    obtain ⟨Nseq, hseq⟩ := hseq
     use Nseq
     intros n hn
     specialize hseq n hn
     specialize hfIa (seq n)
     specialize hseqI n
     specialize hfIa hseqI
-    -- I just don't know how to do this one ???
-    have hεδ : ε < δf := by
-      sorry
-    have hdiff : |seq n - a| < δf := lt_trans hseq hεδ
-    specialize hfIa hdiff
+    specialize hfIa hseq
     simp only [Function.comp_apply, gt_iff_lt]
     exact hfIa
 
