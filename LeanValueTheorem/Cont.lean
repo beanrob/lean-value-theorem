@@ -54,7 +54,7 @@ lemma cont_ε_δ_imp_cont_seq
     specialize hseqI n
     specialize hfIa hseqI
     specialize hfIa hseq
-    simp only [Function.comp_apply, gt_iff_lt]
+    simp only [Function.comp_apply]
     exact hfIa
 
 -- Backwards direction
