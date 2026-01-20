@@ -599,9 +599,11 @@ lemma fun_non_negative
     exact (not_lt_of_ge side2) side1
 
   apply proof
-  · let x := (l + r) / 2
-    have hx : l < x ∧ x < r := by sorry
-    simpa [prop, ooi] using hx
+  · sorry
+    -- let x := (l + r) / 2
+    -- have hx : l < x ∧ x < r := by sorry
+    -- simpa [prop, ooi] using hx
+  · sorry
   · sorry
 
 -- Proof that a non-positive function has non-positive limit
