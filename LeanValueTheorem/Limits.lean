@@ -605,6 +605,7 @@ lemma fun_non_negative
     -- rw [hoI]
     -- exact ⟨left_lt_add_div_two.mpr h, add_div_two_lt_right.mpr h⟩
   · sorry
+  · sorry
 
 -- Proof that a non-positive function has non-positive limit
 lemma fun_non_positive
