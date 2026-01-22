@@ -612,6 +612,7 @@ lemma fun_non_positive
   (f : ℝ → ℝ)
   (c a : ℝ)
   (hfa : is_lim_fun I f c a)
+  (hoI : is_open I)
   (h_nonpos : ∀ n ∈ I, f n ≤ 0) :
   a ≤ 0 := by
 

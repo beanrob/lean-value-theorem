@@ -12,13 +12,14 @@ variable {a b : ℝ} {f f' : ℝ → ℝ} {I : Set ℝ}
 
 theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b) f f' (ooi a b)}
  {hfba : f b = f a} : ∃ c ∈ (ooi a b), f' c = 0 := by
+ have hab' := ne_of_lt hab -- useful for some interval stuff
  by_cases h : is_const_fun (cci a b) f
  -- First suppose f is a constant function
  · have hzero : is_deriv (ooi a b) f 0 (ooi a b) := by
     refine const_zero_deriv (ooi a b) f (ooi a b) ?_
     exact const_closed_imp_const_open a b f h
    have hf'zero := fun c a_1 ↦ deriv_at_deriv (ooi a b) 0 c f f' a_1 hff' (hzero c a_1)
-   obtain ⟨c,hc⟩ := non_empty a b hab
+   obtain ⟨c,hc⟩ := non_empty a b hab'
    exact ⟨c, hc, hf'zero c hc⟩
  -- Now suppose f is not constant
  ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f hab h
@@ -117,9 +118,9 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
          exact left
       -- if limsup exists it must be non-positive, if liminf exists it must be non-negative
       have hlimsup (l : ℝ) :=
-       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l a_1 hxp
+       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l a_1 sorry hxp
       have hliminf (l : ℝ) :=
-       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l a_1 hxn
+       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l a_1 sorry hxn
       -- the derivative of f exists at d, it follows that the limit of diff as h tends to 0 exists
       have hderivexists : ∃ l, is_deriv_at (ooi a b) f l d := by
        exact ⟨(f' d), (hff' d left)⟩
@@ -215,9 +216,9 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
          rw [hset]
          exact left
       have hlimsup (l : ℝ) :=
-       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l a_1 hxp
+       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l a_1 sorry hxp
       have hliminf (l : ℝ) :=
-       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l a_1 hxn
+       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l a_1 sorry hxn
       have hderivexists : ∃ l, is_deriv_at (ooi a b) f l d := by
        exact ⟨(f' d), (hff' d left)⟩
       have hlimexists := (exists_congr hlimderiv).mpr hderivexists
