@@ -15,7 +15,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
  by_cases h : is_const_fun (cci a b) f
  -- First suppose f is a constant function
  · have hzero : is_deriv (ooi a b) f 0 (ooi a b) := by
-    refine const_zero_deriv (ooi a b) f ?_
+    refine const_zero_deriv (ooi a b) f (ooi a b) ?_
     exact const_closed_imp_const_open a b f h
    have hf'zero := fun c a_1 ↦ deriv_at_deriv (ooi a b) 0 c f f' a_1 hff' (hzero c a_1)
    obtain ⟨c,hc⟩ := non_empty a b hab

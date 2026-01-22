@@ -15,7 +15,7 @@ def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
 def is_deriv (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : Prop :=
   ∀ a ∈ A, is_deriv_at D f (f' a) a
 
--- Proof that the derivative of a function at a point is unique
+-- Proof that the value of the derivative of f : D → ℝ at a is unique
 lemma deriv_at_unique (D : Set ℝ) (f : ℝ → ℝ) (m n : ℝ) (a : ℝ) (ha : a ∈ D) :
  (is_deriv_at D f m a ∧ is_deriv_at D f n a) → m = n := by
  let ha_1 := ha
@@ -38,6 +38,7 @@ lemma deriv_unique (D : Set ℝ) (f f' g' : ℝ → ℝ) (A : Set ℝ) :
  apply a.right at hA'
  exact ⟨hA, hA'⟩
 
+-- Proof that f'(a) is the value derivative of f : D → ℝ at a
 lemma deriv_at_deriv (D : Set ℝ) (m a : ℝ) (f f' : ℝ → ℝ) (ha : a ∈ D)
  (hf' : is_deriv D f f' D) (hf : is_deriv_at D f m a) : f' a = m := by
  unfold is_deriv at hf'
@@ -47,9 +48,9 @@ lemma deriv_at_deriv (D : Set ℝ) (m a : ℝ) (f f' : ℝ → ℝ) (ha : a ∈ 
 
 -- Proof that f : D → ℝ has zero derivative if it is constant
 lemma const_zero_deriv
-  (D : Set ℝ) (f : ℝ → ℝ) :
-  is_const_fun D f → is_deriv D f 0 D := by
-  intro hcon a ha _ ε hε
+  (D : Set ℝ) (f : ℝ → ℝ) (A : Set ℝ) :
+  is_const_fun D f → is_deriv D f 0 A := by
+  intro hcon a haA haD ε hε
   use 1
   constructor
   · simp
@@ -59,7 +60,7 @@ lemma const_zero_deriv
     have hah : a + h ∈ D ∧ a ∈ D := by
       constructor
       · exact hh1
-      · exact ha
+      · exact haD
     specialize hcon (a + h) a hah
     rw [hcon]
     simp only [sub_self, zero_div, abs_zero, gt_iff_lt]
@@ -94,14 +95,65 @@ lemma recip_deriv
       sorry
     sorry
 
--- Proof that the derivative of af + bg is af' + bg'
+-- Lemma used to work with limits of functions on different domains
+lemma h_subset (a x : ℝ) (D E : Set ℝ) (f : ℝ → ℝ)
+ (hf : is_lim_fun {h | a + h ∈ D ∧ h ≠ 0} (fun h ↦ (f (a + h) - f a) / h) 0 x) :
+ is_lim_fun {h | a + h ∈ D ∩ E ∧ h ≠ 0} (fun h ↦ (f (a + h) - f a) / h) 0 x := by
+      unfold is_lim_fun
+      unfold is_lim_fun at hf
+      intro ε hε
+      specialize hf ε hε
+      obtain ⟨δ, hδ⟩ := hf
+      use δ
+      obtain ⟨hδ1, hδ2⟩ := hδ
+      constructor
+      · exact hδ1
+      · intro x
+        specialize hδ2 x
+        intro hx
+        have hx1 : x ∈ {h | a + h ∈ D ∧ h ≠ 0} := by
+          simp only [ne_eq, Set.mem_setOf_eq]
+          simp only [Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq] at hx
+          obtain ⟨hx2, hx3⟩ := hx
+          constructor
+          · obtain ⟨hx4, hx5⟩ := hx2
+            exact hx4
+          · exact hx3
+        exact hδ2 hx1
+
+-- Proof that the derivative of f + g is f' + g'
 lemma sum_rule
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ → ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :
-  ∀ a b, is_deriv (D ∩ E) (fun x ↦ a * (f x) + b * (g x))
-  (fun x ↦ a * (f' x) + b * (g' x)) (A ∩ B) := by
-    intro a b c hc _
-    sorry --algebra of limits goes here
+  is_deriv (D ∩ E) (fun x ↦ (f x) + (g x))
+  (fun x ↦ (f' x) + (g' x)) (A ∩ B) := by
+    intro a ha1 ha2
+    obtain ⟨haA, haB⟩ := ha1
+    obtain ⟨haD, haE⟩ := ha2
+    unfold is_deriv at hf hg
+    unfold is_deriv_at at hf hg
+    specialize hf a haA haD
+    specialize hg a haB haE
+    have hf1 : is_lim_fun {h | a + h ∈ D ∩ E ∧ h ≠ 0} (fun h ↦ (f (a + h) - f a) / h) 0 (f' a) := by
+      exact h_subset a (f' a) D E f hf
+    have hg1 : is_lim_fun {h | a + h ∈ E ∩ D ∧ h ≠ 0} (fun h ↦ (g (a + h) - g a) / h) 0 (g' a) := by
+      apply h_subset a (g' a) E D g hg
+    have hset : {h | a + h ∈ E ∩ D ∧ h ≠ 0} = {h | a + h ∈ D ∩ E ∧ h ≠ 0} := by
+      refine Set.ext ?_
+      intro x
+      simp only [Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, and_congr_left_iff]
+      intro hx
+      exact And.comm
+    rw[hset] at hg1
+    have heq : (fun h ↦ ((fun x ↦ f x + g x) (a + h) - (fun x ↦ f x + g x) a) / h)
+     = (fun n ↦ (f (a + n) - f a) / n + (g (a + n) - g a) / n) := by
+      funext
+      rename ℝ => y
+      simp only
+      rw [add_sub_add_comm, add_div]
+    rw[heq]
+    exact fun_sum {h | a + h ∈ D ∩ E ∧ h ≠ 0}
+     (fun h ↦ (f (a + h) - f a) / h) (fun h ↦ (g (a + h) - g a) / h) 0 (f' a) (g' a) hf1 hg1
 
 -- Proof that the derivative of f * g is f' * g + f * g'
 lemma product_rule
@@ -109,8 +161,38 @@ lemma product_rule
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ → ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :
   is_deriv (D ∩ E) (fun x ↦ (f x) * (g x))
   (fun x ↦ (f' x) * (g x) + (f x) * (g' x)) (A ∩ B) := by
-    intro a ha _
-    sorry --algebra of limits goes here
+    intro a ha1 ha2
+    obtain ⟨haA, haB⟩ := ha1
+    obtain ⟨haD, haE⟩ := ha2
+    unfold is_deriv at hf hg
+    unfold is_deriv_at at hf hg
+    specialize hf a haA haD
+    specialize hg a haB haE
+    have hf1 : is_lim_fun {h | a + h ∈ D ∩ E ∧ h ≠ 0} (fun h ↦ (f (a + h) - f a) / h) 0 (f' a) := by
+      exact h_subset a (f' a) D E f hf
+    have hg1 : is_lim_fun {h | a + h ∈ E ∩ D ∧ h ≠ 0} (fun h ↦ (g (a + h) - g a) / h) 0 (g' a) := by
+      apply h_subset a (g' a) E D g hg
+    have hset : {h | a + h ∈ E ∩ D ∧ h ≠ 0} = {h | a + h ∈ D ∩ E ∧ h ≠ 0} := by
+      refine Set.ext ?_
+      intro x
+      simp only [Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, and_congr_left_iff]
+      intro hx
+      exact And.comm
+    rw[hset] at hg1
+    sorry --hmmm
+
+-- Proof that the derivative of rf is rf'
+lemma scale_rule
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
+  (r : ℝ) : is_deriv D (fun x ↦ r * (f x)) (fun x ↦ r * (f' x)) A := by
+    have hconst : is_deriv D (fun y ↦ r) 0 A := by
+      apply const_zero_deriv
+      intro x y hxy
+      simp
+    have hprod : is_deriv (D ∩ D) (fun x ↦ r * f x) (fun x ↦ 0 * f x + r * f' x) (A ∩ A) := by
+      exact product_rule D (fun y ↦ r) 0 A hconst D f f' A hf
+    simp only [Set.inter_self, zero_mul, zero_add] at hprod
+    exact hprod
 
 --Proof that the derivative of x ^ n is n * x ^ (n + 1) for n ∈ ℕ
 lemma power_rule
@@ -200,7 +282,7 @@ lemma power_rule_neg
         · right
           left
           rw [sub_add_eq_add_sub, ← one_add_mul]
-          simp
+          simp only [Nat.cast_ofNat, Int.reduceNeg, Int.reduceAdd, neg_mul, one_mul, ne_eq]
           rw [Int.sub_eq_zero, @neg_eq_iff_eq_neg, ← ne_eq n (-1)]
           refine Ne.symm (Int.ne_of_lt ?_)
           have hneg : -1 < 0 := by
@@ -242,7 +324,7 @@ lemma quotient_rule
       rw [sub_div, sub_eq_add_neg]
       congr
       · rw [mul_div_assoc, ← zpow_one_sub_natCast₀ ?_]
-        · simp only [Nat.cast_ofNat, Int.reduceSub, zpow_neg, zpow_one, one_div]
+        · simp
         · apply hnz
       · rw [← div_neg, mul_div_assoc, ← one_div_mul_eq_div, div_neg_eq_neg_div']
     rw [hf1, hf2]
@@ -264,7 +346,9 @@ lemma simple_sum_rule (D : Set ℝ) (f f' g g': ℝ → ℝ)
  exact hx
 
 --some specific derivative computations to simplify the proof in LeanValueTheorem
-lemma const_x_const_deriv (D : Set ℝ) (c : ℝ): is_deriv D (fun x => c*x) (fun x => c) D := by
+
+-- Proof that cx has derivative c
+lemma const_x_const_deriv (D : Set ℝ) (c : ℝ) : is_deriv D (fun x => c*x) (fun x => c) D := by
  let fc : ℝ → ℝ := (fun x => c)
  let f0 : ℝ → ℝ := (fun x => 0)
  let fx : ℝ → ℝ := (fun x => x)
@@ -285,22 +369,21 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ): is_deriv D (fun x => c*x) (fu
  rw [← hf2]
  exact product_rule D fc f0 D hc D fx f1 D hx
 
+-- Proof that g(x) = f(x) - cx has derivative f'(x) - c
 lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f f' D) :
  is_deriv D (fun x => f x - c * x) (fun x => f' x - c) D := by
- let fx : ℝ → ℝ := fun x => f x
- let fx' : ℝ → ℝ := fun x => f' x
  let fc : ℝ → ℝ := fun x => -c * x
  let fc' : ℝ → ℝ := fun x => -c
  have hc := const_x_const_deriv D (-c)
  have hf1 : (fun x ↦ fx x + fc x) = (fun x => f x - c * x) := by
   funext; expose_names
-  unfold fx; unfold fc
+  unfold fc
   rw [← sub_neg_eq_add (f x) (-c * x)]
   rw [neg_mul_eq_neg_mul (-c) x]
   rw [neg_neg c]
- have hf2 : (fun x ↦ fx' x + fc' x) = (fun x => f' x - c) := by
+ have hf2 : (fun x ↦ f' x + fc' x) = (fun x => f' x - c) := by
   funext; expose_names
-  unfold fx'; unfold fc'
+  unfold fc'
   exact rfl
  rw [← hf1]; rw [← hf2]
  exact simple_sum_rule D fx fx' fc fc' hff' hc

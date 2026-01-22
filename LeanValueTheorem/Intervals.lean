@@ -6,10 +6,10 @@ import Mathlib.Data.Real.Basic
   -- cci = closed-closed interval
   -- oci = open-closed interval
   -- coi = closed-open interval
-def ooi : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | a < x ∧ x < b })
-def cci : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | a ≤ x ∧ x ≤ b })
-def oci : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | a < x ∧ x ≤ b })
-def coi : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | a ≤ x ∧ x < b })
+def ooi : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | min a b < x ∧ x < max a b })
+def cci : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | min a b ≤ x ∧ x ≤ max a b })
+def oci : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | min a b < x ∧ x ≤ max a b })
+def coi : ℝ → ℝ → Set ℝ := (fun a b => { x : ℝ | min a b ≤ x ∧ x < max a b })
 
 -- Definition for whether a set is an interval
 def is_interval (I : Set ℝ) : Prop :=
@@ -50,36 +50,39 @@ lemma closed_interval (I : Set ℝ) : is_closed I → is_interval I := by
   aesop
 
 -- Proof that if x is in an open interval then it is in the corresponding closed interval
-lemma open_in_closed (a b x : ℝ) : x ∈ (ooi a b) → x ∈ (cci a b) := by
- intro h
- unfold cci
- unfold ooi at h
- simp at h
- simp
- cases h
- and_intros
- · (expose_names; exact Std.le_of_lt left)
- · (expose_names; exact Std.le_of_lt right)
+lemma open_in_closed (a b x : ℝ) (hxab : x ∈ (ooi a b)) : x ∈ (cci a b) := by
+ exact ⟨le_of_lt hxab.left, le_of_lt hxab.right⟩
+
 
 -- Proof that an open interval (a,b) with a < b is non-empty
-lemma non_empty (a b : ℝ) : a < b → ∃ c : ℝ, c ∈ (ooi a b) := by
- intro h
- let c : ℝ := (a + b) / 2
- have ha : a < c := by exact left_lt_add_div_two.mpr h
- have hb : c < b := by exact add_div_two_lt_right.mpr h
- have hc : c ∈ (ooi a b) := by
-  unfold ooi
-  exact Set.mem_sep ha hb
- exact Exists.intro c hc
+lemma non_empty (a b : ℝ) (hab : a ≠ b) : ∃ c : ℝ, c ∈ (ooi a b) :=
+ have h := min_lt_max.mpr hab
+ have ha := left_lt_add_div_two.mpr h
+ have hb := add_div_two_lt_right.mpr h
+ Exists.intro ((min a b + max a b) / 2) (Set.mem_sep ha hb)
 
--- if c is in [a,b] and is not equal to a or b then it is in (a,b)
-lemma closed_not_bounds_open (a b c : ℝ) (ha : c ≠ a) (hb : c ≠ b) (hab : c ∈ cci a b) :
+lemma closed_not_bounds_open
+ (a b c : ℝ) (ha : c ≠ a) (hb : c ≠ b) (hab : c ∈ cci a b) :
  c ∈ ooi a b := by
+
  unfold ooi
  unfold cci at hab
  refine Set.mem_setOf.mpr ?_
  rw [Set.mem_setOf] at hab
  cases hab; expose_names
+
+ have hmin : c ≠ min a b := by
+  by_cases h : a ≤ b
+  · simp [h, ha]
+  · simp only [not_le] at h
+    simp [le_of_lt h, hb]
+
+ have hmax : c ≠ max a b := by
+  by_cases h : a ≤ b
+  · simp [h, hb]
+  · simp only [not_le] at h
+    simp [le_of_lt h, ha]
+
  and_intros
- · exact Std.lt_of_le_of_ne left (id (Ne.symm ha))
- · exact Std.lt_of_le_of_ne right hb
+ · exact Std.lt_of_le_of_ne left (ne_comm.mp hmin)
+ · exact Std.lt_of_le_of_ne right hmax
