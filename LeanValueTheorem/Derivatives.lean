@@ -334,16 +334,10 @@ lemma quotient_rule
 lemma simple_sum_rule (D : Set ℝ) (f f' g g': ℝ → ℝ)
                       (hf : is_deriv D f f' D) (hg : is_deriv D g g' D) :
  is_deriv D (fun x => f x + g x) (fun x => f' x + g' x) D := by
- have hx := sum_rule D f f' D hf D g g' D hg 1 1
+ have hx := sum_rule D f f' D hf D g g' D hg
  rw [Set.inter_self D] at hx
- have hf1 : (fun x => 1 * f x + 1 * g x) = (fun x => f x + g x) := by
-  funext; expose_names
-  rw [one_mul (f x)]; rw [one_mul (g x)]
- have hf2 : (fun x => 1 * f' x + 1 * g' x) = (fun x => f' x + g' x) := by
-  funext; expose_names
-  rw [one_mul (f' x)]; rw [one_mul (g' x)]
- rw [hf1] at hx; rw [hf2] at hx
  exact hx
+
 
 --some specific derivative computations to simplify the proof in LeanValueTheorem
 
@@ -353,7 +347,7 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ) : is_deriv D (fun x => c*x) (f
  let f0 : ℝ → ℝ := (fun x => 0)
  let fx : ℝ → ℝ := (fun x => x)
  let f1 : ℝ → ℝ := (fun x => 1)
- have hc := const_zero_deriv D (fun x ↦ c) fun x y ↦ congrFun rfl
+ have hc := const_zero_deriv D (fun x ↦ c) D
  have hx := x_one_deriv D
  have hf1 : (fun x => fc x * fx x) = (fun x => c * x) := by exact rfl
  have hf2 : (fun x => f0 x * fx x + fc x * f1 x) = (fun x => c) := by
@@ -367,7 +361,7 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ) : is_deriv D (fun x => c*x) (f
  rw [← Set.inter_self D]
  rw [← hf1]
  rw [← hf2]
- exact product_rule D fc f0 D hc D fx f1 D hx
+ exact product_rule D fc f0 D (hc fun x y ↦ congrFun rfl) D fx f1 D hx
 
 -- Proof that g(x) = f(x) - cx has derivative f'(x) - c
 lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f f' D) :
@@ -375,7 +369,7 @@ lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f 
  let fc : ℝ → ℝ := fun x => -c * x
  let fc' : ℝ → ℝ := fun x => -c
  have hc := const_x_const_deriv D (-c)
- have hf1 : (fun x ↦ fx x + fc x) = (fun x => f x - c * x) := by
+ have hf1 : (fun x ↦ f x + fc x) = (fun x => f x - c * x) := by
   funext; expose_names
   unfold fc
   rw [← sub_neg_eq_add (f x) (-c * x)]
@@ -386,4 +380,4 @@ lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f 
   unfold fc'
   exact rfl
  rw [← hf1]; rw [← hf2]
- exact simple_sum_rule D fx fx' fc fc' hff' hc
+ exact simple_sum_rule D f f' fc fc' hff' hc
