@@ -15,16 +15,30 @@ def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
 def is_deriv (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : Prop :=
   ∀ a ∈ A, is_deriv_at D f (f' a) a
 
-lemma deriv_at_unique (D : Set ℝ) (f : ℝ → ℝ) (m n: ℝ) (a : ℝ) (ha : a ∈ D) :
+-- Proof that the derivative of a function at a point is unique
+lemma deriv_at_unique (D : Set ℝ) (f : ℝ → ℝ) (m n : ℝ) (a : ℝ) (ha : a ∈ D) :
  (is_deriv_at D f m a ∧ is_deriv_at D f n a) → m = n := by
  let ha_1 := ha
  refine fun b ↦ ?_
  unfold is_deriv_at at b
  apply b.left at ha
  apply b.right at ha_1
- sorry
+ exact lim_fun_unique {h | a + h ∈ D ∧ h ≠ 0} (fun h ↦ (f (a + h) - f a) / h) 0 m n ⟨ha, ha_1⟩
 
-lemma deriv_at_deriv (D : Set ℝ) (m a : ℝ) (f f': ℝ → ℝ) (ha : a ∈ D)
+-- Proof that the derivative of a function on an interval is unique
+lemma deriv_unique (D : Set ℝ) (f f' g' : ℝ → ℝ) (A : Set ℝ) :
+ (is_deriv D f f' A ∧ is_deriv D f g' A) → ∀ x ∈ A ∩ D, f' x = g' x := by
+ refine fun a x a_1 ↦ ?_
+ have hA : x ∈ A := by exact Set.mem_of_mem_inter_left a_1
+ let hA' := hA
+ have hD : x ∈ D := by exact Set.mem_of_mem_inter_right a_1
+ apply deriv_at_unique D f (f' x) (g' x) x hD
+ unfold is_deriv at a
+ apply a.left at hA
+ apply a.right at hA'
+ exact ⟨hA, hA'⟩
+
+lemma deriv_at_deriv (D : Set ℝ) (m a : ℝ) (f f' : ℝ → ℝ) (ha : a ∈ D)
  (hf' : is_deriv D f f' D) (hf : is_deriv_at D f m a) : f' a = m := by
  unfold is_deriv at hf'
  have hderiv : is_deriv_at D f (f' a) a := by exact hf' a ha
@@ -201,23 +215,11 @@ lemma quotient_rule
     rw [hf1, hf2]
     exact hpr
 
--- Proof that the derivative of a function on an interval is unique
-lemma deriv_unique (D : Set ℝ) (f f' g' : ℝ → ℝ) (A : Set ℝ) :
- is_deriv D f f' A ∧ is_deriv D f g' A → ∀ x ∈ A, f' x = g' x := by
- intro h
- unfold is_deriv at h
- unfold is_deriv_at at h
- cases h; expose_names
- --pain
- sorry
-
 --simpler version of sum rule
 lemma simple_sum_rule (D : Set ℝ) (f f' g g': ℝ → ℝ)
                       (hf : is_deriv D f f' D) (hg : is_deriv D g g' D) :
  is_deriv D (fun x => f x + g x) (fun x => f' x + g' x) D := by
- have hx : is_deriv (D ∩ D) (fun x => 1 * f x + 1 * g x)
-           (fun x => 1 * f' x + 1 * g' x) (D ∩ D) := by
-  exact sum_rule D f f' D hf D g g' D hg 1 1
+ have hx := sum_rule D f f' D hf D g g' D hg 1 1
  rw [Set.inter_self D] at hx
  have hf1 : (fun x => 1 * f x + 1 * g x) = (fun x => f x + g x) := by
   funext; expose_names
@@ -234,10 +236,8 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ): is_deriv D (fun x => c*x) (fu
  let f0 : ℝ → ℝ := (fun x => 0)
  let fx : ℝ → ℝ := (fun x => x)
  let f1 : ℝ → ℝ := (fun x => 1)
- have hc : is_deriv D fc f0 D := by
-  exact const_zero_deriv D (fun x ↦ c) fun x y ↦ congrFun rfl
- have hx : is_deriv D fx f1 D := by
-  exact x_one_deriv D
+ have hc := const_zero_deriv D (fun x ↦ c) fun x y ↦ congrFun rfl
+ have hx := x_one_deriv D
  have hf1 : (fun x => fc x * fx x) = (fun x => c * x) := by exact rfl
  have hf2 : (fun x => f0 x * fx x + fc x * f1 x) = (fun x => c) := by
   funext
@@ -250,7 +250,7 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ): is_deriv D (fun x => c*x) (fu
  rw [← Set.inter_self D]
  rw [← hf1]
  rw [← hf2]
- refine product_rule D fc f0 D hc D fx f1 D hx
+ exact product_rule D fc f0 D hc D fx f1 D hx
 
 lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f f' D) :
  is_deriv D (fun x => f x - c * x) (fun x => f' x - c) D := by
@@ -258,7 +258,7 @@ lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f 
  let fx' : ℝ → ℝ := fun x => f' x
  let fc : ℝ → ℝ := fun x => -c * x
  let fc' : ℝ → ℝ := fun x => -c
- have hc : is_deriv D fc fc' D := by exact const_x_const_deriv D (-c)
+ have hc := const_x_const_deriv D (-c)
  have hf1 : (fun x ↦ fx x + fc x) = (fun x => f x - c * x) := by
   funext; expose_names
   unfold fx; unfold fc
@@ -270,4 +270,4 @@ lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f 
   unfold fx'; unfold fc'
   exact rfl
  rw [← hf1]; rw [← hf2]
- refine simple_sum_rule D fx fx' fc fc' hff' hc
+ exact simple_sum_rule D fx fx' fc fc' hff' hc

@@ -72,6 +72,7 @@ lemma non_empty (a b : ℝ) : a < b → ∃ c : ℝ, c ∈ (ooi a b) := by
   exact Set.mem_sep ha hb
  exact Exists.intro c hc
 
+-- if c is in [a,b] and is not equal to a or b then it is in (a,b)
 lemma closed_not_bounds_open (a b c : ℝ) (ha : c ≠ a) (hb : c ≠ b) (hab : c ∈ cci a b) :
  c ∈ ooi a b := by
  unfold ooi
