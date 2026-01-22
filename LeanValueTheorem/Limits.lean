@@ -616,29 +616,9 @@ lemma fun_non_negative
         -- have := by simpa [abs_neg] using abs_pos.mpr (ne_of_gt (sub_pos.mpr cr))
         -- #check this
         -- exact add_lt_add_left this c
-
       · sorry
-
-
-
-
-
-
-
-
-
-
     · sorry
-
-
-
-
-
-
-
-
     -- instead of this pick an x that is something like c + min(\delta, range of the interval)
-
     -- exact ⟨left_lt_add_div_two.mpr h, add_div_two_lt_right.mpr h⟩
   · sorry
   · sorry
@@ -665,3 +645,61 @@ lemma fun_non_positive
   have ha_neg := fun_non_negative I (fun n => -1 * f n) c (-1 * a) l r hcI hnf hoI hlr h_nonneg
   rw [←neg_eq_neg_one_mul] at ha_neg
   exact (neg_nonneg.mp ha_neg)
+
+
+lemma lim_fun_unique (D : Set ℝ) (f : ℝ → ℝ) (c m n : ℝ) :
+ is_lim_fun D f c m ∧ is_lim_fun D f c n → m = n := by
+ sorry
+
+lemma lim_exists_on_subset (D E : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (hDE : E ⊆ D) :
+ (∃ l, is_lim_fun D f c l) → (∃ l, is_lim_fun E f c l) := by
+ refine fun a ↦ ?_
+ obtain ⟨l, hl⟩ := a
+ unfold is_lim_fun
+ unfold is_lim_fun at hl
+ use l
+ refine fun ε a ↦ ?_
+ apply hl at a
+ obtain ⟨δ, hδ⟩ := a
+ cases hδ; expose_names
+ use δ
+ exact ⟨left, fun x a a_1 ↦ right x (hDE a) a_1⟩
+
+
+
+lemma lim_union (D E : Set ℝ) (f : ℝ → ℝ) (c l m n : ℝ)
+ (hD : is_lim_fun D f c m) (hE : is_lim_fun E f c n) (hDE : is_lim_fun (D ∪ E) f c l) :
+ l = m ∧ l = n := by
+ have hxD (x : ℝ) : x ∈ D → x ∈ D ∪ E := by exact fun a ↦ Set.mem_union_left E a
+ have hxE (x : ℝ) : x ∈ E → x ∈ D ∪ E := by exact fun a ↦ Set.mem_union_right D a
+ unfold is_lim_fun at hDE
+ have h : (∀ ε > 0, ∃ δ > 0, ∀ x ∈ D ∪ E, |x - c| < δ → |f x - l| < ε) ↔
+          ((∀ ε > 0, ∃ δ > 0, ∀ x ∈ D, |x - c| < δ → |f x - l| < ε) ∧
+           (∀ ε > 0, ∃ δ > 0, ∀ x ∈ E, |x - c| < δ → |f x - l| < ε)) := by
+  rw [iff_def]
+  and_intros
+  · refine fun a ↦ ?_
+    and_intros
+    · refine fun ε b ↦ ?_
+      apply a at b
+      obtain ⟨δ,hδ⟩ := b
+      cases hδ; expose_names
+      use δ
+      and_intros
+      · exact left
+      · exact fun x a a_1 ↦ right x (hxD x a) a_1
+    · refine fun ε b ↦ ?_
+      apply a at b
+      obtain ⟨δ,hδ⟩ := b
+      cases hδ; expose_names
+      use δ
+      and_intros
+      · exact left
+      · exact fun x a a_1 ↦ right x (hxE x a) a_1
+  · exact fun a ε a_1 ↦ hDE ε a_1
+ rw [h] at hDE
+ have h1 := hDE.left
+ have h2 := hDE.right
+ have hleft := lim_fun_unique D f c l m ⟨h1,hD⟩
+ have hright := lim_fun_unique E f c l n ⟨h2,hE⟩
+ exact ⟨hleft, hright⟩
