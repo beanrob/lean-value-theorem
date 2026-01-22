@@ -1,6 +1,6 @@
 import Mathlib.Data.Real.Basic
-import Mathlib.Tactic.Linarith
 import LeanValueTheorem.Sequences
+import Mathlib.Tactic.Ring
 
 -- Definition for l being the limit of the sequence a
 def is_lim_seq (a : ℕ → ℝ) (l : ℝ) : Prop :=
@@ -37,7 +37,9 @@ lemma seq_sum
   intro n hn
   have hn1 : n ≥ N1 := le_trans (le_max_left N1 N2) hn
   have hn2 : n ≥ N2 := le_trans (le_max_right N1 N2) hn
-  have r : (f n - a) + (g n - b) = f n + g n - (a + b) := by ring1
+  have r : (f n - a) + (g n - b) = f n + g n - (a + b) := sub_add_sub_comm (f n) a (g n) b
+
+  have number : ((2/3) : ℝ) < 1 := (div_lt_one₀ (by norm_num)).mpr (by exact_mod_cast (by decide))
 
   calc
   |f n + g n - (a + b)|
@@ -45,10 +47,12 @@ lemma seq_sum
   _ ≤ |f n - a| + |g n - b| := abs_add_le (f n - a) (g n - b)
   _ < ε' + ε' := add_lt_add (hfa_prop n hn1) (hgb_prop n hn2)
   _ = (ε / 3) + (ε / 3) := by rfl
-  _ < ε := by linarith
+  _ = ((2 / 3) : ℝ) * ε := by ring1
+  _ < (1 : ℝ) * ε := mul_lt_mul_of_pos_right number hε
+  _ = ε := by simp
 
 -- given a sequence of the form sequence - constant with limit 0
--- the limit of the sequence is constant
+-- the limit of the sequence is the constant
 lemma seq_lim_of_seq_sub_lim
   (f : ℕ → ℝ) (a : ℝ)
   (hf : is_sequence (fun n => f n - a))
@@ -116,13 +120,15 @@ lemma seq_non_negative
   have h_neg (n : ℕ) (hn : n ≥ N) := by
     have ineq1 := (lt_of_le_of_lt (le_abs_self (f n - a)) (hf_prop n hn))
     calc
-      f n = f n - a + a := by ring1
+      f n = f n - a + a := Eq.symm (sub_add_cancel (f n) a)
       _ < ε + a := add_lt_add_of_lt_of_le ineq1 (le_rfl)
       _ = 0 := by simp [ε]
 
   have side1 := h_neg N (by norm_num)
   have side2 := h_nonneg N
-  exact not_lt_of_ge side2 side1
+  have := not_lt_of_ge side2
+  have :=  this side1
+  exact this
 
 -- Proof that a non-positive sequence has non-positive limit
 lemma seq_non_positive
@@ -165,12 +171,15 @@ lemma seq_prod_special
   intro n hn
   have h1 := by simpa [sub_zero] using hfa_prop n (le_trans (le_max_left N1 N2) hn)
   have h2 := by simpa [sub_zero] using hgb_prop n (le_trans (le_max_right N1 N2) hn)
+  have number : ((1/3) : ℝ) < 1 := (div_lt_one₀ (by norm_num)).mpr (by norm_num)
 
   calc
     |(fun n ↦ f n * g n) n - 0| = |f n| * |g n| := by simp
     _ < ε' * 1 := mul_lt_mul_of_nonneg h1 h2 (abs_nonneg (f n)) (abs_nonneg (g n))
     _ = ε/3 := by simp [ε']
-    _ < ε := by linarith
+    _ = (1/3) * ε := by ring1
+    _ < (1 : ℝ) * ε := mul_lt_mul_of_pos_right number hε
+    _ = ε := by simp
 
 lemma seq_prod
   (f g : ℕ → ℝ)
@@ -230,8 +239,9 @@ lemma seq_neq_zero_of_lim_neq_zero
 
   by_contra! h
   have : |g n - b| = |b| := by simp [h]
-  have : |b| < |b| / 2 := by simpa [this] using (h_prop n hn)
-  linarith
+  have side1 : |b| < |b| / 2 := by simpa [this] using (h_prop n hn)
+  have side2 : |b| / 2 < |b| := by exact div_two_lt_of_pos hbp
+  exact (not_lt_of_gt side1) side2
 
 lemma seq_recip
   (g : ℕ → ℝ) (b : ℝ)
@@ -251,7 +261,10 @@ lemma seq_recip
   rcases (seq_scalar_prod g b b hg hgb).2 ε1 hε1 with ⟨N1, hgb_prop1⟩
 
   have sub (n : ℕ) (hnN1 : n ≥ N1) : b^2 / 2 < g n * b := by
-    linarith [(abs_lt.1 (by simpa [ε1] using hgb_prop1 n hnN1)).1]
+    have ineq1 := add_lt_of_lt_sub_right (abs_lt.1 (by simpa [ε1] using hgb_prop1 n hnN1)).1
+    have rearrange : -(b ^ 2 / 2) + b * b = b^2 / 2 := by ring1
+    rw [rearrange] at ineq1
+    simpa only [mul_comm, gt_iff_lt] using ineq1
 
   rcases (seq_neq_zero_of_lim_neq_zero g b hg hgb hbz) with ⟨N', seq_prop⟩
 
@@ -289,7 +302,7 @@ lemma seq_recip
     _ ≤ |g n - b| * (2 / b ^ 2) := shuffle2 n (le_trans hN1 hn)
     _ < ε2 * (2 / b ^ 2) := mul_lt_mul_of_pos_right (hgb_prop2 n ((le_trans hN2 hn))) h1ε1
     _ = ε * (2 / b ^ 2)⁻¹ * (2 / b ^ 2) := by rw [hε2eq]
-    _ = ε * ((2 / b ^ 2) * (2 / b ^ 2)⁻¹) := by linarith
+    _ = ε * ((2 / b ^ 2) * (2 / b ^ 2)⁻¹) := by ring1
     _ = ε * 1 := by rw [shuffle3]
     _ = ε := by simp
 
@@ -333,7 +346,8 @@ lemma fun_sum
   intro x hxI hxcδ
   have h1 := (hfa_prop x hxI (lt_of_lt_of_le hxcδ (min_le_left δ1 δ2)))
   have h2 := (hgb_prop x hxI (lt_of_lt_of_le hxcδ (min_le_right δ1 δ2)))
-  have r : (f x - a) + (g x - b) = f x + g x - (a + b) := by ring1
+  have r : (f x - a) + (g x - b) = f x + g x - (a + b) := sub_add_sub_comm (f x) a (g x) b
+  have number : ((2/3) : ℝ) < 1 := (div_lt_one₀ (by norm_num)).mpr (by exact_mod_cast (by decide))
 
   calc
   |f x + g x - (a + b)|
@@ -341,8 +355,12 @@ lemma fun_sum
   _ ≤ |f x - a| + |g x - b| := abs_add_le (f x - a) (g x - b)
   _ < ε' + ε' := add_lt_add h1 h2
   _ = (ε / 3) + (ε / 3) := by rfl
-  _ < ε := by linarith
+  _ = (2/3 :ℝ) * ε := by ring1
+  _ < (1 : ℝ) * ε := mul_lt_mul_of_pos_right number hε
+  _ = ε := by simp
 
+-- given a function of the form function - constant with limit 0
+-- the limit of the function is the constant
 lemma fun_lim_of_fun_sub_lim
   (I : Set ℝ)
   (f : ℝ → ℝ) (a c : ℝ)
@@ -352,6 +370,8 @@ lemma fun_lim_of_fun_sub_lim
   have h := fun_sum I (fun n => f n - a) (fun n => a) c 0 a hfa ha
   simpa using h
 
+-- given a function with some limit
+-- the function (function - limit) has limit 0
 lemma fun_sub_lim_of_fun_lim
   (I : Set ℝ)
   (f : ℝ → ℝ) (a c : ℝ)
@@ -405,12 +425,15 @@ lemma fun_prod_special
   intro x hxI hxcδ
   have h1 := by simpa [sub_zero] using (hfa_prop x hxI (lt_of_lt_of_le hxcδ (min_le_left δ1 δ2)))
   have h2 := by simpa [sub_zero] using (hgb_prop x hxI (lt_of_lt_of_le hxcδ (min_le_right δ1 δ2)))
+  have number : ((1/3) : ℝ) < 1 := (div_lt_one₀ (by norm_num)).mpr (by norm_num)
 
   calc
     |(fun n ↦ f n * g n) x - 0| = |f x| * |g x| := by simp
     _ < ε' * 1 := mul_lt_mul_of_nonneg h1 h2 (abs_nonneg (f x)) (abs_nonneg (g x))
     _ = ε/3 := by simp [ε']
-    _ < ε := by linarith
+    _ = (1/3) * ε := by ring1
+    _ < (1 : ℝ) * ε := mul_lt_mul_of_pos_right number hε
+    _ = ε := by simp
 
 lemma fun_prod
   (I : Set ℝ)
@@ -465,11 +488,13 @@ lemma fun_neq_zero_of_lim_neq_zero
   rcases hgb (|b|/2) (div_pos hbp (by norm_num)) with ⟨δ, hδ, h_prop⟩
   refine ⟨δ, hδ, ?_⟩
   intro x hxI hxcδ
+  have number : (1/2 : ℝ) < 1 := (div_lt_one₀ (by norm_num)).mpr (by norm_num)
 
   by_contra! h
-  have : |g x - b| = |b| := by simp [h]
-  have : |b| < |b| / 2 := by simpa [this] using (h_prop x hxI hxcδ)
-  linarith
+  have : |g x - b| = |b| := by simp only [h, zero_sub, abs_neg]
+  have side1 : |b| < |b| / 2 := by simpa [this] using (h_prop x hxI hxcδ)
+  have side2 : |b| / 2 < |b| := by exact div_two_lt_of_pos hbp
+  exact (not_lt_of_gt side1) side2
 
 lemma fun_recip
   (I : Set ℝ)
@@ -485,8 +510,11 @@ lemma fun_recip
   have hε1 : (b ^ 2) / 2 > 0 := div_pos (sq_pos_of_ne_zero hbz) (by norm_num)
   rcases (fun_scalar_prod I g b b c hgb) ε1 hε1 with ⟨δ1, hδ1, hgb_prop1⟩
 
-  have sub (x : ℝ) (hxI : x ∈ I) (hxcδ : |x - c| < δ1) : b^2 / 2 < g x * b := by
-    linarith [(abs_lt.1 (by simpa [ε1] using hgb_prop1 x hxI hxcδ)).1]
+  have sub (x : ℝ) (hxI : x ∈ I) (hxcδ : |x - c| < δ1)  : b^2 / 2 < g x * b := by
+    have ineq1 := add_lt_of_lt_sub_right (abs_lt.1 (by simpa [ε1] using hgb_prop1 x hxI hxcδ)).1
+    have rearrange : -(b ^ 2 / 2) + b * b = b^2 / 2 := by ring1
+    rw [rearrange] at ineq1
+    simpa only [mul_comm, gt_iff_lt] using ineq1
 
   rcases (fun_neq_zero_of_lim_neq_zero I g c b hgb hbz) with ⟨δ', hδ', fun_prop⟩
 
@@ -522,13 +550,13 @@ lemma fun_recip
     (2 / b^2) (div_ne_zero (by norm_num) (ne_of_gt (sq_pos_of_ne_zero hbz)))
 
   calc
-    |b - g x| / |g x * b| = |g x - b| / |g x * b| := by simp [abs_sub_comm]
+    |b - g x| / |g x * b| = |g x - b| / |g x * b| := by simp only [abs_sub_comm]
     _ ≤ |g x - b| * (2 / b ^ 2) := shuffle2 x hxI (lt_of_lt_of_le hxcδ hδ1)
     _ < ε2 * (2 / b ^ 2) := mul_lt_mul_of_pos_right (hgb_prop2 x hxI (lt_of_lt_of_le hxcδ hδ2)) h1ε1
     _ = ε * (2 / b ^ 2)⁻¹ * (2 / b ^ 2) := by rw [hε2eq]
-    _ = ε * ((2 / b ^ 2) * (2 / b ^ 2)⁻¹) := by linarith
+    _ = ε * ((2 / b ^ 2) * (2 / b ^ 2)⁻¹) := by ring1
     _ = ε * 1 := by rw [shuffle3]
-    _ = ε := by simp
+    _ = ε := by simp only [mul_one]
 
 lemma fun_quot
   (I : Set ℝ)
@@ -541,7 +569,7 @@ lemma fun_quot
 
   have := fun_recip I g c b hgb hbz
   have := fun_prod I f (fun n => 1 / g n) c a (1 / b) hfa this
-  simpa [mul_div_right_comm a 1 b] using this
+  simpa only [one_div] using this
 
 -- Proof that a non-negative function has non-negative limit
 lemma fun_non_negative
@@ -553,19 +581,18 @@ lemma fun_non_negative
   a ≥ 0 := by
 
   by_contra! ha
-  let ε := -a
-  rcases hfa ε (neg_pos.mpr ha) with ⟨δ, hδ, hf_prop⟩
+  rcases hfa (-a) (neg_pos.mpr ha) with ⟨δ, hδ, hf_prop⟩
 
   have proof (x : ℝ) (hxI : x ∈ I) (hxcδ : |x - c| < δ) := by
     have ineq1 := (lt_of_le_of_lt (le_abs_self (f x - a)) (hf_prop x hxI hxcδ))
     have side1 := by
       calc
-        f x = f x - a + a := by linarith
-        _ < ε + a := add_lt_add_of_lt_of_le ineq1 (le_rfl)
-        _ = 0 := by simp [ε]
+        f x = f x - a + a := Eq.symm (sub_add_cancel (f x) a)
+        _ < -a + a := add_lt_add_of_lt_of_le ineq1 (le_rfl)
+        _ = 0 := by simp only [neg_add_cancel]
 
     have side2 := h_nonneg x hxI
-    exact not_lt_of_ge side2 side1
+    exact (not_lt_of_ge side2) side1
 
   exact proof (sorry) (sorry) (sorry)
 
