@@ -23,7 +23,20 @@ lemma deriv_at_unique (D : Set ℝ) (f : ℝ → ℝ) (m n : ℝ) (a : ℝ) (ha 
  unfold is_deriv_at at b
  apply b.left at ha
  apply b.right at ha_1
- sorry
+ exact lim_fun_unique {h | a + h ∈ D ∧ h ≠ 0} (fun h ↦ (f (a + h) - f a) / h) 0 m n ⟨ha, ha_1⟩
+
+-- Proof that the derivative of a function on an interval is unique
+lemma deriv_unique (D : Set ℝ) (f f' g' : ℝ → ℝ) (A : Set ℝ) :
+ (is_deriv D f f' A ∧ is_deriv D f g' A) → ∀ x ∈ A ∩ D, f' x = g' x := by
+ refine fun a x a_1 ↦ ?_
+ have hA : x ∈ A := by exact Set.mem_of_mem_inter_left a_1
+ let hA' := hA
+ have hD : x ∈ D := by exact Set.mem_of_mem_inter_right a_1
+ apply deriv_at_unique D f (f' x) (g' x) x hD
+ unfold is_deriv at a
+ apply a.left at hA
+ apply a.right at hA'
+ exact ⟨hA, hA'⟩
 
 -- Proof that f'(a) is the value derivative of f : D → ℝ at a
 lemma deriv_at_deriv (D : Set ℝ) (m a : ℝ) (f f' : ℝ → ℝ) (ha : a ∈ D)
@@ -317,15 +330,20 @@ lemma quotient_rule
     rw [hf1, hf2]
     exact hpr
 
--- Proof that the derivative f' of a function f on a set A is unique
-lemma deriv_unique (D : Set ℝ) (f f' g' : ℝ → ℝ) (A : Set ℝ) :
- is_deriv D f f' A ∧ is_deriv D f g' A → ∀ x ∈ A, f' x = g' x := by
- intro h
- unfold is_deriv at h
- unfold is_deriv_at at h
- cases h; expose_names
- --pain
- sorry
+--simpler version of sum rule
+lemma simple_sum_rule (D : Set ℝ) (f f' g g': ℝ → ℝ)
+                      (hf : is_deriv D f f' D) (hg : is_deriv D g g' D) :
+ is_deriv D (fun x => f x + g x) (fun x => f' x + g' x) D := by
+ have hx := sum_rule D f f' D hf D g g' D hg 1 1
+ rw [Set.inter_self D] at hx
+ have hf1 : (fun x => 1 * f x + 1 * g x) = (fun x => f x + g x) := by
+  funext; expose_names
+  rw [one_mul (f x)]; rw [one_mul (g x)]
+ have hf2 : (fun x => 1 * f' x + 1 * g' x) = (fun x => f' x + g' x) := by
+  funext; expose_names
+  rw [one_mul (f' x)]; rw [one_mul (g' x)]
+ rw [hf1] at hx; rw [hf2] at hx
+ exact hx
 
 --some specific derivative computations to simplify the proof in LeanValueTheorem
 
@@ -335,10 +353,8 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ) : is_deriv D (fun x => c*x) (f
  let f0 : ℝ → ℝ := (fun x => 0)
  let fx : ℝ → ℝ := (fun x => x)
  let f1 : ℝ → ℝ := (fun x => 1)
- have hc : is_deriv D fc f0 D := by
-  exact const_zero_deriv D (fun x ↦ c) D fun x y ↦ congrFun rfl
- have hx : is_deriv D fx f1 D := by
-  exact x_one_deriv D
+ have hc := const_zero_deriv D (fun x ↦ c) fun x y ↦ congrFun rfl
+ have hx := x_one_deriv D
  have hf1 : (fun x => fc x * fx x) = (fun x => c * x) := by exact rfl
  have hf2 : (fun x => f0 x * fx x + fc x * f1 x) = (fun x => c) := by
   funext
@@ -351,15 +367,15 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ) : is_deriv D (fun x => c*x) (f
  rw [← Set.inter_self D]
  rw [← hf1]
  rw [← hf2]
- refine product_rule D fc f0 D hc D fx f1 D hx
+ exact product_rule D fc f0 D hc D fx f1 D hx
 
 -- Proof that g(x) = f(x) - cx has derivative f'(x) - c
 lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f f' D) :
  is_deriv D (fun x => f x - c * x) (fun x => f' x - c) D := by
  let fc : ℝ → ℝ := fun x => -c * x
  let fc' : ℝ → ℝ := fun x => -c
- have hc : is_deriv D fc fc' D := by exact const_x_const_deriv D (-c)
- have hf1 : (fun x ↦ f x + fc x) = (fun x => f x - c * x) := by
+ have hc := const_x_const_deriv D (-c)
+ have hf1 : (fun x ↦ fx x + fc x) = (fun x => f x - c * x) := by
   funext; expose_names
   unfold fc
   rw [← sub_neg_eq_add (f x) (-c * x)]
@@ -370,7 +386,4 @@ lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f 
   unfold fc'
   exact rfl
  rw [← hf1]; rw [← hf2]
- have hf3 : is_deriv (D ∩ D) (fun x ↦ f x + fc x) (fun x ↦ f' x + fc' x) (D ∩ D) := by
-  apply sum_rule D f f' D hff' D fc fc' D hc
- simp only [Set.inter_self] at hf3
- exact hf3
+ exact simple_sum_rule D fx fx' fc fc' hff' hc
