@@ -260,11 +260,9 @@ lemma fun_quot
 lemma fun_non_negative
   (I : Set ℝ)
   (f : ℝ → ℝ)
-  (c a l r : ℝ)
-  (hcI : c ∈ I) -- idk how to do this without this assumption
+  (c a : ℝ)
+  (hcI : c ∈ I)
   (hfa : is_lim_fun I f c a)
-  (hoI : I = ooi l r)
-  (hlr : l ≠ r)
   (h_nonneg : ∀ x ∈ I, f x ≥ 0) :
   a ≥ 0 := by
   by_contra! ha
@@ -281,51 +279,27 @@ lemma fun_non_negative
     have side2 := h_nonneg x hxI
     exact (not_lt_of_ge side2) side1
 
-  have h := min_lt_max.mpr hlr
-  rw [hoI] at hcI
-  apply proof
-  · rw [hoI]
-    set x := c + min δ (min |c - min l r| |c - max l r|) with hx
-    and_intros
-    · have one := (min_le_right δ (min |c - min l r| |c - max l r|))
-      have two := (min_le_right |c - min l r| |c - max l r|)
-      have i1 := le_trans one two
-      have i2 := by simpa only [←hx] using (add_le_add_left i1 c)
-      have i3 := sub_lt_sub_left h c
-      have cl := hcI.left
-      have cr := hcI.right
-      have final : c < c + |c - max l r| := by
-        sorry
-        -- have := by simpa [abs_neg] using abs_pos.mpr (ne_of_gt (sub_pos.mpr cr))
-        -- #check this
-        -- exact add_lt_add_left this c
-      · sorry
-    · sorry
-    -- instead of this pick an x that is something like c + min(\delta, range of the interval)
-    -- exact ⟨left_lt_add_div_two.mpr h, add_div_two_lt_right.mpr h⟩
-  · sorry
-  · sorry
+  exact proof c hcI (by simpa using hδ)
+
 
 -- Proof that a non-positive function has non-positive limit
 lemma fun_non_positive
   (I : Set ℝ)
   (f : ℝ → ℝ)
-  (c a l r : ℝ)
+  (c a : ℝ)
   (hcI : c ∈ I)
   (hfa : is_lim_fun I f c a)
-  (hoI : I = ooi l r)
-  (hlr : l ≠ r)
-  (h_nonpos : ∀ n, f n ≤ 0) :
+  (h_nonpos : ∀ x ∈ I, f x ≤ 0) :
   a ≤ 0 := by
 
   have hnf := fun_scalar_prod I f (-1) a c hfa
   have h_nonneg := fun (x : ℝ) (hxI : x ∈ I) => by
     calc
       -1 * f x = -f x := (neg_eq_neg_one_mul (f x)).symm
-      _ ≥ -0 := (neg_le_neg (h_nonpos x))
+      _ ≥ -0 := (neg_le_neg (h_nonpos x hxI))
       _ = 0 := by simp
 
-  have ha_neg := fun_non_negative I (fun n => -1 * f n) c (-1 * a) l r hcI hnf hoI hlr h_nonneg
+  have ha_neg := fun_non_negative I (fun n => -1 * f n) c (-1 * a) hcI hnf h_nonneg
   rw [←neg_eq_neg_one_mul] at ha_neg
   exact (neg_nonneg.mp ha_neg)
 
