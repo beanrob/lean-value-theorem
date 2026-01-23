@@ -4,8 +4,6 @@ import LeanValueTheorem.Limits
 import LeanValueTheorem.Intervals
 import LeanValueTheorem.Bounds
 
-import Mathlib.Tactic.Linarith
-
 -- Defintion for m being the value of the derivative of f : D → ℝ at a
 def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
   a ∈ D →
@@ -331,7 +329,7 @@ lemma quotient_rule
     exact hpr
 
 --simpler version of sum rule
-lemma simple_sum_rule (D : Set ℝ) (f f' g g': ℝ → ℝ)
+lemma simple_sum_rule (D : Set ℝ) (f f' g g' : ℝ → ℝ)
                       (hf : is_deriv D f f' D) (hg : is_deriv D g g' D) :
  is_deriv D (fun x => f x + g x) (fun x => f' x + g' x) D := by
  have hx := sum_rule D f f' D hf D g g' D hg

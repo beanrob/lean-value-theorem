@@ -2,13 +2,13 @@ import Mathlib.Data.Real.Basic
 import LeanValueTheorem.Cont
 
 
-def upper_bound (f: ℝ → ℝ) (I : Set ℝ) (u : ℝ) : Prop :=
+def upper_bound (f : ℝ → ℝ) (I : Set ℝ) (u : ℝ) : Prop :=
   ∀ x ∈ I, f x ≤ u
 
 def least_upper_bound (f : ℝ → ℝ) (I : Set ℝ) (U : ℝ) : Prop :=
   (upper_bound f I U) ∧ (∀ u : ℝ, upper_bound f I u → U ≤ u)
 
-def lower_bound (f: ℝ → ℝ) (I : Set ℝ) (l : ℝ) : Prop :=
+def lower_bound (f : ℝ → ℝ) (I : Set ℝ) (l : ℝ) : Prop :=
   ∀ x ∈ I, l ≤ f x
 
 def greatest_lower_bound (f : ℝ → ℝ) (I : Set ℝ) (L : ℝ) : Prop :=
