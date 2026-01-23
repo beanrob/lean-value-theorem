@@ -118,9 +118,9 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
          exact left
       -- if limsup exists it must be non-positive, if liminf exists it must be non-negative
       have hlimsup (l : ℝ) :=
-       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l a_1 sorry hxp
+       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l sorry a_1 hxp
       have hliminf (l : ℝ) :=
-       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l a_1 sorry hxn
+       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l sorry a_1 hxn
       -- the derivative of f exists at d, it follows that the limit of diff as h tends to 0 exists
       have hderivexists : ∃ l, is_deriv_at (ooi a b) f l d := by
        exact ⟨(f' d), (hff' d left)⟩
@@ -216,9 +216,9 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
          rw [hset]
          exact left
       have hlimsup (l : ℝ) :=
-       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l a_1 sorry hxp
+       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l sorry a_1 hxp
       have hliminf (l : ℝ) :=
-       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l a_1 sorry hxn
+       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l sorry a_1 hxn
       have hderivexists : ∃ l, is_deriv_at (ooi a b) f l d := by
        exact ⟨(f' d), (hff' d left)⟩
       have hlimexists := (exists_congr hlimderiv).mpr hderivexists
