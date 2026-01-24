@@ -11,6 +11,20 @@ def is_lim_fun (D : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (l : ℝ) : Prop :=
 lemma const_fun_limit (I : Set ℝ) (a c : ℝ) : (is_lim_fun I (fun n => a) c a) := by
   exact fun ε hε => ⟨1, by norm_num, fun x hxI hxcδ => by simp [sub_self, abs_zero, hε]⟩
 
+lemma const_fun_limit_unique
+  (I : Set ℝ) (a l c : ℝ) (hcI : c ∈ I) (hcla : is_lim_fun I (fun n => a) c l) :
+  a = l := by
+
+  by_contra! h
+  have hpos : |l - a| > 0 := abs_pos.mpr (sub_ne_zero.mpr (ne_comm.mp h))
+  rcases hcla (|l - a| / 2) (div_pos hpos (by norm_num)) with ⟨δ, hδ, h_prop⟩
+  have hcc : |c - c| < δ := by simpa using hδ
+
+  have side1 : |l - a| < |l - a| / 2 := by simpa [abs_sub_comm] using h_prop c hcI hcc
+  have side2 : |l - a| / 2 < |l - a| := by exact div_two_lt_of_pos hpos
+  exact (not_lt_of_gt side1) side2
+
+
 -- Algebra of limits for functions (for sums, products and quotients)
 lemma fun_sum
   (I : Set ℝ)
@@ -303,9 +317,20 @@ lemma fun_non_positive
   rw [←neg_eq_neg_one_mul] at ha_neg
   exact (neg_nonneg.mp ha_neg)
 
-lemma lim_fun_unique (D : Set ℝ) (f : ℝ → ℝ) (c m n : ℝ) :
- is_lim_fun D f c m ∧ is_lim_fun D f c n → m = n := by
- sorry
+lemma lim_fun_unique
+  (D : Set ℝ) (f : ℝ → ℝ) (c m n : ℝ)
+  (hfm : is_lim_fun D f c m)
+  (hfn : is_lim_fun D f c n) :
+  m = n := by
+
+  have lim1 := fun_scalar_prod D f (-1) n c hfn
+  have lim2 := fun_sum D f (fun n => -1 * f n) c m (-1 * n) hfm lim1
+  simp only [neg_mul, one_mul, add_neg_cancel] at lim2
+  have hcD : c ∈ D := by sorry
+  have eq := const_fun_limit_unique D 0 (m + -n) c hcD lim2
+  rw [eq_add_neg_iff_add_eq, zero_add] at eq
+  exact Eq.symm eq
+
 
 lemma lim_exists_on_subset (D E : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (hDE : E ⊆ D) :
  (∃ l, is_lim_fun D f c l) → (∃ l, is_lim_fun E f c l) := by
@@ -354,6 +379,6 @@ lemma lim_union (D E : Set ℝ) (f : ℝ → ℝ) (c l m n : ℝ)
  rw [h] at hDE
  have h1 := hDE.left
  have h2 := hDE.right
- have hleft := lim_fun_unique D f c l m ⟨h1,hD⟩
- have hright := lim_fun_unique E f c l n ⟨h2,hE⟩
+ have hleft  := lim_fun_unique D f c l m h1 hD
+ have hright := lim_fun_unique E f c l n h2 hE
  exact ⟨hleft, hright⟩
