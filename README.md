@@ -7,6 +7,7 @@
 
 ## In Progress
 
+- Proof of uniqueness of limits for functions (Saumya)
 - Proof of "continuous functions are bounded" (Saumya)
 - Proof of Product, Chain, Sum and Quotient Rule (Odysseas)
 - Proof of Rolle's Theorem (Chris)
