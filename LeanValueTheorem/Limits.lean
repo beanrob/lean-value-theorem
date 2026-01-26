@@ -272,17 +272,18 @@ lemma fun_quot
 
 -- Proof that a non-negative function has non-negative limit
 lemma fun_non_negative
-  (I : Set ℝ)
+  (c a l r : ℝ)
   (f : ℝ → ℝ)
-  (c a : ℝ)
-  (hcI : c ∈ I)
-  (hfa : is_lim_fun I f c a)
-  (h_nonneg : ∀ x ∈ I, f x ≥ 0) :
+  (hlr : ¬(l = r))
+  (hccI : c ∈ cci l r)
+  (hfa : is_lim_fun (ooi l r) f c a)
+  (h_nonneg : ∀ x ∈ ooi l r, f x ≥ 0) :
   a ≥ 0 := by
+
   by_contra! ha
   rcases hfa (-a) (neg_pos.mpr ha) with ⟨δ, hδ, hf_prop⟩
 
-  have proof (x : ℝ) (hxI : x ∈ I) (hxcδ : |x - c| < δ) := by
+  have proof (x : ℝ) (hxI : x ∈ ooi l r) (hxcδ : |x - c| < δ) := by
     have ineq1 := (lt_of_le_of_lt (le_abs_self (f x - a)) (hf_prop x hxI hxcδ))
     have side1 := by
       calc
@@ -293,27 +294,88 @@ lemma fun_non_negative
     have side2 := h_nonneg x hxI
     exact (not_lt_of_ge side2) side1
 
-  exact proof c hcI (by simpa using hδ)
+  have hc : (min l r ≤ c) ∧ (c ≤ max l r) := hccI
+  rcases hc with ⟨hcmin, hcmax⟩
+  by_cases hc_min : c = min l r
+  · by_cases hc_max : c = max l r
+    · have min_eq_max := hc_max.symm.trans hc_min
+      have eq1 := le_antisymm (le_of_le_of_eq (le_max_right l r) min_eq_max) (min_le_right l r)
+      have eq2 := le_antisymm (le_of_le_of_eq (le_max_left l r) min_eq_max) (min_le_left l r)
+      exact hlr (eq1.trans eq2.symm).symm
+    · set x := c + min (δ/2) ((max l r -c)/2) with hxc
+
+      have hδ2 : δ/2 > 0 := div_pos hδ (by norm_num)
+      have in1 : max l r ≠ min l r := by rw [hc_min] at hc_max; exact (ne_comm.mpr hc_max)
+      have in2 : min l r ≤ max l r := le_trans (min_le_left l r) (le_max_left l r)
+      have in3 : min l r < max l r := lt_of_le_of_ne in2 (ne_comm.mpr in1)
+      have in4 : max l r - c > 0 :=  by rw [hc_min]; exact sub_pos.mpr in3
+      have in5 : ((max l r -c)/2) > 0:= div_pos in4 (by norm_num)
+      have in6 : min (δ/2) ((max l r -c)/2) > 0 := lt_min hδ2 in5
+      have in7 := lt_add_of_pos_right c in6
+      have in8 := min_le_right (δ/2) ((max l r -c)/2)
+      have in9 : ((max l r - c) / 2) < (max l r - c) := half_lt_self in4
+      have in10 : min (δ/2) ((max l r -c)/2) < (max l r - c) := lt_of_le_of_lt in8 in9
+      have in11 : min (δ/2) ((max l r -c)/2) ≤ (δ/2) := min_le_left (δ/2) ((max l r -c)/2)
+      have in12 : δ/2 < δ := half_lt_self hδ
+
+      have final_less : min l r < x := by simpa [hc_min, hxc] using in7
+      have final_more : x < max l r := by simpa [←hxc] using (add_lt_add_left in10 c)
+
+      apply proof x ⟨final_less, final_more⟩
+      rw [hxc]
+      simp only [add_sub_cancel_left]
+      rw [abs_of_pos in6]
+      exact lt_of_le_of_lt in11 in12
+
+  · by_cases hc_max : c = max l r
+    · set x := c - min (δ/2) ((c - min l r)/2) with hxc
+
+      have hδ2 : δ/2 > 0 := div_pos hδ (by norm_num)
+      have in1 : max l r ≠ min l r := by rw [hc_max] at hc_min; exact hc_min
+      have in2 : min l r ≤ max l r := le_trans (min_le_left l r) (le_max_left l r)
+      have in3 : min l r < max l r := lt_of_le_of_ne in2 (ne_comm.mpr in1)
+      have in4 : c - min l r > 0 :=  by rw [hc_max]; exact sub_pos.mpr in3
+      have in5 : ((c - min l r)/2) > 0:= div_pos in4 (by norm_num)
+      have in6 : min (δ/2)  ((c - min l r)/2) > 0 := lt_min hδ2 in5
+      have in7 := sub_lt_self c in6
+      have in8 := min_le_right (δ/2) ((c - min l r)/2)
+      have in9 : ((c - min l r) / 2) < (c - min l r) := half_lt_self in4
+      have in10 : min (δ/2) ((c - min l r) / 2) < (c - min l r) := lt_of_le_of_lt in8 in9
+      have in11 : min (δ/2) ((c - min l r) / 2) ≤ (δ/2) := min_le_left (δ/2) ((c - min l r) / 2)
+      have in12 : δ/2 < δ := half_lt_self hδ
+
+      have final_less : min l r < x := by simpa [←hxc] using (sub_lt_sub_left in10 c)
+      have final_more : x < max l r := by simpa [hc_max, hxc] using in7
+
+      apply proof x ⟨final_less, final_more⟩
+      rw [hxc]
+      simp only [sub_sub_cancel_left, abs_neg]
+      rw [abs_of_pos in6]
+      exact lt_of_le_of_lt in11 in12
+
+    · have final_less := lt_of_le_of_ne hcmin (ne_comm.mpr hc_min)
+      have final_more := lt_of_le_of_ne hcmax hc_max
+      exact proof c ⟨final_less, final_more⟩ (by simpa using hδ)
 
 
 -- Proof that a non-positive function has non-positive limit
 lemma fun_non_positive
-  (I : Set ℝ)
+  (c a l r : ℝ)
   (f : ℝ → ℝ)
-  (c a : ℝ)
-  (hcI : c ∈ I)
-  (hfa : is_lim_fun I f c a)
-  (h_nonpos : ∀ x ∈ I, f x ≤ 0) :
+  (hlr : ¬(l = r))
+  (hccI : c ∈ cci l r)
+  (hfa : is_lim_fun (ooi l r) f c a)
+  (h_nonpos : ∀ x ∈ ooi l r, f x ≤ 0) :
   a ≤ 0 := by
 
-  have hnf := fun_scalar_prod I f (-1) a c hfa
-  have h_nonneg := fun (x : ℝ) (hxI : x ∈ I) => by
+  have hnf := fun_scalar_prod (ooi l r) f (-1) a c hfa
+  have h_nonneg := fun (x : ℝ) (hxI : x ∈ ooi l r) => by
     calc
       -1 * f x = -f x := (neg_eq_neg_one_mul (f x)).symm
       _ ≥ -0 := (neg_le_neg (h_nonpos x hxI))
       _ = 0 := by simp
 
-  have ha_neg := fun_non_negative I (fun n => -1 * f n) c (-1 * a) hcI hnf h_nonneg
+  have ha_neg := fun_non_negative c (-1 * a) l r (fun n => -1 * f n) hlr hccI hnf h_nonneg
   rw [←neg_eq_neg_one_mul] at ha_neg
   exact (neg_nonneg.mp ha_neg)
 
