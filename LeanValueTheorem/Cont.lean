@@ -71,34 +71,30 @@ lemma cont_seq_imp_cont_ε_δ
     use ε
     constructor
     · exact hε
-    ·
+    · by_contra h
       simp at h
-      intros x hxI hxaε
-      let seq : ℕ → ℝ := fun n => x + (1/n)
+      obtain ⟨x, hx, hxε, hxfε⟩ := h
+      -- FUCKED UP AND EVIL CHEATING:
+      -- let seq : ℕ → ℝ := fun n => x
+      -- NEED TO BE FIXED TO SOMETHING LIKE:
+      let seq : ℕ → ℝ := fun n => a -- + (1/n)
       have hseqI : ∀ n : ℕ, seq n ∈ I := by
         intro n
-        sorry
-      have limseq : is_lim_seq seq a := by
+        unfold seq
+        exact haI
+      have seqlim : is_lim_seq seq a := by
         unfold is_lim_seq
-        intros ε1 hε1
-        sorry
-      specialize hfIa seq hseqI limseq
-      -- ...
-      unfold is_lim_seq at limseq
-      specialize limseq ε hε
-      obtain ⟨N1, limseq⟩ := limseq
-      -- ...
+        aesop
+      specialize hfIa seq hseqI seqlim
       unfold is_lim_seq at hfIa
       specialize hfIa ε hε
-      obtain ⟨N2, hfIa⟩ := hfIa
-      -- ...
-      specialize limseq (N1 + N2)
-      specialize hfIa   (N1 + N2)
-      have sum1 : N1 + N2 ≥ N1 := by aesop
-      have sum2 : N1 + N2 ≥ N2 := by aesop
-      specialize limseq sum1
-      specialize hfIa   sum2
+      obtain ⟨N, hfIa⟩ := hfIa
+      unfold seq at hfIa
+      specialize hfIa N
+      simp at hfIa
+      have hxfε' := not_lt_of_ge hxfε
       sorry
+      -- exact hxfε' hfIa
 
 -- Algebra of continuous functions (for sums, products, and quotients)
 lemma cont_sum
