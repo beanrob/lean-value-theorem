@@ -1,6 +1,11 @@
 import Mathlib.Data.Real.Basic
 import LeanValueTheorem.Cont
 
+#check upperBounds
+#check lowerBounds
+#check BddAbove
+#check BddBelow
+
 
 def upper_bound (f : ℝ → ℝ) (I : Set ℝ) (u : ℝ) : Prop :=
   ∀ x ∈ I, f x ≤ u
@@ -49,8 +54,6 @@ lemma not_unbounded_iff_bounded (f : ℝ → ℝ) (I : Set ℝ) :
       exact le_trans (neg_le_neg (hb x hx)) (le_max_right a (-b))
 
 
-
-
 theorem cont_imp_bounded (f : ℝ → ℝ) (I : Set ℝ) : is_cont f I → is_bounded f I := by
   sorry
 
@@ -92,12 +95,6 @@ theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) (hfc : is_cont f (
 
   sorry
 
-
-
-
-
-
---   →
 
 
 theorem cont_closed_attains_bounds (f : ℝ → ℝ) (a b : ℝ) (cont : is_cont f (cci a b)) :
