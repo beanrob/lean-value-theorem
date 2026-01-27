@@ -68,19 +68,37 @@ lemma cont_seq_imp_cont_ε_δ
     unfold is_cont_at_seq at hfIa
     intros haI ε hε
     specialize hfIa haI
-    let seq : ℕ → ℝ := fun n => a - 1/n
-    have hseqI : ∀ n : ℕ, seq n ∈ I := by sorry
-    specialize hfIa seq hseqI
-    have limseq : is_lim_seq seq a := by sorry
-    specialize hfIa limseq
-    unfold is_lim_seq at hfIa
-    specialize hfIa ε hε
-    obtain ⟨N2, hfIa⟩ := hfIa
-    -- ...
-    unfold is_lim_seq at limseq
-    specialize limseq ε hε
-    obtain ⟨N1, limseq⟩ := limseq
-    sorry
+    use ε
+    constructor
+    · exact hε
+    ·
+      simp at h
+      intros x hxI hxaε
+      let seq : ℕ → ℝ := fun n => x + (1/n)
+      have hseqI : ∀ n : ℕ, seq n ∈ I := by
+        intro n
+        sorry
+      have limseq : is_lim_seq seq a := by
+        unfold is_lim_seq
+        intros ε1 hε1
+        sorry
+      specialize hfIa seq hseqI limseq
+      -- ...
+      unfold is_lim_seq at limseq
+      specialize limseq ε hε
+      obtain ⟨N1, limseq⟩ := limseq
+      -- ...
+      unfold is_lim_seq at hfIa
+      specialize hfIa ε hε
+      obtain ⟨N2, hfIa⟩ := hfIa
+      -- ...
+      specialize limseq (N1 + N2)
+      specialize hfIa   (N1 + N2)
+      have sum1 : N1 + N2 ≥ N1 := by aesop
+      have sum2 : N1 + N2 ≥ N2 := by aesop
+      specialize limseq sum1
+      specialize hfIa   sum2
+      sorry
 
 -- Algebra of continuous functions (for sums, products, and quotients)
 lemma cont_sum
