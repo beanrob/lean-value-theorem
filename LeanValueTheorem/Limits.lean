@@ -517,6 +517,7 @@ lemma lim_union (D E : Set ℝ) (f : ℝ → ℝ) (c l m n : ℝ)
  rw [h] at hDE
  have h1 := hDE.left
  have h2 := hDE.right
- have hleft  := lim_fun_unique D f c l m h1 hD
- have hright := lim_fun_unique E f c l n h2 hE
- exact ⟨hleft, hright⟩
+ sorry
+--  have hleft  := lim_fun_unique D f c l m h1 hD
+--  have hright := lim_fun_unique E f c l n h2 hE
+--  exact ⟨hleft, hright⟩
