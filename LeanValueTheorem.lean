@@ -8,12 +8,13 @@ import LeanValueTheorem.Limits
 import LeanValueTheorem.Misc
 import LeanValueTheorem.Sequences
 
-variable {a b : ℝ} {f f' : ℝ → ℝ} {I : Set ℝ}
+variable {a b : ℝ} {f f' : ℝ → ℝ}
 
 theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b) f f' (ooi a b)}
  {hfba : f b = f a} : ∃ c ∈ (ooi a b), f' c = 0 := by
  have hab' := ne_of_lt hab -- useful for some interval stuff
  by_cases h : is_const_fun (cci a b) f
+
  -- First suppose f is a constant function
  · have hzero : is_deriv (ooi a b) f 0 (ooi a b) := by
     refine const_zero_deriv (ooi a b) f (ooi a b) ?_
@@ -21,14 +22,18 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
    have hf'zero := fun c a_1 ↦ deriv_at_deriv (ooi a b) 0 c f f' a_1 hff' (hzero c a_1)
    obtain ⟨c,hc⟩ := non_empty a b hab'
    exact ⟨c, hc, hf'zero c hc⟩
+
+
  -- Now suppose f is not constant
  ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f hab h
     have hcbounds := cont_closed_attains_bounds f a b hfc
+
     -- Prove that f attains its bounds within the open interval
     have hbound:
     (∃ c ∈ (ooi a b), least_upper_bound f (cci a b) (f c)) ∨
     (∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c)) := by
      by_cases h1 : f c < f a
+
      · have hmin : ∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c) := by
         obtain ⟨c, hc⟩ := hcbounds.right; expose_names
         have hfcleqfc1 : f c ≤ f c_1 := by
@@ -45,6 +50,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
         have hcopen := closed_not_bounds_open a b c hcnota hcnotb hc.left
         exact Exists.intro c (And.imp_left (fun a ↦ hcopen) hc)
        exact Or.inr hmin
+
      · rw [not_lt] at h1
        have hlt : f a < f c := by
         cases hc; expose_names; exact Std.lt_of_le_of_ne h1 (Ne.symm right)
@@ -64,15 +70,19 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
         have hcopen := closed_not_bounds_open a b c hcnota hcnotb hc.left
         exact Exists.intro c (And.imp_left (fun a ↦ hcopen) hc)
        exact Or.symm (Or.inr hmax)
+
     -- Now prove that f'(c) = 0 at the bounds
+
     -- f is not constant so it has either a LUB or GLB in the open interval, we split these cases
-    cases hbound; expose_names
-    · obtain ⟨d, hd⟩ := h_1
+    cases hbound;
+
+    · expose_names; obtain ⟨d, hd⟩ := h_1
       let diff : ℝ → ℝ := fun x => (f (d + x) - f d) / x
       cases hd; expose_names
       unfold least_upper_bound at right
       cases right; expose_names
       unfold upper_bound at left_1
+
       -- diff is non-positive when h > 0 and non-negative when h < 0
       have hxp : ∀ x ∈ {h | d + h ∈ ooi a b ∧ h > 0}, diff x ≤ 0 := by
        unfold diff
@@ -82,8 +92,8 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
         apply open_in_closed at left_2
         exact tsub_nonpos.mpr (left_1 (d + x) left_2)
        apply div_nonpos_of_nonpos_of_nonneg
-       exact hxp_1
-       exact Std.le_of_lt right_1
+       · exact hxp_1
+       · exact Std.le_of_lt right_1
       have hxn : ∀ x ∈ {h | d + h ∈ ooi a b ∧ h < 0}, diff x ≥ 0 := by
        unfold diff
        refine fun x a ↦ ?_
@@ -92,8 +102,9 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
         apply open_in_closed at left_2
         exact tsub_nonpos.mpr (left_1 (d + x) left_2)
        apply div_nonneg_of_nonpos
-       exact hxn_1
-       exact Std.le_of_lt right_1
+       · exact hxn_1
+       · exact Std.le_of_lt right_1
+
       -- useful rewrite to align with our definition of the derivative
       have hset : ({h | d + h ∈ ooi a b ∧ h < 0} ∪ {h | d + h ∈ ooi a b ∧ h > 0})
                  = {h | d + h ∈ ooi a b ∧ h ≠ 0} := by
@@ -101,6 +112,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
        rw [← Set.inter_union_distrib_left {a_1 | d + a_1 ∈ ooi a b} {a | a < 0} {a | a > 0}]
        rw [← Set.setOf_or]
        simp
+
       -- why we define diff - if we can prove this limit is 0 then we have the result
       have hlimderiv (l : ℝ) : is_lim_fun ({h | d + h ∈ ooi a b ∧ h < 0}
                                  ∪ {h | d + h ∈ ooi a b ∧ h > 0}) diff 0 l
@@ -116,15 +128,135 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
          apply y at left
          rw [hset]
          exact left
+
+
+      -- need to prove these sets are open intervals to use fun_non_positive/fun_non_negative
+      have hopen : {h | d + h ∈ ooi a b} = ooi (a - d) (b - d) := by
+       unfold ooi
+       rw [min_sub_sub_right a b d]
+       rw [max_sub_sub_right a b d]
+       rw [min_eq_left_of_lt hab]
+       rw [max_eq_right_of_lt hab]
+       refine Set.setOf_inj.mpr ?_
+       funext; expose_names
+       simp
+       rw[iff_def]
+       and_intros
+       · refine fun c ↦ ?_
+         and_intros
+         · cases c; expose_names
+           exact sub_left_lt_of_lt_add left_2
+         · cases c; expose_names
+           exact lt_tsub_iff_left.mpr right_1
+       · refine fun c ↦ ?_
+         and_intros
+         · cases c; expose_names
+           exact lt_add_of_tsub_lt_left left_2
+         · cases c; expose_names
+           exact lt_tsub_iff_left.mp right_1
+
+      have hopen1 : {h | d + h ∈ ooi a b ∧ h > 0} = ooi 0 (b - d) := by
+       rw [Set.setOf_and]
+       rw [hopen]
+       unfold ooi
+       rw [← Set.setOf_and]
+       rw [min_sub_sub_right]
+       rw [min_eq_left_of_lt hab]
+       rw [max_sub_sub_right]
+       rw [max_eq_right_of_lt hab]
+       have had: a - d < 0 := by
+        unfold ooi at left
+        rw [min_eq_left_of_lt hab] at left
+        rw [Set.mem_setOf] at left
+        apply sub_neg_of_lt left.left
+       have hbd: b - d > 0 := by
+        unfold ooi at left
+        rw [max_eq_right_of_lt hab] at left
+        rw [Set.mem_setOf] at left
+        refine sub_pos.mpr left.right
+       rw [show
+           {a_1 | (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 > 0} = fun a_1 ↦
+             (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 > 0
+           from rfl]
+       rw [show
+           {x | min 0 (b - d) < x ∧ x < max 0 (b - d)} = fun x ↦
+             min 0 (b - d) < x ∧ x < max 0 (b - d)
+           from rfl]
+       funext; expose_names
+       rw [and_assoc]
+       nth_rw 2 [and_comm]
+       rw [← and_assoc]
+       rw [← max_lt_iff]
+       rw [max_eq_right (le_of_lt had)]
+       rw [min_eq_left (le_of_lt hbd)]
+       rw [max_eq_right (le_of_lt hbd)]
+
+      have hopen2 : {h | d + h ∈ ooi a b ∧ h < 0} = ooi (a - d) 0 := by
+       rw [Set.setOf_and]
+       rw [hopen]
+       unfold ooi
+       rw [← Set.setOf_and]
+       rw [min_sub_sub_right]
+       rw [min_eq_left_of_lt hab]
+       rw [max_sub_sub_right]
+       rw [max_eq_right_of_lt hab]
+       have had: a - d < 0 := by
+        unfold ooi at left
+        rw [min_eq_left_of_lt hab] at left
+        rw [Set.mem_setOf] at left
+        apply sub_neg_of_lt left.left
+       have hbd: b - d > 0 := by
+        unfold ooi at left
+        rw [max_eq_right_of_lt hab] at left
+        rw [Set.mem_setOf] at left
+        refine sub_pos.mpr left.right
+       rw [show
+           {a_1 | (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 < 0} = fun a_1 ↦
+             (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 < 0
+           from rfl]
+       rw [show
+           {x | min (a - d) 0 < x ∧ x < max (a - d) 0} = fun x ↦
+             min (a - d) 0 < x ∧ x < max (a - d) 0
+           from rfl]
+       funext; expose_names
+       rw [and_assoc]
+       rw [← lt_inf_iff]
+       rw [max_eq_right (le_of_lt had)]
+       rw [inf_comm (b - d) 0]
+       rw [min_eq_left (le_of_lt hbd)]
+       rw [min_eq_left (le_of_lt had)]
+
+
       -- if limsup exists it must be non-positive, if liminf exists it must be non-negative
-      have hlimsup (l : ℝ) :=
-       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l sorry a_1 hxp
-      have hliminf (l : ℝ) :=
-       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l sorry a_1 hxn
+      have hlimsup (l : ℝ) : is_lim_fun {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l → l ≤ 0 := by
+       refine fun z ↦ ?_
+       rw [hopen1] at z
+       rw [hopen1] at hxp
+       have h1 : ¬(0 = b - d) := by
+        rw [← ne_eq]
+        rw [ne_comm]
+        rw [sub_ne_zero]
+        rw [ne_comm]
+        exact (bounds_not_in_open a b d left).right
+       have h2 := (bounds_in_closed 0 (b - d)).left
+       exact fun_non_positive 0 l 0 (b - d) diff h1 h2 z hxp
+      have hliminf (l : ℝ) : is_lim_fun {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l → l ≥ 0 := by
+       refine fun z ↦ ?_
+       rw [hopen2] at z
+       rw [hopen2] at hxn
+       have h1 : ¬(a - d = 0) := by
+        rw [← ne_eq]
+        rw [sub_ne_zero]
+        rw [ne_comm]
+        exact (bounds_not_in_open a b d left).left
+       have h2 := (bounds_in_closed (a - d) 0).right
+       exact fun_non_negative 0 l (a - d) 0 diff h1 h2 z hxn
+
       -- the derivative of f exists at d, it follows that the limit of diff as h tends to 0 exists
       have hderivexists : ∃ l, is_deriv_at (ooi a b) f l d := by
        exact ⟨(f' d), (hff' d left)⟩
       have hlimexists := (exists_congr hlimderiv).mpr hderivexists
+
       -- of course if the limit exists then so do liminf and limsup
       have hlimsupexists := lim_exists_on_subset ({h | d + h ∈ ooi a b ∧ h < 0}
                                                 ∪ {h | d + h ∈ ooi a b ∧ h > 0})
@@ -134,6 +266,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
            {h | d + h ∈ ooi a b ∧ h < 0} diff 0 Set.subset_union_left hlimexists
       obtain ⟨n, hn⟩ := hlimsupexists
       obtain ⟨m, hm⟩ := hliminfexists
+
       -- if the limit exists then it must equal zero
       have hlimzero (l : ℝ): is_lim_fun ({h | d + h ∈ ooi a b ∧ h < 0}
                                    ∪ {h | d + h ∈ ooi a b ∧ h > 0}) diff 0 l → l = 0 := by
@@ -148,6 +281,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
        apply le_antisymm
        · exact this_1
        · exact this
+
       -- so the limit is zero
       have hlim : is_lim_fun ({h | d + h ∈ ooi a b ∧ h < 0}
                             ∪ {h | d + h ∈ ooi a b ∧ h > 0}) diff 0 0 := by
@@ -157,6 +291,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
        apply l at htemp
        rw [htemp] at hl
        exact hl
+
       -- so the derivative at d is zero
       have hderiv : is_deriv_at (ooi a b) f 0 d := by
        unfold diff at hlim
@@ -167,6 +302,9 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
       have hfderiv := hff' d left
       have hunique := deriv_at_deriv (ooi a b) 0 d f f' left hff' hderiv
       exact Exists.intro d (And.symm ⟨hunique, left⟩)
+
+
+
       -- now the second case; the proof is practically identical but with some inequalities reversed
     · expose_names
       obtain ⟨d, hd⟩ := h_1
@@ -183,8 +321,8 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
         apply open_in_closed at left_2
         exact sub_nonneg_of_le (left_1 (d + x) left_2)
        apply div_nonneg
-       exact hxp_1
-       exact Std.le_of_lt right_1
+       · exact hxp_1
+       · exact Std.le_of_lt right_1
       have hxn : ∀ x ∈ {h | d + h ∈ ooi a b ∧ h < 0}, diff x ≤ 0 := by
        unfold diff
        refine fun x a ↦ ?_
@@ -193,8 +331,8 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
         apply open_in_closed at left_2
         exact sub_nonneg_of_le (left_1 (d + x) left_2)
        apply div_nonpos_of_nonneg_of_nonpos
-       exact hxn_1
-       exact Std.le_of_lt right_1
+       · exact hxn_1
+       · exact Std.le_of_lt right_1
       have hset : ({h | d + h ∈ ooi a b ∧ h < 0} ∪ {h | d + h ∈ ooi a b ∧ h > 0})
                  = {h | d + h ∈ ooi a b ∧ h ≠ 0} := by
        repeat rw [Set.setOf_and]
@@ -215,10 +353,121 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
          apply y at left
          rw [hset]
          exact left
-      have hlimsup (l : ℝ) :=
-       fun a_1 ↦ fun_non_negative {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l sorry a_1 hxp
-      have hliminf (l : ℝ) :=
-       fun a_1 ↦ fun_non_positive {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l sorry a_1 hxn
+      have hopen : {h | d + h ∈ ooi a b} = ooi (a - d) (b - d) := by
+       unfold ooi
+       rw [min_sub_sub_right a b d]
+       rw [max_sub_sub_right a b d]
+       rw [min_eq_left_of_lt hab]
+       rw [max_eq_right_of_lt hab]
+       refine Set.setOf_inj.mpr ?_
+       funext; expose_names
+       simp
+       rw[iff_def]
+       and_intros
+       · refine fun c ↦ ?_
+         and_intros
+         · cases c; expose_names
+           exact sub_left_lt_of_lt_add left_2
+         · cases c; expose_names
+           exact lt_tsub_iff_left.mpr right_1
+       · refine fun c ↦ ?_
+         and_intros
+         · cases c; expose_names
+           exact lt_add_of_tsub_lt_left left_2
+         · cases c; expose_names
+           exact lt_tsub_iff_left.mp right_1
+      have hopen1 : {h | d + h ∈ ooi a b ∧ h > 0} = ooi 0 (b - d) := by
+       rw [Set.setOf_and]
+       rw [hopen]
+       unfold ooi
+       rw [← Set.setOf_and]
+       rw [min_sub_sub_right]
+       rw [min_eq_left_of_lt hab]
+       rw [max_sub_sub_right]
+       rw [max_eq_right_of_lt hab]
+       have had: a - d < 0 := by
+        unfold ooi at left
+        rw [min_eq_left_of_lt hab] at left
+        rw [Set.mem_setOf] at left
+        apply sub_neg_of_lt left.left
+       have hbd: b - d > 0 := by
+        unfold ooi at left
+        rw [max_eq_right_of_lt hab] at left
+        rw [Set.mem_setOf] at left
+        refine sub_pos.mpr left.right
+       rw [show
+           {a_1 | (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 > 0} = fun a_1 ↦
+             (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 > 0
+           from rfl]
+       rw [show
+           {x | min 0 (b - d) < x ∧ x < max 0 (b - d)} = fun x ↦
+             min 0 (b - d) < x ∧ x < max 0 (b - d)
+           from rfl]
+       funext; expose_names
+       rw [and_assoc]
+       nth_rw 2 [and_comm]
+       rw [← and_assoc]
+       rw [← max_lt_iff]
+       rw [max_eq_right (le_of_lt had)]
+       rw [min_eq_left (le_of_lt hbd)]
+       rw [max_eq_right (le_of_lt hbd)]
+      have hopen2 : {h | d + h ∈ ooi a b ∧ h < 0} = ooi (a - d) 0 := by
+       rw [Set.setOf_and]
+       rw [hopen]
+       unfold ooi
+       rw [← Set.setOf_and]
+       rw [min_sub_sub_right]
+       rw [min_eq_left_of_lt hab]
+       rw [max_sub_sub_right]
+       rw [max_eq_right_of_lt hab]
+       have had: a - d < 0 := by
+        unfold ooi at left
+        rw [min_eq_left_of_lt hab] at left
+        rw [Set.mem_setOf] at left
+        apply sub_neg_of_lt left.left
+       have hbd: b - d > 0 := by
+        unfold ooi at left
+        rw [max_eq_right_of_lt hab] at left
+        rw [Set.mem_setOf] at left
+        refine sub_pos.mpr left.right
+       rw [show
+           {a_1 | (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 < 0} = fun a_1 ↦
+             (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 < 0
+           from rfl]
+       rw [show
+           {x | min (a - d) 0 < x ∧ x < max (a - d) 0} = fun x ↦
+             min (a - d) 0 < x ∧ x < max (a - d) 0
+           from rfl]
+       funext; expose_names
+       rw [and_assoc]
+       rw [← lt_inf_iff]
+       rw [max_eq_right (le_of_lt had)]
+       rw [inf_comm (b - d) 0]
+       rw [min_eq_left (le_of_lt hbd)]
+       rw [min_eq_left (le_of_lt had)]
+      have hlimsup (l : ℝ) : is_lim_fun {h | d + h ∈ ooi a b ∧ h > 0} diff 0 l → l ≥ 0 := by
+       refine fun z ↦ ?_
+       rw [hopen1] at z
+       rw [hopen1] at hxp
+       have h1 : ¬(0 = b - d) := by
+        rw [← ne_eq]
+        rw [ne_comm]
+        rw [sub_ne_zero]
+        rw [ne_comm]
+        exact (bounds_not_in_open a b d left).right
+       have h2 := (bounds_in_closed 0 (b - d)).left
+       exact fun_non_negative 0 l 0 (b - d) diff h1 h2 z hxp
+      have hliminf (l : ℝ) : is_lim_fun {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l → l ≤ 0 := by
+       refine fun z ↦ ?_
+       rw [hopen2] at z
+       rw [hopen2] at hxn
+       have h1 : ¬(a - d = 0) := by
+        rw [← ne_eq]
+        rw [sub_ne_zero]
+        rw [ne_comm]
+        exact (bounds_not_in_open a b d left).left
+       have h2 := (bounds_in_closed (a - d) 0).right
+       exact fun_non_positive 0 l (a - d) 0 diff h1 h2 z hxn
       have hderivexists : ∃ l, is_deriv_at (ooi a b) f l d := by
        exact ⟨(f' d), (hff' d left)⟩
       have hlimexists := (exists_congr hlimderiv).mpr hderivexists
@@ -265,12 +514,18 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
 
 theorem mvt {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b) f f' (ooi a b)} :
  ∃ c ∈ ooi a b, f' c = (f b - f a) / (b - a) := by
+
+ -- We define a new function g with g(a) = g(b) and apply Rolle's theorem
  let r : ℝ := (f b - f a) / (b - a)
  let g : ℝ → ℝ := fun x => f x - r * x
  let g' : ℝ → ℝ := fun x => f' x - r
+
+ -- Useful rewrite
  have hext : (fun x => -(r * x)) = (fun x => -r * x) := by
    funext
    rw [neg_mul]
+
+ -- Prove g is continuous
  have hrx : is_cont (fun x => -(r * x)) (cci a b) := by
   rw [hext]
   apply cont_on_prod (fun x => -r) (fun x => x) (cci a b)
@@ -280,7 +535,11 @@ theorem mvt {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b)
   apply cont_on_sum f (fun x ↦ -(r * x)) (cci a b)
   · exact hfc
   · exact hrx
+
+ -- Prove g' is the derivative of g - the work for this is all done in the Derivatives file
  have hgg' := g_deriv (ooi a b) r f f' hff'
+
+ -- Prove g(a) = g(b)
  have hgba : g b = g a:= by
   unfold g
   rw [sub_eq_iff_eq_add']
@@ -294,6 +553,8 @@ theorem mvt {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b)
    apply sub_ne_zero_of_ne
    exact Ne.symm (ne_of_lt hab)
   exact Eq.symm (div_mul_cancel₀ (f b - f a) hbaz)
+
+ -- Finally apply Rolle's theorem to g
  have hg'r : ∃ c ∈ (ooi a b), g' c = 0 := by
   apply rolle
   · exact hab

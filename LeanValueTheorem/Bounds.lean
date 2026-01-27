@@ -54,45 +54,8 @@ lemma not_unbounded_iff_bounded (f : ℝ → ℝ) (I : Set ℝ) :
       exact le_trans (neg_le_neg (hb x hx)) (le_max_right a (-b))
 
 
-theorem cont_imp_bounded (f : ℝ → ℝ) (I : Set ℝ) : is_cont f I → is_bounded f I := by
-  sorry
-
-theorem cont_attains_bounds (f : ℝ → ℝ) (I : Set ℝ) {cont : is_cont f I} :
-  (∃ a : ℝ,    least_upper_bound f I a → ∃ x ∈ I, f x = a) ∧
-  (∃ b : ℝ, greatest_lower_bound f I b → ∃ x ∈ I, f x = b) := by
-    have boundedness := cont_imp_bounded f I cont
-    unfold is_bounded at boundedness
-    obtain ⟨hupper, hlower⟩ := boundedness
-    obtain ⟨U, hupper⟩ := hupper
-    obtain ⟨L, hlower⟩ := hlower
-    constructor
-    · use U
-      intro hupper
-      by_contra h
-      apply forall_not_of_not_exists at h
-      -- ...
-      sorry
-    · use L
-      intro hlower
-      by_contra h
-      apply forall_not_of_not_exists at h
-      -- ...
-      sorry
-
-
-theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) (hfc : is_cont f (cci a b)) :
-  is_bounded f (cci a b) := by
-
-  by_contra h
-  have co (p q : Prop) : (p → q) → (¬q → ¬p) := by exact fun a_2 a_3 a ↦ a_3 (a_2 a)
-  have hunbf := co
-    (¬is_unbounded f (cci a b))
-    (is_bounded f (cci a b))
-    (not_unbounded_iff_bounded f (cci a b)).mp h
-
-  unfold is_unbounded at hunbf
-  simp at hunbf
-
+theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) :
+ is_cont f (cci a b) → is_bounded f (cci a b) := by
   sorry
 
 
