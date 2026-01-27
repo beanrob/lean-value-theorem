@@ -12,17 +12,85 @@ lemma const_fun_limit (I : Set ℝ) (a c : ℝ) : (is_lim_fun I (fun n => a) c a
   exact fun ε hε => ⟨1, by norm_num, fun x hxI hxcδ => by simp [sub_self, abs_zero, hε]⟩
 
 lemma const_fun_limit_unique
-  (I : Set ℝ) (a l c : ℝ) (hcI : c ∈ I) (hcla : is_lim_fun I (fun n => a) c l) :
-  a = l := by
+  (l_1 l_2 c a b : ℝ) (hccD : c ∈ cci a b) (hab : ¬(a = b))
+  (hcla : is_lim_fun (ooi a b) (fun n => l_1) c l_2) :
+  l_1 = l_2 := by
 
   by_contra! h
-  have hpos : |l - a| > 0 := abs_pos.mpr (sub_ne_zero.mpr (ne_comm.mp h))
-  rcases hcla (|l - a| / 2) (div_pos hpos (by norm_num)) with ⟨δ, hδ, h_prop⟩
-  have hcc : |c - c| < δ := by simpa using hδ
+  have hpos : |l_1 - l_2| > 0 := abs_pos.mpr (sub_ne_zero.mpr h)
+  rcases hcla (|l_1 - l_2| / 2) (div_pos hpos (by norm_num)) with ⟨δ, hδ, h_prop⟩
 
-  have side1 : |l - a| < |l - a| / 2 := by simpa [abs_sub_comm] using h_prop c hcI hcc
-  have side2 : |l - a| / 2 < |l - a| := by exact div_two_lt_of_pos hpos
-  exact (not_lt_of_gt side1) side2
+  have proof (x : ℝ) (hxI : x ∈ ooi a b) (hxcδ : |x - c| < δ) := by
+    have side1 : |l_1 - l_2| < |l_1 - l_2| / 2 := by simpa [abs_sub_comm] using h_prop x hxI hxcδ
+    have side2 : |l_1 - l_2| / 2 < |l_1 - l_2| := by exact div_two_lt_of_pos hpos
+    exact (not_lt_of_gt side1) side2
+
+  rcases hccD with ⟨hl, hr⟩
+
+  by_cases hcD : min a b < c ∧ c < max a b
+  · rcases hcD with ⟨hmin, hmax⟩
+    exact proof c ⟨hmin, hmax⟩ (by simp [hδ])
+  · by_cases h_min_max : min a b = max a b
+    · have eq1 := le_antisymm (le_of_le_of_eq (le_max_right a b) h_min_max.symm) (min_le_right a b)
+      have eq2 := le_antisymm (le_of_le_of_eq (le_max_left a b) h_min_max.symm) (min_le_left a b)
+      exact hab (eq1.trans eq2.symm).symm
+    · rw [not_and_or] at hcD
+      cases hcD with
+      | inl hcDr =>
+        rw [not_lt] at hcDr
+        have hminc := eq_of_le_of_ge hl hcDr
+        set x := c + min (δ/2) ((max a b - c) / 2) with hxc
+
+        have hδ2 : δ/2 > 0 := div_pos hδ (by norm_num)
+        have in1 : min a b ≤ max a b := le_trans (min_le_left a b) (le_max_left a b)
+        have in2 : min a b < max a b := lt_of_le_of_ne in1 h_min_max
+        have in3 : max a b - c > 0 := by rw [←hminc]; exact sub_pos.mpr in2
+        have in4 : ((max a b -c)/2) > 0:= div_pos in3 (by norm_num)
+        have in5 : min (δ/2) ((max a b - c) / 2) > 0 := lt_min hδ2 in4
+        have in6 := lt_add_of_pos_right c in5
+        have in7 := min_le_right (δ/2) ((max a b -c)/2)
+        have in8 : ((max a b - c) / 2) < (max a b - c) := half_lt_self in3
+        have in9 : min (δ/2) ((max a b - c) / 2) < (max a b - c) := lt_of_le_of_lt in7 in8
+        have in10 : min (δ/2) ((max a b - c) / 2) ≤ (δ/2) := min_le_left (δ/2) ((max a b - c)/2)
+        have in11 : δ/2 < δ := half_lt_self hδ
+
+        have final_less : min a b < x := by simpa [hminc, hxc] using in6
+        have final_more : x < max a b := by simpa [←hxc] using (add_lt_add_left in9 c)
+
+        apply proof x ⟨final_less, final_more⟩
+        rw [hxc]
+        simp only [add_sub_cancel_left]
+        rw [abs_of_pos in5]
+        exact lt_of_le_of_lt in10 in11
+
+      | inr hcDl =>
+        rw [not_lt] at hcDl
+        have hmaxc := eq_of_le_of_ge hr hcDl
+        set x := c - min (δ/2) ((c - min a b) / 2) with hxc
+
+        have hδ2 : δ/2 > 0 := div_pos hδ (by norm_num)
+        have in1 : min a b ≤ max a b := le_trans (min_le_left a b) (le_max_left a b)
+        have in2 : min a b < max a b := lt_of_le_of_ne in1 h_min_max
+        have in3 : c - min a b > 0 :=  by rw [hmaxc]; exact sub_pos.mpr in2
+        have in4 : ((c - min a b) / 2) > 0:= div_pos in3 (by norm_num)
+        have in5 : min (δ/2)  ((c - min a b) / 2) > 0 := lt_min hδ2 in4
+        have in6 := sub_lt_self c in5
+        have in7 := min_le_right (δ/2) ((c - min a b) / 2)
+        have in8 : ((c - min a b) / 2) < (c - min a b) := half_lt_self in3
+        have in9 : min (δ/2) ((c - min a b) / 2) < (c - min a b) := lt_of_le_of_lt in7 in8
+        have in10 : min (δ/2) ((c - min a b) / 2) ≤ (δ/2) := min_le_left (δ/2) ((c - min a b) / 2)
+        have in11 : δ/2 < δ := half_lt_self hδ
+
+        have final_less : min a b < x := by simpa [hxc] using (sub_lt_sub_left in9 c)
+        have final_more : x < max a b := by simpa [hmaxc, hxc] using in6
+
+        apply proof x ⟨final_less, final_more⟩
+        rw [hxc]
+        simp only [sub_sub_cancel_left, abs_neg]
+        rw [abs_of_pos in5]
+        exact lt_of_le_of_lt in10 in11
+
+
 
 
 -- Algebra of limits for functions (for sums, products and quotients)
@@ -380,9 +448,12 @@ lemma fun_non_positive
   exact (neg_nonneg.mp ha_neg)
 
 lemma lim_fun_unique
-  (D : Set ℝ) (f : ℝ → ℝ) (c m n : ℝ)
-  (hfm : is_lim_fun D f c m)
-  (hfn : is_lim_fun D f c n) :
+  (c m n a b : ℝ)
+  (D : ooi a b) (f : ℝ → ℝ)
+  (hccD : c ∈ cci a b)
+  (hab : ¬(a = b))
+  (hfm : is_lim_fun (ooi a b) f c m)
+  (hfn : is_lim_fun (ooi a b) f c n) :
   m = n := by
 
   -- the current proof just takes c ∈ D as an assumption (using sorry)
@@ -390,13 +461,13 @@ lemma lim_fun_unique
   -- this will allos c ∈ D or c = l or c = r
   -- when c ∈ D current proof holds
   -- o/w requires more work
-  have lim1 := fun_scalar_prod D f (-1) n c hfn
-  have lim2 := fun_sum D f (fun n => -1 * f n) c m (-1 * n) hfm lim1
+  have lim1 := fun_scalar_prod (ooi a b) f (-1) n c hfn
+  have lim2 := fun_sum (ooi a b) f (fun n => -1 * f n) c m (-1 * n) hfm lim1
   simp only [neg_mul, one_mul, add_neg_cancel] at lim2
-  have hcD : c ∈ D := by sorry
-  have eq := const_fun_limit_unique D 0 (m + -n) c hcD lim2
+  have eq := const_fun_limit_unique 0 (m + -n) c a b hccD hab lim2
   rw [eq_add_neg_iff_add_eq, zero_add] at eq
   exact Eq.symm eq
+
 
 
 lemma lim_exists_on_subset (D E : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (hDE : E ⊆ D) :
