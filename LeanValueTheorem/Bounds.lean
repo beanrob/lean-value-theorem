@@ -1,96 +1,52 @@
 import Mathlib.Data.Real.Basic
 import LeanValueTheorem.Cont
 
-#check upperBounds
-#check lowerBounds
-#check BddAbove
-#check BddBelow
 
+theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) (hfc : is_cont f (cci a b)) :
+  BddAbove (f '' (cci a b)) ∧ BddBelow (f '' (cci a b)) := by
 
-def upper_bound (f : ℝ → ℝ) (I : Set ℝ) (u : ℝ) : Prop :=
-  ∀ x ∈ I, f x ≤ u
+  by_contra h
+  rw [not_and_or] at h
+  cases h with
+  | inl hl =>
+    unfold BddAbove upperBounds at hl
+    simp at hl
+    rw [Set.not_nonempty_iff_eq_empty] at hl
+    rw [←Set.compl_univ_iff] at hl
+    have ex (n : ℝ) : n ∈ Set.univ := by trivial
+    rw [←hl] at ex
+    simp at ex
+    sorry
 
-def least_upper_bound (f : ℝ → ℝ) (I : Set ℝ) (U : ℝ) : Prop :=
-  (upper_bound f I U) ∧ (∀ u : ℝ, upper_bound f I u → U ≤ u)
-
-def lower_bound (f : ℝ → ℝ) (I : Set ℝ) (l : ℝ) : Prop :=
-  ∀ x ∈ I, l ≤ f x
-
-def greatest_lower_bound (f : ℝ → ℝ) (I : Set ℝ) (L : ℝ) : Prop :=
-  (lower_bound f I L) ∧ (∀ l : ℝ, lower_bound f I l → l ≤ L)
-
-def is_bounded (f : ℝ → ℝ) (I : Set ℝ) : Prop :=
-  (∃ U : ℝ, upper_bound f I U) ∧ (∃ L : ℝ, lower_bound f I L)
-
-def is_unbounded (f : ℝ → ℝ) (I : Set ℝ) : Prop :=
-  ∀ n : ℝ, ∃ x ∈ I, |f x| > n
-
-lemma not_unbounded_iff_bounded (f : ℝ → ℝ) (I : Set ℝ) :
-  ¬ (is_unbounded f I) ↔ (is_bounded f I) := by
-
-  constructor
-  · intro h
-    unfold is_unbounded at h
-    simp at h
-    rcases h with ⟨B, hIB⟩
-
-    have upper (x : ℝ) (hx : x ∈ I) : f x ≤ B := le_trans (le_abs_self (f x)) (hIB x hx)
-    have lower (x : ℝ) (hx : x ∈ I) : -B ≤ f x := (abs_le.mp (hIB x hx)).1
-    exact ⟨⟨B, upper⟩, ⟨-B, lower⟩⟩
-
-  · intro h
-    unfold is_bounded at h
-    rw [exists_and_exists_comm] at h
-    rcases h with ⟨a, b, ha, hb⟩
-    unfold is_unbounded
-    simp
-    refine ⟨max a (-b), ?_⟩
-    intro x hx
-    by_cases hfp : f x ≥ 0
-    · rw [abs_of_nonneg hfp]
-      exact le_trans (ha x hx) (le_max_left a (-b))
-    · simp at hfp
-      rw [abs_of_neg hfp]
-      exact le_trans (neg_le_neg (hb x hx)) (le_max_right a (-b))
-
-
-lemma lub_unique (f : ℝ → ℝ) (I : Set ℝ) (U1 U2 : ℝ)
-                 (hU1 : least_upper_bound f I U1) (hU2 : least_upper_bound f I U2) :
-                 U1 = U2 := by
- unfold least_upper_bound at hU1
- unfold least_upper_bound at hU2
- cases hU1; expose_names
- apply hU2.right at left
- cases hU2; expose_names
- apply right at left_1
- rw [le_antisymm_iff]
- exact ⟨left_1, left⟩
-
-lemma glb_unique (f : ℝ → ℝ) (I : Set ℝ) (U1 U2 : ℝ)
-                 (hU1 : greatest_lower_bound f I U1) (hU2 : greatest_lower_bound f I U2) :
-                 U1 = U2 := by
- unfold greatest_lower_bound at hU1
- unfold greatest_lower_bound at hU2
- cases hU1; expose_names
- apply hU2.right at left
- cases hU2; expose_names
- apply right at left_1
- rw [le_antisymm_iff]
- exact ⟨left, left_1⟩
-
-theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) :
- is_cont f (cci a b) → is_bounded f (cci a b) := by
- sorry
-
+  | inr hr =>
+    unfold BddBelow lowerBounds at hr
+    simp at hr
+    rw [Set.not_nonempty_iff_eq_empty] at hr
+    rw [←Set.compl_univ_iff] at hr
+    have ex (n : ℝ) : n ∈ Set.univ := by trivial
+    rw [←hr] at ex
+    simp at ex
+    sorry
 
 
 theorem cont_closed_attains_bounds (f : ℝ → ℝ) (a b : ℝ) (cont : is_cont f (cci a b)) :
- (∃ x ∈ (cci a b),    least_upper_bound f (cci a b) (f x)) ∧
- (∃ x ∈ (cci a b), greatest_lower_bound f (cci a b) (f x)) := by
- apply cont_closed_imp_bounded f a b at cont
- unfold is_bounded at cont
- and_intros
- · obtain ⟨U, hU⟩ := cont.left
-   sorry
- · obtain ⟨L, hL⟩ := cont.right
-   sorry
+  (∃ x ∈ (cci a b), IsLUB (f '' (cci a b)) (f x)) ∧
+  (∃ x ∈ (cci a b), IsGLB (f '' (cci a b))  (f x)) := by
+
+  have boundedness := cont_closed_imp_bounded f a b cont
+  unfold BddAbove BddBelow at boundedness
+  obtain ⟨hupper, hlower⟩ := boundedness
+  obtain ⟨U, hupper⟩ := hupper
+  obtain ⟨L, hlower⟩ := hlower
+  constructor
+  · use U
+    by_contra h
+    -- apply forall_not_of_not_exists at h
+    -- ...
+    sorry
+
+  · use L
+    by_contra h
+    -- apply forall_not_of_not_exists at h
+    -- ...
+    sorry

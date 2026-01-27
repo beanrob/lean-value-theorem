@@ -34,17 +34,18 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
 
     -- Prove that f attains its bounds within the open interval
     have hbound:
-    (∃ c ∈ (ooi a b), least_upper_bound f (cci a b) (f c)) ∨
-    (∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c)) := by
+    (∃ c ∈ (ooi a b), IsLUB (f '' (cci a b)) (f c)) ∨
+    (∃ c ∈ (ooi a b), IsGLB (f '' (cci a b)) (f c)) := by
      by_cases h1 : f c < f a
 
-     · have hmin : ∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c) := by
+     · have hmin : ∃ c ∈ (ooi a b), IsGLB (f '' (cci a b)) (f c) := by
         obtain ⟨c, hc⟩ := hcbounds.right; expose_names
         have hfcleqfc1 : f c ≤ f c_1 := by
          cases hc; expose_names
-         unfold greatest_lower_bound at right
+         unfold IsGLB at right
          cases right; expose_names
-         unfold lower_bound at left_1
+         unfold lowerBounds at left_1
+         simp at left_1
          exact left_1 c_1 hc_1.left
         have hfclessfa := Std.lt_of_le_of_lt hfcleqfc1 h1
         have hfcnotfa := ne_of_lt hfclessfa
@@ -58,13 +59,14 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
      · rw [not_lt] at h1
        have hlt : f a < f c := by
         cases hc; expose_names; exact Std.lt_of_le_of_ne h1 (Ne.symm right)
-       have hmax : ∃ c ∈ (ooi a b), least_upper_bound f (cci a b) (f c) := by
+       have hmax : ∃ c ∈ (ooi a b), IsLUB (f '' (cci a b)) (f c) := by
         obtain ⟨c, hc⟩ := hcbounds.left; expose_names
         have hfcgeqfc1 : f c_1 ≤ f c := by
          cases hc; expose_names
-         unfold least_upper_bound at right
+         unfold IsLUB at right
          cases right; expose_names
-         unfold upper_bound at left_1
+         unfold upperBounds at left_1
+         simp at left_1
          exact left_1 c_1 hc_1.left
         have hfcgreaterfa := Std.lt_of_lt_of_le hlt hfcgeqfc1
         have hfcnotfa := Ne.symm (ne_of_lt hfcgreaterfa)
@@ -83,10 +85,10 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
     · expose_names; obtain ⟨d, hd⟩ := h_1
       let diff : ℝ → ℝ := fun x => (f (d + x) - f d) / x
       cases hd; expose_names
-      unfold least_upper_bound at right
+      unfold IsLUB at right
       cases right; expose_names
-      unfold upper_bound at left_1
-
+      unfold upperBounds at left_1
+      simp at left_1
       -- diff is non-positive when h > 0 and non-negative when h < 0
       have hxp : ∀ x ∈ {h | d + h ∈ ooi a b ∧ h > 0}, diff x ≤ 0 := by
        unfold diff
@@ -228,9 +230,10 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
       obtain ⟨d, hd⟩ := h_1
       let diff : ℝ → ℝ := fun x => (f (d + x) - f d) / x
       cases hd; expose_names
-      unfold least_upper_bound at right
+      unfold IsLUB at right
       cases right; expose_names
-      unfold upper_bound at left_1
+      unfold lowerBounds at left_1
+      simp at left_1
       have hxp : ∀ x ∈ {h | d + h ∈ ooi a b ∧ h > 0}, diff x ≥ 0 := by
        unfold diff
        refine fun x a ↦ ?_
