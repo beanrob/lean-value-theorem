@@ -4,8 +4,6 @@ import LeanValueTheorem.Limits
 import LeanValueTheorem.Intervals
 import LeanValueTheorem.Bounds
 
-import Mathlib.Tactic.Linarith
-
 -- Defintion for m being the value of the derivative of f : D → ℝ at a
 def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
   a ∈ D →
