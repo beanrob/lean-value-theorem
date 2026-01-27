@@ -240,10 +240,17 @@ lemma scale_rule
       apply const_zero_deriv
       intro x y hxy
       simp
-    have hprod : is_deriv (D ∩ D) (fun x ↦ r * f x) (fun x ↦ 0 * f x + r * f' x) (A ∩ A) := by
-      apply product_rule D (fun y ↦ r) 0 A hconst D f f' A hf ?_
-      sorry --prove the constant is continuous, should be trivial
-    simp only [Set.inter_self, zero_mul, zero_add] at hprod
+    have hprod : is_deriv (D ∩ D) (fun x ↦ f x * r) (fun x ↦ f' x * r + f x * 0) (A ∩ A) := by
+      apply product_rule D f f' A hf D (fun y ↦ r) 0 A hconst ?_
+      exact const_cont_on r D A
+    simp at hprod
+    have h1 : (fun x ↦ r * f x) = (fun x ↦ f x * r) := by
+      funext x
+      rw [mul_comm]
+    have h2 : (fun x ↦ r * f' x) = (fun x ↦ f' x * r) := by
+      funext x
+      rw [mul_comm]
+    rw [h1, h2]
     exact hprod
 
 --Proof that the derivative of x ^ n is n * x ^ (n + 1) for n ∈ ℕ
