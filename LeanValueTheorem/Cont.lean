@@ -68,10 +68,18 @@ lemma cont_seq_imp_cont_ε_δ
     unfold is_cont_at_seq at hfIa
     intros haI ε hε
     specialize hfIa haI
-    let seq : ℕ → ℝ := fun n => a + (1 / (n + 1))
-    have hseqI : ∀ n : ℕ, seq n ∈ I := sorry
+    let seq : ℕ → ℝ := fun n => a - 1/n
+    have hseqI : ∀ n : ℕ, seq n ∈ I := by sorry
     specialize hfIa seq hseqI
-    use (a + ε)
+    have limseq : is_lim_seq seq a := by sorry
+    specialize hfIa limseq
+    unfold is_lim_seq at hfIa
+    specialize hfIa ε hε
+    obtain ⟨N2, hfIa⟩ := hfIa
+    -- ...
+    unfold is_lim_seq at limseq
+    specialize limseq ε hε
+    obtain ⟨N1, limseq⟩ := limseq
     sorry
 
 -- Algebra of continuous functions (for sums, products, and quotients)
