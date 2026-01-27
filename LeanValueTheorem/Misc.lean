@@ -57,3 +57,110 @@ lemma not_const_imp_diff (a b : ℝ) (f : ℝ → ℝ) (hab : a < b) :
    rw [not_and_not_right] at x
    exact x a
  · exact hab
+
+-- Some rewrites to be used in the proof of Rolle's theorem
+
+lemma hunionrw (I : Set ℝ) (d : ℝ) :
+ ({h | d + h ∈ I ∧ h < 0} ∪ {h | d + h ∈ I ∧ h > 0})
+                                 = {h | d + h ∈ I ∧ h ≠ 0} := by
+ repeat rw [Set.setOf_and]
+ rw [← Set.inter_union_distrib_left {a_1 | d + a_1 ∈ I} {a | a < 0} {a | a > 0}]
+ rw [← Set.setOf_or]
+ simp
+
+lemma openrw1 (a b d : ℝ) (hab : a < b) : {h | d + h ∈ ooi a b} = ooi (a - d) (b - d) := by
+       unfold ooi
+       rw [min_sub_sub_right a b d]
+       rw [max_sub_sub_right a b d]
+       rw [min_eq_left_of_lt hab]
+       rw [max_eq_right_of_lt hab]
+       refine Set.setOf_inj.mpr ?_
+       funext; expose_names
+       simp
+       rw[iff_def]
+       and_intros
+       · refine fun c ↦ ?_
+         and_intros
+         · cases c; expose_names
+           exact sub_left_lt_of_lt_add left
+         · cases c; expose_names
+           exact lt_tsub_iff_left.mpr right
+       · refine fun c ↦ ?_
+         and_intros
+         · cases c; expose_names
+           exact lt_add_of_tsub_lt_left left
+         · cases c; expose_names
+           exact lt_tsub_iff_left.mp right
+
+lemma openrw2 (a b d : ℝ) (hab : a < b) (hd : d ∈ ooi a b) :
+ {h | d + h ∈ ooi a b ∧ h > 0} = ooi 0 (b - d) := by
+       rw [Set.setOf_and]
+       rw [openrw1 a b d hab]
+       unfold ooi
+       rw [← Set.setOf_and]
+       rw [min_sub_sub_right]
+       rw [min_eq_left_of_lt hab]
+       rw [max_sub_sub_right]
+       rw [max_eq_right_of_lt hab]
+       have had: a - d < 0 := by
+        unfold ooi at hd
+        rw [min_eq_left_of_lt hab] at hd
+        rw [Set.mem_setOf] at hd
+        apply sub_neg_of_lt hd.left
+       have hbd: b - d > 0 := by
+        unfold ooi at hd
+        rw [max_eq_right_of_lt hab] at hd
+        rw [Set.mem_setOf] at hd
+        refine sub_pos.mpr hd.right
+       rw [show
+           {a_1 | (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 > 0} = fun a_1 ↦
+             (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 > 0
+           from rfl]
+       rw [show
+           {x | min 0 (b - d) < x ∧ x < max 0 (b - d)} = fun x ↦
+             min 0 (b - d) < x ∧ x < max 0 (b - d)
+           from rfl]
+       funext; expose_names
+       rw [and_assoc]
+       nth_rw 2 [and_comm]
+       rw [← and_assoc]
+       rw [← max_lt_iff]
+       rw [max_eq_right (le_of_lt had)]
+       rw [min_eq_left (le_of_lt hbd)]
+       rw [max_eq_right (le_of_lt hbd)]
+
+lemma openrw3 (a b d : ℝ) (hab : a < b) (hd : d ∈ ooi a b) :
+ {h | d + h ∈ ooi a b ∧ h < 0} = ooi (a - d) 0 := by
+       rw [Set.setOf_and]
+       rw [openrw1 a b d hab]
+       unfold ooi
+       rw [← Set.setOf_and]
+       rw [min_sub_sub_right]
+       rw [min_eq_left_of_lt hab]
+       rw [max_sub_sub_right]
+       rw [max_eq_right_of_lt hab]
+       have had: a - d < 0 := by
+        unfold ooi at hd
+        rw [min_eq_left_of_lt hab] at hd
+        rw [Set.mem_setOf] at hd
+        apply sub_neg_of_lt hd.left
+       have hbd: b - d > 0 := by
+        unfold ooi at hd
+        rw [max_eq_right_of_lt hab] at hd
+        rw [Set.mem_setOf] at hd
+        refine sub_pos.mpr hd.right
+       rw [show
+           {a_1 | (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 < 0} = fun a_1 ↦
+             (a - d < a_1 ∧ a_1 < b - d) ∧ a_1 < 0
+           from rfl]
+       rw [show
+           {x | min (a - d) 0 < x ∧ x < max (a - d) 0} = fun x ↦
+             min (a - d) 0 < x ∧ x < max (a - d) 0
+           from rfl]
+       funext; expose_names
+       rw [and_assoc]
+       rw [← lt_inf_iff]
+       rw [max_eq_right (le_of_lt had)]
+       rw [inf_comm (b - d) 0]
+       rw [min_eq_left (le_of_lt hbd)]
+       rw [min_eq_left (le_of_lt had)]
