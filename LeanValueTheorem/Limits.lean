@@ -385,6 +385,12 @@ lemma lim_fun_unique
   (hfn : is_lim_fun D f c n) :
   m = n := by
 
+  -- the current proof just takes c ∈ D as an assumption
+  -- the lemma type needs to be changed st c ∈ cci l r
+  -- and D = ooi l r, therefore
+  -- c ∈ D or c = l or c = r
+  -- when c ∈ D current proof holds
+  -- o/w requires more work
   have lim1 := fun_scalar_prod D f (-1) n c hfn
   have lim2 := fun_sum D f (fun n => -1 * f n) c m (-1 * n) hfm lim1
   simp only [neg_mul, one_mul, add_neg_cancel] at lim2
