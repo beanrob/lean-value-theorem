@@ -164,7 +164,8 @@ lemma sum_rule
 -- Proof that the derivative of f * g is f' * g + f * g'
 lemma product_rule
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
-  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ → ℝ) (B : Set ℝ) (hg : is_deriv E g g' B) :
+  (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ → ℝ) (B : Set ℝ) (hg : is_deriv E g g' B)
+  (hcont : is_cont_on g E B) :
   is_deriv (D ∩ E) (fun x ↦ (f x) * (g x))
   (fun x ↦ (f' x) * (g x) + (f x) * (g' x)) (A ∩ B) := by
     intro a ha1 ha2
@@ -185,7 +186,51 @@ lemma product_rule
       intro hx
       exact And.comm
     rw[hset] at hg1
-    sorry --hmmm
+    have hh1 : (fun x ↦ f' x * g x + f x * g' x) a = (f' a) * (g a) + (f a) * (g' a) := by
+      simp
+    rw [hh1]
+    have hh2 : (fun h ↦ ((fun x ↦ f x * g x) (a + h) - (fun x ↦ f x * g x) a) / h)
+     = (fun h ↦ ((f (a + h) - f (a)) / h) * (g (a + h)) + (f a) * ((g (a + h) - g (a)) / h)) := by
+      funext h
+      simp only
+      rw [div_mul_eq_mul_div, mul_div, ← add_div, sub_mul, mul_sub]
+      simp
+    rw [hh2]
+    apply fun_sum {h | a + h ∈ D ∩ E ∧ h ≠ 0}
+     (fun h => (f (a + h) - f a) / h * g (a + h)) (fun h => f a * ((g (a + h) - g a) / h))
+     0 (f' a * g a) (f a * g' a) ?_ ?_
+    · apply fun_prod {h | a + h ∈ D ∩ E ∧ h ≠ 0}
+       (fun h => (f (a + h) - f a) / h) (fun h => g (a + h)) 0 (f' a) (g a) ?_ ?_
+      · exact hf1
+      · specialize hcont a haB
+        unfold is_cont_at at hcont
+        obtain ⟨hed, _ ⟩ := hcont
+        specialize hed haE
+        unfold is_lim_fun
+        intro ε hε
+        specialize hed ε hε
+        obtain ⟨δ, hδ⟩ := hed
+        use δ
+        obtain ⟨hδ0, hδ1⟩ := hδ
+        constructor
+        · exact hδ0
+        · intro h h1 h2
+          simp only
+          specialize hδ1 (a + h)
+          have hE : (a + h) ∈ E := by
+            simp only [Set.mem_inter_iff, Set.mem_setOf_eq] at h1
+            obtain ⟨h11, _⟩ := h1
+            obtain ⟨_, h112⟩ := h11
+            exact h112
+          specialize hδ1 hE
+          simp only [add_sub_cancel_left] at hδ1
+          simp only [sub_zero] at h2
+          specialize hδ1 h2
+          exact hδ1
+    · apply fun_prod {h | a + h ∈ D ∩ E ∧ h ≠ 0}
+       (fun h => f a) (fun h => (g (a + h) - g a) / h) 0 (f a) (g' a) ?_ ?_
+      · apply const_fun_limit
+      · exact hg1
 
 -- Proof that the derivative of rf is rf'
 lemma scale_rule
@@ -196,7 +241,8 @@ lemma scale_rule
       intro x y hxy
       simp
     have hprod : is_deriv (D ∩ D) (fun x ↦ r * f x) (fun x ↦ 0 * f x + r * f' x) (A ∩ A) := by
-      exact product_rule D (fun y ↦ r) 0 A hconst D f f' A hf
+      apply product_rule D (fun y ↦ r) 0 A hconst D f f' A hf ?_
+      sorry --prove the constant is continuous, should be trivial
     simp only [Set.inter_self, zero_mul, zero_add] at hprod
     exact hprod
 
@@ -214,9 +260,16 @@ lemma power_rule
     simp only [Nat.cast_add, Nat.cast_one, add_tsub_cancel_right]
     have hmul : is_deriv (D ∩ D) (fun x ↦ x ^ n * x)
      (fun x ↦ n * x ^ (n - 1) * x + x ^ n * 1) (D ∩ D) := by
-      apply product_rule D (fun x ↦ x ^ n) (fun x ↦ ↑n * x ^ (n - 1)) D hn
-       D (fun x ↦ x) (fun x ↦ 1) D _
-      exact x_one_deriv D
+      apply product_rule D (fun x ↦ x ^ n) (fun x ↦ ↑n * x ^ (n - 1))
+       D hn D (fun x ↦ x) (fun x ↦ 1) D _ ?_
+      · exact x_one_deriv D
+      · have hid : is_cont (fun x => x) D := by
+          exact id_cont D
+        unfold is_cont_on
+        unfold is_cont at hid
+        intro a ha
+        specialize hid a ha
+        exact hid
     simp only [Set.inter_self, mul_one] at hmul
     have hf1 : (fun (x : ℝ) ↦ x ^ (n + 1)) = (fun (x : ℝ) ↦ x ^ n * x) := by
       refine funext ?_
@@ -305,7 +358,7 @@ lemma power_rule_neg
 lemma quotient_rule
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (hf : is_deriv D f f' D)
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ → ℝ) (hg : is_deriv E g g' E)
-  (hnz : ∀ x, (g x) ≠ 0) :
+  (hnz : ∀ x, (g x) ≠ 0) (hcont : is_cont g E) :
   is_deriv (D ∩ E) (fun x ↦ (f x) / (g x))
   (fun x ↦ ((f' x) * (g x) - (f x) * (g' x)) / (g x) ^ 2) (D ∩ E) := by
     have hch : is_deriv E (fun x ↦ 1 / (g x)) (fun x ↦ (-1 / (g x) ^ 2) * (g' x)) E := by
@@ -317,8 +370,14 @@ lemma quotient_rule
         apply hnz
     have hpr : is_deriv (D ∩ E) (fun x ↦ f x * (1 / g x))
      (fun x ↦ f' x * (1 / g x) + f x * (-1 / g x ^ 2 * g' x)) (D ∩ E) := by
-      apply product_rule D f f' D hf E (fun x ↦ 1 / (g x)) (fun x ↦ (-1 / (g x) ^ 2) * (g' x)) E _
-      exact hch
+      apply product_rule D f f' D hf E (fun x ↦ 1 / (g x))
+       (fun x ↦ (-1 / (g x) ^ 2) * (g' x)) E _ ?_
+      · exact hch
+      · apply reciprocal_cont g E
+        · exact hcont
+        · intro x _
+          specialize hnz x
+          exact hnz
     have hf1 : (fun x ↦ f x / g x) = (fun x ↦ f x * (1 / g x)) := by
       refine funext ?_
       intro y
@@ -367,7 +426,8 @@ lemma const_x_const_deriv (D : Set ℝ) (c : ℝ) : is_deriv D (fun x => c*x) (f
  rw [← Set.inter_self D]
  rw [← hf1]
  rw [← hf2]
- exact product_rule D fc f0 D (hc fun x y ↦ congrFun rfl) D fx f1 D hx
+ apply product_rule D fc f0 D (hc fun x y ↦ congrFun rfl) D fx f1 D hx ?_
+ exact id_cont D
 
 -- Proof that g(x) = f(x) - cx has derivative f'(x) - c
 lemma g_deriv (D : Set ℝ) (c : ℝ) (f f' : ℝ → ℝ) (hff' : is_deriv D f f' D) :

@@ -22,7 +22,7 @@ def is_cont_at (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
   (is_cont_at_ε_δ f I a) ∧ (is_cont_at_seq f I a)
 
 -- Definition for a function being continuous on its whole domain
-def is_cont_on (f : ℝ → ℝ) (I : Set ℝ) (C : Set ℝ) {hC : C ⊆ I} : Prop :=
+def is_cont_on (f : ℝ → ℝ) (I : Set ℝ) (C : Set ℝ) : Prop :=
   ∀ a ∈ C, is_cont_at f I a
 
 -- Definition for a function being continuous on its whole domain
