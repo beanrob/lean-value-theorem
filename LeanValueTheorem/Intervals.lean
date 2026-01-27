@@ -53,6 +53,41 @@ lemma closed_interval (I : Set ℝ) : is_closed I → is_interval I := by
 lemma open_in_closed (a b x : ℝ) (hxab : x ∈ (ooi a b)) : x ∈ (cci a b) := by
  exact ⟨le_of_lt hxab.left, le_of_lt hxab.right⟩
 
+-- Proof that a closed interval contains its bounds
+lemma bounds_in_closed (a b : ℝ) : a ∈ cci a b ∧ b ∈ cci a b := by
+ unfold cci
+ have h1 : a ∈ {x | min a b ≤ x ∧ x ≤ max a b} := by
+  exact Set.mem_sep (min_le_left a b) (le_max_left a b)
+ have h2 : b ∈ {x | min a b ≤ x ∧ x ≤ max a b} := by
+  exact Set.mem_sep (min_le_right a b) (le_max_right a b)
+ exact ⟨h1, h2⟩
+
+-- Proof that an open interval does not contain its bounds
+lemma bounds_not_in_open (a b c : ℝ) (hc : c ∈ ooi a b) : c ≠ a ∧ c ≠ b := by
+ unfold ooi at hc
+ have h1 : a ∉ {x | min a b < x ∧ x < max a b} := by
+  rw [Set.notMem_setOf_iff]
+  rw [not_and]
+  rw [inf_lt_iff]
+  rw [lt_self_iff_false]
+  rw [false_or]
+  refine fun z ↦ ?_
+  rw [not_lt]
+  rw [max_eq_left_of_lt]
+  exact z
+ have h1' := ne_of_mem_of_not_mem hc h1
+ have h2 : b ∉ {x | min a b < x ∧ x < max a b} := by
+  rw [Set.notMem_setOf_iff]
+  rw [not_and]
+  rw [inf_lt_iff]
+  rw [lt_self_iff_false]
+  rw [or_false]
+  refine fun z ↦ ?_
+  rw [not_lt]
+  rw [max_eq_right_of_lt]
+  exact z
+ have h2' := ne_of_mem_of_not_mem hc h2
+ exact ⟨h1', h2'⟩
 
 -- Proof that an open interval (a,b) with a < b is non-empty
 lemma non_empty (a b : ℝ) (hab : a ≠ b) : ∃ c : ℝ, c ∈ (ooi a b) :=
@@ -61,6 +96,7 @@ lemma non_empty (a b : ℝ) (hab : a ≠ b) : ∃ c : ℝ, c ∈ (ooi a b) :=
  have hb := add_div_two_lt_right.mpr h
  Exists.intro ((min a b + max a b) / 2) (Set.mem_sep ha hb)
 
+-- Proof that if c ∈ [a,b] and c ≠ a and c ≠ b then c ∈ (a,b)
 lemma closed_not_bounds_open
  (a b c : ℝ) (ha : c ≠ a) (hb : c ≠ b) (hab : c ∈ cci a b) :
  c ∈ ooi a b := by
