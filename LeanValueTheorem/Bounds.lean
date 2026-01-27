@@ -17,32 +17,6 @@ def greatest_lower_bound (f : ℝ → ℝ) (I : Set ℝ) (L : ℝ) : Prop :=
 def is_bounded (f : ℝ → ℝ) (I : Set ℝ) : Prop :=
   (∃ U : ℝ, least_upper_bound f I U) ∧ (∃ L : ℝ, greatest_lower_bound f I L)
 
-theorem cont_imp_bounded (f : ℝ → ℝ) (I : Set ℝ) : is_cont f I → is_bounded f I := by
-  sorry
-
-theorem cont_attains_bounds (f : ℝ → ℝ) (I : Set ℝ) {cont : is_cont f I} :
-  (∃ a : ℝ,    least_upper_bound f I a → ∃ x ∈ I, f x = a) ∧
-  (∃ b : ℝ, greatest_lower_bound f I b → ∃ x ∈ I, f x = b) := by
-    have boundedness := cont_imp_bounded f I cont
-    unfold is_bounded at boundedness
-    obtain ⟨hupper, hlower⟩ := boundedness
-    obtain ⟨U, hupper⟩ := hupper
-    obtain ⟨L, hlower⟩ := hlower
-    constructor
-    · use U
-      intro hupper
-      by_contra h
-      apply forall_not_of_not_exists at h
-      -- ...
-      sorry
-    · use L
-      intro hlower
-      by_contra h
-      apply forall_not_of_not_exists at h
-      -- ...
-      sorry
-
-
 theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) :
  is_cont f (cci a b) → is_bounded f (cci a b) := by
   sorry
