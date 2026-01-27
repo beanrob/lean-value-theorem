@@ -385,10 +385,9 @@ lemma lim_fun_unique
   (hfn : is_lim_fun D f c n) :
   m = n := by
 
-  -- the current proof just takes c ∈ D as an assumption
-  -- the lemma type needs to be changed st c ∈ cci l r
-  -- and D = ooi l r, therefore
-  -- c ∈ D or c = l or c = r
+  -- the current proof just takes c ∈ D as an assumption (using sorry)
+  -- the lemma type needs to be changed st c ∈ cci l r and D = ooi l r,
+  -- this will allos c ∈ D or c = l or c = r
   -- when c ∈ D current proof holds
   -- o/w requires more work
   have lim1 := fun_scalar_prod D f (-1) n c hfn
