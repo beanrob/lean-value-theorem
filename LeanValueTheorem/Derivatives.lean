@@ -21,8 +21,15 @@ lemma deriv_at_unique (D : Set ℝ) (f : ℝ → ℝ) (m n : ℝ) (a : ℝ) (ha 
  unfold is_deriv_at at b
  apply b.left at ha
  apply b.right at ha_1
+ rw [← hunionrw] at ha
+ rw [← hunionrw] at ha_1
+ have : {h | a + h ∈ D ∧ h < 0} ⊆ ({h | a + h ∈ D ∧ h < 0} ∪ {h | a + h ∈ D ∧ h > 0}) := by
+  exact Set.subset_union_left
+ have :
+  is_lim_fun {h | a + h ∈ D ∧ h < 0} (fun h ↦ (f (a + h) - f a) / h) 0 m := by
+  sorry
  sorry
---  exact lim_fun_unique {h | a + h ∈ D ∧ h ≠ 0} (fun h ↦ (f (a + h) - f a) / h) 0 m n ha ha_1
+
 
 -- Proof that the derivative of a function on an interval is unique
 lemma deriv_unique (D : Set ℝ) (f f' g' : ℝ → ℝ) (A : Set ℝ) :

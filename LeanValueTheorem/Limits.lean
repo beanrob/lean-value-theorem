@@ -449,7 +449,7 @@ lemma fun_non_positive
 
 lemma lim_fun_unique
   (c m n a b : ℝ)
-  (D : ooi a b) (f : ℝ → ℝ)
+  (f : ℝ → ℝ)
   (hccD : c ∈ cci a b)
   (hab : ¬(a = b))
   (hfm : is_lim_fun (ooi a b) f c m)
@@ -461,12 +461,12 @@ lemma lim_fun_unique
   -- this will allos c ∈ D or c = l or c = r
   -- when c ∈ D current proof holds
   -- o/w requires more work
-  have lim1 := fun_scalar_prod (ooi a b) f (-1) n c hfn
-  have lim2 := fun_sum (ooi a b) f (fun n => -1 * f n) c m (-1 * n) hfm lim1
-  simp only [neg_mul, one_mul, add_neg_cancel] at lim2
-  have eq := const_fun_limit_unique 0 (m + -n) c a b hccD hab lim2
-  rw [eq_add_neg_iff_add_eq, zero_add] at eq
-  exact Eq.symm eq
+   have lim1 := fun_scalar_prod (ooi a b) f (-1) n c hfn
+   have lim2 := fun_sum (ooi a b) f (fun n => -1 * f n) c m (-1 * n) hfm lim1
+   simp only [neg_mul, one_mul, add_neg_cancel] at lim2
+   have eq := const_fun_limit_unique 0 (m + -n) c a b hccD hab lim2
+   rw [eq_add_neg_iff_add_eq, zero_add] at eq
+   exact Eq.symm eq
 
 
 
@@ -484,15 +484,18 @@ lemma lim_exists_on_subset (D E : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (hDE : E 
  use δ
  exact ⟨left, fun x a a_1 ↦ right x (hDE a) a_1⟩
 
-lemma lim_union (D E : Set ℝ) (f : ℝ → ℝ) (c l m n : ℝ)
- (hD : is_lim_fun D f c m) (hE : is_lim_fun E f c n) (hDE : is_lim_fun (D ∪ E) f c l) :
+lemma lim_union (a b s t : ℝ) (f : ℝ → ℝ) (c l m n : ℝ) (hab : ¬(a = b)) (hst : ¬(s = t))
+ (hD : is_lim_fun (ooi a b) f c m) (hE : is_lim_fun (ooi s t) f c n)
+ (hDE : is_lim_fun (ooi a b ∪ ooi s t) f c l) (hc : c ∈ cci a b ∧ c ∈ cci s t) :
  l = m ∧ l = n := by
- have hxD (x : ℝ) : x ∈ D → x ∈ D ∪ E := by exact fun a ↦ Set.mem_union_left E a
- have hxE (x : ℝ) : x ∈ E → x ∈ D ∪ E := by exact fun a ↦ Set.mem_union_right D a
+ have hxD (x : ℝ) : x ∈ ooi a b → x ∈ ooi a b ∪ ooi s t := by
+  exact fun z ↦ Set.mem_union_left (ooi s t) z
+ have hxE (x : ℝ) : x ∈ ooi s t → x ∈ ooi a b ∪ ooi s t := by
+  exact fun z ↦ Set.mem_union_right (ooi a b) z
  unfold is_lim_fun at hDE
- have h : (∀ ε > 0, ∃ δ > 0, ∀ x ∈ D ∪ E, |x - c| < δ → |f x - l| < ε) ↔
-          ((∀ ε > 0, ∃ δ > 0, ∀ x ∈ D, |x - c| < δ → |f x - l| < ε) ∧
-           (∀ ε > 0, ∃ δ > 0, ∀ x ∈ E, |x - c| < δ → |f x - l| < ε)) := by
+ have h : (∀ ε > 0, ∃ δ > 0, ∀ x ∈ ooi a b ∪ ooi s t, |x - c| < δ → |f x - l| < ε) ↔
+          ((∀ ε > 0, ∃ δ > 0, ∀ x ∈ ooi a b, |x - c| < δ → |f x - l| < ε) ∧
+           (∀ ε > 0, ∃ δ > 0, ∀ x ∈ ooi s t, |x - c| < δ → |f x - l| < ε)) := by
   rw [iff_def]
   and_intros
   · refine fun a ↦ ?_
@@ -517,7 +520,12 @@ lemma lim_union (D E : Set ℝ) (f : ℝ → ℝ) (c l m n : ℝ)
  rw [h] at hDE
  have h1 := hDE.left
  have h2 := hDE.right
+ have hleft  := lim_fun_unique c l m a b f hc.left hab h1 hD
+ have hright := lim_fun_unique c l n s t f hc.right hst h2 hE
+ exact ⟨hleft, hright⟩
+
+lemma lim_equal_on_subset (D E : Set ℝ) (f : ℝ → ℝ) (c m n : ℝ) (hDE : E ⊆ D)
+      (hlimD : is_lim_fun D f c m) (hlimE : is_lim_fun E f c n) : m = n := by
+ unfold is_lim_fun at hlimD
+ unfold is_lim_fun at hlimE
  sorry
---  have hleft  := lim_fun_unique D f c l m h1 hD
---  have hright := lim_fun_unique E f c l n h2 hE
---  exact ⟨hleft, hright⟩
