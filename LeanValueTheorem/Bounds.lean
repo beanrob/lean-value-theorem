@@ -1,13 +1,48 @@
 import LeanValueTheorem.Sequences
 import LeanValueTheorem.Cont
 import Mathlib.Data.Real.Basic
-
-import Mathlib.Order.ConditionallyCompleteLattice.Basic
-import Mathlib.Order.ConditionallyCompleteLattice.Defs
 import Mathlib.Data.Real.Archimedean
 
 lemma sequence_in_closed (f : ℕ → ℝ) (l a b : ℝ) (hfab : ∀ n : ℕ, f n ∈ cci a b)
-  (hfl : is_lim_seq f l) : (l ∈ cci a b) := by sorry
+  (hfl : is_lim_seq f l) : (l ∈ cci a b) := by
+
+  constructor
+  · by_contra! h
+    set ε : ℝ :=  (min a b - l) / 2 with hε_sub
+    have hε : ε > 0 := div_pos (sub_pos.mpr h) (by norm_num)
+
+    rcases hfl ε hε with ⟨N, hf_prop⟩
+    have (n : ℕ) : f n - l > 0 := sub_pos.mpr (lt_of_lt_of_le h (hfab n).left)
+
+    have proof (n : ℕ) (hn : n ≥ N) := by
+      have this2 := by simpa [abs_of_pos (this n)] using (hf_prop n hn)
+      have side1 := (hfab n).left
+      have side2 := by
+        calc
+          f n < l + ((min a b - l) / 2) := lt_add_of_tsub_lt_left this2
+          _ = (min a b + l) / 2 := by ring1
+          _ < min a b := by simpa [add_comm] using add_div_two_lt_right.mpr h
+      exact (not_le_of_gt side2) side1
+    exact proof (N+1) (by norm_num)
+
+  · by_contra! h
+    set ε : ℝ :=  (l - max a b) / 2 with hε_sub
+    have hε : ε > 0 := div_pos (sub_pos.mpr h) (by norm_num)
+
+    rcases hfl ε hε with ⟨N, hf_prop⟩
+    have (n : ℕ) : l - f n > 0 := sub_pos.mpr (lt_of_le_of_lt (hfab n).right h)
+
+    have proof (n : ℕ) (hn : n ≥ N) := by
+      have this2 := by simpa [abs_sub_comm, abs_of_pos (this n)] using (hf_prop n hn)
+      have side1 := (hfab n).right
+      have side2 := by
+        calc
+          f n > l - ((l - max a b) / 2) :=  sub_lt_comm.mp this2
+          _ = (l + max a b) / 2 := by ring1
+          _ > max a b := by simpa [add_comm] using left_lt_add_div_two.mpr h
+
+      exact (not_le_of_gt side2) side1
+    exact proof (N+1) (by norm_num)
 
 lemma supremeum_neary_attained
   (S : ℝ) (A : Set ℝ) (han : Set.Nonempty A) (hab : BddAbove A) (hS : IsLUB A S) :
