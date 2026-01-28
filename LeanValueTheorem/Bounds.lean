@@ -6,6 +6,9 @@ import Mathlib.Order.ConditionallyCompleteLattice.Basic
 import Mathlib.Order.ConditionallyCompleteLattice.Defs
 import Mathlib.Data.Real.Archimedean
 
+lemma sequence_in_closed (f : ℕ → ℝ) (l a b : ℝ) (hfab : ∀ n : ℕ, f n ∈ cci a b)
+  (hfl : is_lim_seq f l) : (l ∈ cci a b) := by sorry
+
 lemma supremeum_neary_attained
   (S : ℝ) (A : Set ℝ) (han : Set.Nonempty A) (hab : BddAbove A) (hS : IsLUB A S) :
   (∀ ε > 0, ∃ a ∈ A, S - ε < a ∧ a ≤ S) := by
@@ -61,26 +64,82 @@ theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) (hfc : is_cont f (
 
   by_contra h
   rw [not_and_or] at h
-  cases h with
-  | inl hl =>
-    unfold BddAbove upperBounds at hl
-    simp at hl
-    rw [Set.not_nonempty_iff_eq_empty] at hl
-    rw [←Set.compl_univ_iff] at hl
-    have ex (n : ℝ) : n ∈ Set.univ := by trivial
-    rw [←hl] at ex
-    simp at ex
-    sorry
 
-  | inr hr =>
-    unfold BddBelow lowerBounds at hr
-    simp at hr
-    rw [Set.not_nonempty_iff_eq_empty] at hr
-    rw [←Set.compl_univ_iff] at hr
-    have ex (n : ℝ) : n ∈ Set.univ := by trivial
-    rw [←hr] at ex
-    simp at ex
-    sorry
+  -- unboundedness
+  have ex (n : ℝ) : ∃ x ∈ cci a b, n < |f x| := by
+    cases h with
+    | inl hl =>
+      unfold BddAbove upperBounds at hl
+      simp at hl
+      rw [Set.not_nonempty_iff_eq_empty] at hl
+      rw [←Set.compl_univ_iff] at hl
+      have part : n ∈ Set.univ := by trivial
+      rw [←hl] at part
+      simp at part
+      rcases part with ⟨x, hx, x_prop⟩
+      refine ⟨x, hx, ?_⟩
+      exact lt_of_lt_of_le x_prop (le_abs_self (f x))
+    | inr hr =>
+      unfold BddBelow lowerBounds at hr
+      simp at hr
+      rw [Set.not_nonempty_iff_eq_empty] at hr
+      rw [←Set.compl_univ_iff] at hr
+      have part : n ∈ Set.univ := by trivial
+      rw [←hr] at part
+      simp at part
+      rcases part with ⟨x, hx, x_prop⟩
+      refine ⟨x, hx, ?_⟩
+      have in1 := neg_lt_neg x_prop
+      have in2 := neg_le_abs (f x)
+      by_cases hn : n > 0
+      · have in3 := by simpa only [neg_zero] using neg_lt_neg hn
+        sorry
+      · simp at hn
+        have in3 := by simpa only [neg_zero] using neg_le_neg hn
+        have in4 := lt_of_lt_of_le x_prop hn
+        sorry
+
+  -- get sequence that diverges and converges at the same time
+  set g : ℕ → ℝ := fun n => Classical.choose (ex n) with hg
+  have g_bounds (n : ℕ) := (Classical.choose_spec (ex n)).1
+  have fx_bounds (n : ℕ) := (Classical.choose_spec (ex n)).2
+
+  have hgb : BddAbove (g '' Set.univ) := by
+    unfold BddAbove upperBounds
+    simp
+    rw [Set.nonempty_def, ←Set.eq_mem_setOf]
+    use max a b
+    intro x
+    rw [hg]
+    exact (g_bounds x).right
+
+  have hgl : BddBelow (g '' Set.univ) := by
+    unfold BddBelow lowerBounds
+    simp
+    rw [Set.nonempty_def, ←Set.eq_mem_setOf]
+    use min a b
+    intro x
+    rw [hg]
+    exact (g_bounds x).left
+
+  have hbw := bolanzo_weierstrass g (by trivial) hgb hgl
+  set k := Classical.choose hbw with hk
+  set lim := Classical.choose (Classical.choose_spec hbw) with hlim
+
+  -- show the limit of subseqeuence lies in cci a b
+  have gk_bounds (n : ℕ) : (fun n ↦ g (k n)) n ∈ cci a b := by simpa using g_bounds (k n)
+  have hgk_lim : is_lim_seq (fun n ↦ g (k n)) lim := by
+    simpa [hk, hlim] using Classical.choose_spec (Classical.choose_spec hbw)
+  have gk_lim := sequence_in_closed (fun n => g (k n)) lim a b gk_bounds hgk_lim
+
+  -- use continuity to show f ∘ g ∘ k → f
+  have cont_at := hfc lim gk_lim
+  unfold is_cont is_cont_at is_cont_at_seq at cont_at
+  have f_lim := cont_at.right gk_lim (fun n => g (k n)) gk_bounds hgk_lim
+  rcases f_lim 1 (by norm_num) with ⟨N, hf_prop⟩
+
+  have := fx_bounds (N+1)
+  sorry
 
 
 theorem cont_closed_attains_bounds (f : ℝ → ℝ) (a b : ℝ) (cont : is_cont f (cci a b)) :
