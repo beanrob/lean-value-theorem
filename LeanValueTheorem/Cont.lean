@@ -22,7 +22,7 @@ def is_cont_at (f : ℝ → ℝ) (I : Set ℝ) (a : ℝ) : Prop :=
   (is_cont_at_ε_δ f I a) ∧ (is_cont_at_seq f I a)
 
 -- Definition for a function being continuous on its whole domain
-def is_cont_on (f : ℝ → ℝ) (I : Set ℝ) (C : Set ℝ) {hC : C ⊆ I} : Prop :=
+def is_cont_on (f : ℝ → ℝ) (I : Set ℝ) (C : Set ℝ) : Prop :=
   ∀ a ∈ C, is_cont_at f I a
 
 -- Definition for a function being continuous on its whole domain
@@ -110,6 +110,22 @@ lemma cont_on_sum
    apply fun a a_1 ↦ cont_sum f g I a
    · exact fun a a_1 ↦ hfIa a a_1
    · exact fun a a_1 ↦ hgIa a a_1
+
+lemma cont_scalar_prod
+  (f : ℝ → ℝ)
+  (I : Set ℝ)
+  (a m : ℝ)
+  (hfIa : is_cont_at f I a) :
+  is_cont_at (fun x => m * f x) I a := by
+  rcases hfIa with ⟨_, hf⟩
+  unfold is_cont_at_seq at hf
+  have seq_scalar_prod : is_cont_at_seq (fun n => m * f n) I a := by
+    intros ha seq hseqI hseq
+    exact (seq_scalar_prod (f ∘ seq) (f a) m (by trivial) (hf ha seq hseqI hseq)).2
+  constructor
+  · apply cont_seq_imp_cont_ε_δ
+    exact seq_scalar_prod
+  · exact seq_scalar_prod
 
 lemma cont_prod
   (f g : ℝ → ℝ)
@@ -263,3 +279,10 @@ lemma const_cont
     · apply cont_seq_imp_cont_ε_δ
       exact seq_cont
     · exact seq_cont
+
+-- needed to avoid significant headache in derivatives file
+lemma const_cont_on
+  (c : ℝ)
+  (I A : Set ℝ) :
+  is_cont_on (fun x => c) I A := by
+    sorry

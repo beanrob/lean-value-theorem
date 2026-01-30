@@ -54,15 +54,11 @@ lemma not_const_imp_diff (a b : ℝ) (f : ℝ → ℝ) (hab : a < b) :
    exact x a
  · exact hab
 
--- Some rewrites to be used in the proof of Rolle's theorem
 
-lemma hunionrw (I : Set ℝ) (d : ℝ) :
- ({h | d + h ∈ I ∧ h < 0} ∪ {h | d + h ∈ I ∧ h > 0})
-                                 = {h | d + h ∈ I ∧ h ≠ 0} := by
- repeat rw [Set.setOf_and]
- rw [← Set.inter_union_distrib_left {a_1 | d + a_1 ∈ I} {a | a < 0} {a | a > 0}]
- rw [← Set.setOf_or]
- simp
+lemma left_le_add_div_two {a b : ℝ} (hab : a ≤ b) : a ≤ (a + b) / 2 := by
+    have h2 : 0 < (2:ℝ) := by norm_num
+    have := by simpa [←two_mul, mul_comm] using (add_le_add_left hab a)
+    exact (le_div_iff₀ h2).mpr this
 
 lemma openrw1 (a b d : ℝ) (hab : a < b) : {h | d + h ∈ ooi a b} = ooi (a - d) (b - d) := by
        unfold ooi
@@ -182,3 +178,7 @@ lemma openrw5 (a b d : ℝ) (hab : a < b) (hd : d ∈ ooi a b) :
  rw [min_eq_left_of_lt hd.right]
  rw [max_eq_right_of_lt hd.right]
  sorry
+lemma add_div_two_le_right {a b : ℝ} (hab : a ≤ b) : (a + b) / 2 ≤ b := by
+  have h2 : 0 < (2:ℝ) := by norm_num
+  have := by simpa [←two_mul, mul_comm] using add_le_add_right hab b
+  exact (div_le_iff₀ h2).mpr this

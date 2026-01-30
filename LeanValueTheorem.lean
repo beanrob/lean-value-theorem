@@ -34,17 +34,18 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
 
     -- Prove that f attains either its upper or lower bound within the open interval
     have hbound:
-    (∃ c ∈ (ooi a b), least_upper_bound f (cci a b) (f c)) ∨
-    (∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c)) := by
+    (∃ c ∈ (ooi a b), IsLUB (f '' (cci a b)) (f c)) ∨
+    (∃ c ∈ (ooi a b), IsGLB (f '' (cci a b)) (f c)) := by
      by_cases h1 : f c < f a
 
-     · have hmin : ∃ c ∈ (ooi a b), greatest_lower_bound f (cci a b) (f c) := by
+     · have hmin : ∃ c ∈ (ooi a b), IsGLB (f '' (cci a b)) (f c) := by
         obtain ⟨c, hc⟩ := hcbounds.right; expose_names
         have hfcleqfc1 : f c ≤ f c_1 := by
          cases hc; expose_names
-         unfold greatest_lower_bound at right
+         unfold IsGLB at right
          cases right; expose_names
-         unfold lower_bound at left_1
+         unfold lowerBounds at left_1
+         simp at left_1
          exact left_1 c_1 hc_1.left
         have hfclessfa := Std.lt_of_le_of_lt hfcleqfc1 h1
         have hfcnotfa := ne_of_lt hfclessfa
@@ -58,13 +59,14 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
      · rw [not_lt] at h1
        have hlt : f a < f c := by
         cases hc; expose_names; exact Std.lt_of_le_of_ne h1 (Ne.symm right)
-       have hmax : ∃ c ∈ (ooi a b), least_upper_bound f (cci a b) (f c) := by
+       have hmax : ∃ c ∈ (ooi a b), IsLUB (f '' (cci a b)) (f c) := by
         obtain ⟨c, hc⟩ := hcbounds.left; expose_names
         have hfcgeqfc1 : f c_1 ≤ f c := by
          cases hc; expose_names
-         unfold least_upper_bound at right
+         unfold IsLUB at right
          cases right; expose_names
-         unfold upper_bound at left_1
+         unfold upperBounds at left_1
+         simp at left_1
          exact left_1 c_1 hc_1.left
         have hfcgreaterfa := Std.lt_of_lt_of_le hlt hfcgeqfc1
         have hfcnotfa := Ne.symm (ne_of_lt hfcgreaterfa)
@@ -83,10 +85,10 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
     · expose_names; obtain ⟨d, hd⟩ := h_1
       let diff : ℝ → ℝ := fun x => (f (d + x) - f d) / x
       cases hd; expose_names
-      unfold least_upper_bound at right
+      unfold IsLUB at right
       cases right; expose_names
-      unfold upper_bound at left_1
-
+      unfold upperBounds at left_1
+      simp at left_1
       -- diff is non-positive when h > 0 and non-negative when h < 0
       have hxp : ∀ x ∈ {h | d + h ∈ ooi a b ∧ h > 0}, diff x ≤ 0 := by
        unfold diff
@@ -232,9 +234,10 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
       obtain ⟨d, hd⟩ := h_1
       let diff : ℝ → ℝ := fun x => (f (d + x) - f d) / x
       cases hd; expose_names
-      unfold least_upper_bound at right
+      unfold IsLUB at right
       cases right; expose_names
-      unfold upper_bound at left_1
+      unfold lowerBounds at left_1
+      simp at left_1
       have hxp : ∀ x ∈ {h | d + h ∈ ooi a b ∧ h > 0}, diff x ≥ 0 := by
        unfold diff
        refine fun x a ↦ ?_
@@ -408,4 +411,68 @@ theorem mvt {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b)
  unfold g' at hg'r
  obtain ⟨c,hc⟩ := hg'r
  rw [sub_eq_zero] at hc
- exact ⟨c, hc⟩
+ exact Exists.intro c hc
+
+theorem cauchy_mvt (a b : ℝ) (hab : a < b) (f g f' g' : ℝ → ℝ)
+  (hfc : is_cont f (cci a b)) (hgc : is_cont g (cci a b))
+  (hff' : is_deriv (ooi a b) f f' (ooi a b)) (hgg' : is_deriv (ooi a b) g g' (ooi a b))
+  (hgt : ∀ t ∈ ooi a b, g' t ≠ 0) :
+  (∃t : ℝ, (f' t / g' t) = (f b - f a) / (g b  - g a)) := by
+
+  set h := fun x => (g b - g a) * (f x) + (f a - f b) * (g x) with hsub
+
+  have hhab : h b = h a := by rw [hsub]; ring1
+
+  have hhc : is_cont h (cci a b) := by
+    rw [hsub]
+    intro x hxab
+    have c1 := cont_scalar_prod f (cci a b) x (g b - g a) (hfc x hxab)
+    have c2 := cont_scalar_prod g (cci a b) x (f a - f b) (hgc x hxab)
+    exact @cont_sum
+      (fun x => (g b - g a) * (f x))
+      (fun x => (f a - f b) * (g x))
+      (cci a b) x c1 c2
+
+  set h' := (fun x => (g b - g a) * (f' x) + (f a - f b) * (g' x)) with h'sub
+  have hhh' : is_deriv (ooi a b) h h' (ooi a b) := by
+    have d1 := scale_rule (ooi a b) f f' (ooi a b) hff' (g b - g a)
+    have d2 := scale_rule (ooi a b) g g' (ooi a b) hgg' (f a - f b)
+    have d3 := sum_rule (ooi a b) (fun x => (g b - g a) * (f x)) (fun x => (g b - g a) * (f' x))
+      (ooi a b) d1 (ooi a b) (fun x => (f a - f b) * (g x)) (fun x => (f a - f b) * (g' x))
+      (ooi a b) d2
+    simp only [Set.inter_self] at d3
+    exact d3
+
+  have hrolle := @rolle a b h h' hab hhc hhh' hhab
+  rcases hrolle with ⟨c, hcab, crolle_prop⟩
+  use c
+  rw [h'sub] at crolle_prop
+  simp only at crolle_prop
+
+  have rolle_rearrange:= eq_zero_sub_of_add_eq_zero_left
+    (a := (f a - f b) * g' c) (b := (g b - g a) * f' c) crolle_prop
+
+  simp only [zero_sub] at rolle_rearrange
+  rw [neg_mul_eq_neg_mul (f a -f b) (g' c)] at rolle_rearrange
+  rw [neg_sub] at rolle_rearrange
+
+  rcases @mvt a b g g' hab hgc hgg' with ⟨t, htab, g_mvt⟩
+  have gfrac_ne_zero := ne_of_eq_of_ne g_mvt.symm (hgt t htab)
+  have gb_sub_ga_ne_zero := left_ne_zero_of_mul gfrac_ne_zero
+
+  have final := congrArg (fun x => x * ((g b - g a)⁻¹ * (g' c)⁻¹)) rolle_rearrange
+  simp only at final
+
+  have rw_left :
+    (g b - g a) * f' c * ((g b - g a)⁻¹ * (g' c)⁻¹) =
+    ((g b - g a) * (g b - g a)⁻¹) * (f' c / g' c) := by ring1
+
+  have rw_right :
+     (f b - f a) * g' c * ((g b - g a)⁻¹ * (g' c)⁻¹) =
+     (g' c * (g' c)⁻¹) * ((f b - f a) / (g b - g a))  := by ring1
+
+  rw [rw_left, rw_right] at final
+  rw [GroupWithZero.mul_inv_cancel (g b - g a) gb_sub_ga_ne_zero] at final
+  rw [GroupWithZero.mul_inv_cancel (g' c) (hgt c hcab)] at final
+  simp only [one_mul] at final
+  exact final
