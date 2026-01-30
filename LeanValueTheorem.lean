@@ -23,7 +23,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
  · have hzero : is_deriv (ooi a b) f 0 (ooi a b) := by
     refine const_zero_deriv (ooi a b) f (ooi a b) ?_
     exact const_closed_imp_const_open a b f h
-   have hf'zero := fun c a_1 ↦ deriv_at_deriv (ooi a b) 0 c f f' a_1 hff' (hzero c a_1)
+   have hf'zero := fun c a_1 ↦ deriv_at_deriv a b 0 c f f' hab a_1 hff' (hzero c a_1)
    obtain ⟨c,hc⟩ := non_empty a b hab'
    exact ⟨c, hc, hf'zero c hc⟩
 
@@ -32,7 +32,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
  ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f hab h
     have hcbounds := cont_closed_attains_bounds f a b hfc
 
-    -- Prove that f attains its bounds within the open interval
+    -- Prove that f attains either its upper or lower bound within the open interval
     have hbound:
     (∃ c ∈ (ooi a b), IsLUB (f '' (cci a b)) (f c)) ∨
     (∃ c ∈ (ooi a b), IsGLB (f '' (cci a b)) (f c)) := by
@@ -147,6 +147,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
         exact (bounds_not_in_open a b d left).right
        have h2 := (bounds_in_closed 0 (b - d)).left
        exact fun_non_positive 0 l 0 (b - d) diff h1 h2 z hxp
+
       have hliminf (l : ℝ) : is_lim_fun {h | d + h ∈ ooi a b ∧ h < 0} diff 0 l → l ≥ 0 := by
        refine fun z ↦ ?_
        rw [hopen2] at z
@@ -168,9 +169,11 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
       have hlimsupexists := lim_exists_on_subset ({h | d + h ∈ ooi a b ∧ h < 0}
                                                 ∪ {h | d + h ∈ ooi a b ∧ h > 0})
            {h | d + h ∈ ooi a b ∧ h > 0} diff 0 Set.subset_union_right hlimexists
+
       have hliminfexists := lim_exists_on_subset ({h | d + h ∈ ooi a b ∧ h < 0}
                                                 ∪ {h | d + h ∈ ooi a b ∧ h > 0})
            {h | d + h ∈ ooi a b ∧ h < 0} diff 0 Set.subset_union_left hlimexists
+
       obtain ⟨n, hn⟩ := hlimsupexists
       obtain ⟨m, hm⟩ := hliminfexists
 
@@ -193,6 +196,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
         · rw [hopen1] at hn; exact hn
         · rw [hopen2] at z; rw [hopen1] at z; exact z
         · exact ⟨(bounds_in_closed (a - d) 0).right, (bounds_in_closed 0 (b - d)).left⟩
+
        have hn' := hlimsup n hn
        have hm' := hliminf m hm
        cases this; expose_names
@@ -220,7 +224,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
        rw [hset] at hlim
        exact hlim
       have hfderiv := hff' d left
-      have hunique := deriv_at_deriv (ooi a b) 0 d f f' left hff' hderiv
+      have hunique := deriv_at_deriv a b 0 d f f' hab left hff' hderiv
       exact Exists.intro d (And.symm ⟨hunique, left⟩)
 
 
@@ -347,7 +351,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
        rw [hset] at hlim
        exact hlim
       have hfderiv := hff' d left
-      have hunique := deriv_at_deriv (ooi a b) 0 d f f' left hff' hderiv
+      have hunique := deriv_at_deriv a b 0 d f f' hab left hff' hderiv
       exact Exists.intro d (And.symm ⟨hunique, left⟩)
 
 
@@ -373,6 +377,7 @@ theorem mvt {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b)
   apply cont_on_prod (fun x => -r) (fun x => x) (cci a b)
   · exact const_cont (-r) (cci a b)
   · exact id_cont (cci a b)
+
  have hgc : is_cont g (cci a b) := by
   apply cont_on_sum f (fun x ↦ -(r * x)) (cci a b)
   · exact hfc

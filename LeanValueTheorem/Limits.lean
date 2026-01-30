@@ -1,6 +1,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Ring
 import LeanValueTheorem.Intervals
+import LeanValueTheorem.Misc
 
 
 -- Definition for l being the limit of the function f : D → ℝ at c
@@ -519,8 +520,54 @@ lemma lim_union (a b s t : ℝ) (f : ℝ → ℝ) (c l m n : ℝ) (hab : ¬(a = 
  have hright := lim_fun_unique c l n s t f hc.right hst h2 hE
  exact ⟨hleft, hright⟩
 
-lemma lim_equal_on_subset (D E : Set ℝ) (f : ℝ → ℝ) (c m n : ℝ) (hDE : E ⊆ D)
-      (hlimD : is_lim_fun D f c m) (hlimE : is_lim_fun E f c n) : m = n := by
- unfold is_lim_fun at hlimD
- unfold is_lim_fun at hlimE
- sorry
+-- Used to prove deriv_at_unique
+
+lemma special_lim_fun_unique
+  (c m n a b : ℝ)
+  (f : ℝ → ℝ)
+  (hccD : c ∈ ooi a b)
+  (hab : a < b)
+  (hfm : is_lim_fun (ooi a b \ {c}) f c m)
+  (hfn : is_lim_fun (ooi a b \ {c}) f c n) :
+  m = n := by
+  rw [openrw5 a b c hab hccD] at hfm
+  rw [openrw5 a b c hab hccD] at hfn
+  let D := (ooi a c ∪ ooi c b)
+  let Dleft := ooi a c
+  let Dright := ooi c b
+  -- m
+  have h1 := lim_exists_on_subset D Dleft f c Set.subset_union_left ⟨m, hfm⟩
+  have h2 := lim_exists_on_subset D Dright f c Set.subset_union_right ⟨m, hfm⟩
+  obtain ⟨s, hs⟩ := h1
+  obtain ⟨t, ht⟩ := h2
+  have : m = s ∧ m = t := by
+   refine lim_union a c c b f c m s t ?_ ?_ hs ht hfm ?_
+   · rw [← ne_eq]
+     rw [ne_comm]
+     apply (bounds_not_in_open a b c hccD).left
+   · rw [← ne_eq]
+     apply (bounds_not_in_open a b c hccD).right
+   · exact ⟨(bounds_in_closed a c).right, (bounds_in_closed c b).left⟩
+  rw [← this.left] at hs
+  rw [← this.right] at ht
+  -- n
+  have h1 := lim_exists_on_subset D Dleft f c Set.subset_union_left ⟨n, hfn⟩
+  have h2 := lim_exists_on_subset D Dright f c Set.subset_union_right ⟨n, hfn⟩
+  obtain ⟨u, hu⟩ := h1
+  obtain ⟨v, hv⟩ := h2
+  have : n = u ∧ n = v := by
+   refine lim_union a c c b f c n u v ?_ ?_ hu hv hfn ?_
+   · rw [← ne_eq]
+     rw [ne_comm]
+     apply (bounds_not_in_open a b c hccD).left
+   · rw [← ne_eq]
+     apply (bounds_not_in_open a b c hccD).right
+   · exact ⟨(bounds_in_closed a c).right, (bounds_in_closed c b).left⟩
+  rw [← this.left] at hu
+  rw [← this.right] at hv
+
+  refine lim_fun_unique c m n a c f ?_ ?_ hs hu
+  · exact (bounds_in_closed a c).right
+  · rw [← ne_eq]
+    rw [ne_comm]
+    apply (bounds_not_in_open a b c hccD).left

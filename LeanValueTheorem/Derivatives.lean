@@ -13,44 +13,55 @@ def is_deriv_at (D : Set ℝ) (f : ℝ → ℝ) (m : ℝ) (a : ℝ) : Prop :=
 def is_deriv (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) : Prop :=
   ∀ a ∈ A, is_deriv_at D f (f' a) a
 
--- Proof that the value of the derivative of f : D → ℝ at a is unique
-lemma deriv_at_unique (D : Set ℝ) (f : ℝ → ℝ) (m n : ℝ) (a : ℝ) (ha : a ∈ D) :
- (is_deriv_at D f m a ∧ is_deriv_at D f n a) → m = n := by
- let ha_1 := ha
- refine fun b ↦ ?_
- unfold is_deriv_at at b
- apply b.left at ha
- apply b.right at ha_1
- rw [← hunionrw] at ha
- rw [← hunionrw] at ha_1
- have : {h | a + h ∈ D ∧ h < 0} ⊆ ({h | a + h ∈ D ∧ h < 0} ∪ {h | a + h ∈ D ∧ h > 0}) := by
-  exact Set.subset_union_left
- have :
-  is_lim_fun {h | a + h ∈ D ∧ h < 0} (fun h ↦ (f (a + h) - f a) / h) 0 m := by
-  sorry
- sorry
 
+-- The next 3 lemmas are only proven for functions on open intervals
+
+-- Proof that the value of the derivative of f : (ooi l r) → ℝ at a is unique
+lemma deriv_at_unique (l r : ℝ) (f : ℝ → ℝ) (m n : ℝ) (a : ℝ) (hlr : l < r) (ha : a ∈ (ooi l r)) :
+ (is_deriv_at (ooi l r) f m a ∧ is_deriv_at (ooi l r) f n a) → m = n := by
+ let ha_1 := ha
+ let ha_2 := ha
+ refine fun z ↦ ?_
+ unfold is_deriv_at at z
+ apply z.left at ha_1
+ apply z.right at ha_2
+ rw [openrw4 l r a hlr ha] at ha_1
+ rw [openrw4 l r a hlr ha] at ha_2
+ refine special_lim_fun_unique 0 m n (l-a) (r-a) (fun h ↦ (f (a + h) - f a) / h) ?_ ?_ ha_1 ha_2
+ · unfold ooi
+   unfold ooi at ha
+   rw [min_sub_sub_right]
+   rw [max_sub_sub_right]
+   rw [min_eq_left_of_lt hlr]
+   rw [max_eq_right_of_lt hlr]
+   rw [min_eq_left_of_lt hlr] at ha
+   rw [max_eq_right_of_lt hlr] at ha
+   rw [show (a ∈ {x | l < x ∧ x < r}) = (l < a ∧ a < r) from rfl] at ha
+   exact Set.mem_sep (sub_neg.mpr ha.left) (sub_pos.mpr ha.right)
+ · exact sub_lt_sub_right hlr a
 
 -- Proof that the derivative of a function on an interval is unique
-lemma deriv_unique (D : Set ℝ) (f f' g' : ℝ → ℝ) (A : Set ℝ) :
- (is_deriv D f f' A ∧ is_deriv D f g' A) → ∀ x ∈ A ∩ D, f' x = g' x := by
+lemma deriv_unique (l r : ℝ) (f f' g' : ℝ → ℝ) (hlr : l < r) :
+ (is_deriv (ooi l r) f f' (ooi l r) ∧ is_deriv (ooi l r) f g' (ooi l r)) →
+  ∀ x ∈ (ooi l r), f' x = g' x := by
  refine fun a x a_1 ↦ ?_
- have hA : x ∈ A := by exact Set.mem_of_mem_inter_left a_1
- let hA' := hA
- have hD : x ∈ D := by exact Set.mem_of_mem_inter_right a_1
- apply deriv_at_unique D f (f' x) (g' x) x hD
+ let a_2 := a_1
+ apply deriv_at_unique l r f (f' x) (g' x) x hlr a_1
  unfold is_deriv at a
- apply a.left at hA
- apply a.right at hA'
- exact ⟨hA, hA'⟩
+ apply a.left at a_1
+ apply a.right at a_2
+ exact ⟨a_1, a_2⟩
 
 -- Proof that f'(a) is the value derivative of f : D → ℝ at a
-lemma deriv_at_deriv (D : Set ℝ) (m a : ℝ) (f f' : ℝ → ℝ) (ha : a ∈ D)
- (hf' : is_deriv D f f' D) (hf : is_deriv_at D f m a) : f' a = m := by
+lemma deriv_at_deriv (l r m a : ℝ) (f f' : ℝ → ℝ) (hlr : l < r) (ha : a ∈ (ooi l r))
+ (hf' : is_deriv (ooi l r) f f' (ooi l r)) (hf : is_deriv_at (ooi l r) f m a) : f' a = m := by
  unfold is_deriv at hf'
- have hderiv : is_deriv_at D f (f' a) a := by exact hf' a ha
- have hand : is_deriv_at D f m a ∧ is_deriv_at D f (f' a) a := by exact ⟨hf, hf' a ha⟩
- exact deriv_at_unique D f (f' a) m a ha (id (And.symm hand))
+ have hderiv : is_deriv_at (ooi l r) f (f' a) a := by exact hf' a ha
+ have hand : is_deriv_at (ooi l r) f m a ∧ is_deriv_at (ooi l r) f (f' a) a := by
+  exact ⟨hf, hf' a ha⟩
+ exact deriv_at_unique l r f (f' a) m a hlr ha (id (And.symm hand))
+
+
 
 -- Proof that f : D → ℝ has zero derivative if it is constant
 lemma const_zero_deriv
