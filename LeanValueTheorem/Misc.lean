@@ -160,3 +160,25 @@ lemma openrw3 (a b d : ℝ) (hab : a < b) (hd : d ∈ ooi a b) :
        rw [inf_comm (b - d) 0]
        rw [min_eq_left (le_of_lt hbd)]
        rw [min_eq_left (le_of_lt had)]
+
+-- These two are used for uniqueness of limits/derivatives
+lemma openrw4 (a b d : ℝ) (hab : a < b) (hd : d ∈ ooi a b) :
+ {h | d + h ∈ ooi a b ∧ h ≠ 0} = ooi (a - d) (b - d) \ {0} := by
+ rw [Set.setOf_and]
+ rw [openrw1 a b d hab]
+ exact rfl
+
+lemma openrw5 (a b d : ℝ) (hab : a < b) (hd : d ∈ ooi a b) :
+ ooi a b \ {d} = ooi a d ∪ ooi d b := by
+ unfold ooi
+ unfold ooi at hd
+ rw [min_eq_left_of_lt hab] at hd
+ rw [max_eq_right_of_lt hab] at hd
+ rw [show (d ∈ {x | a < x ∧ x < b}) = (a < d ∧ d < b) from rfl] at hd
+ rw [min_eq_left_of_lt hab]
+ rw [max_eq_right_of_lt hab]
+ rw [min_eq_left_of_lt hd.left]
+ rw [max_eq_right_of_lt hd.left]
+ rw [min_eq_left_of_lt hd.right]
+ rw [max_eq_right_of_lt hd.right]
+ sorry
