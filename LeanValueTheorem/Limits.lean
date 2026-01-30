@@ -92,6 +92,8 @@ lemma const_fun_limit_unique
         exact lt_of_le_of_lt in10 in11
 
 
+
+
 -- Algebra of limits for functions (for sums, products and quotients)
 lemma fun_sum
   (I : Set ℝ)
@@ -466,6 +468,7 @@ lemma lim_fun_unique
    have eq := const_fun_limit_unique 0 (m + -n) c a b hccD hab lim2
    rw [eq_add_neg_iff_add_eq, zero_add] at eq
    exact Eq.symm eq
+
 
 
 lemma lim_exists_on_subset (D E : Set ℝ) (f : ℝ → ℝ) (c : ℝ) (hDE : E ⊆ D) :
