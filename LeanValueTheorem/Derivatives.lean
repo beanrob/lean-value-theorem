@@ -94,12 +94,52 @@ lemma recip_deriv
   (D : Set ℝ) (hD : ∀ x ∈ D, x ≠ 0) :
   is_deriv D (fun x ↦ 1 / x) (fun x ↦ -1 / x ^ 2) D := by
     intro a ha _
-    have hsimp : (fun h ↦ ((fun x ↦ 1 / x) (a + h) - (fun x ↦ 1 / x) a) / h)
-     = (fun h ↦ -1 / (a * (a + h))) := by
-      refine funext ?_
-      intro h
-      sorry
-    sorry
+    simp only
+    have hrecip : is_lim_fun {h | a + h ∈ D ∧ h ≠ 0}
+     (fun h ↦ 1 / -((a + h) * a)) 0 (1 / -a ^ 2) := by
+      apply fun_recip {h | a + h ∈ D ∧ h ≠ 0}
+      · have hshift : (fun h ↦ -((a + h) * a)) = (fun h ↦ -a * (a + h)) := by
+          funext h
+          simp only [neg_mul, neg_inj]
+          rw [mul_comm]
+        rw[hshift]
+        rw [sq, neg_mul_eq_neg_mul]
+        apply fun_scalar_prod {h | a + h ∈ D ∧ h ≠ 0} (fun h ↦ a + h) (-a) a 0
+        nth_rewrite 3 [← add_zero a]
+        apply fun_sum {h | a + h ∈ D ∧ h ≠ 0} (fun h ↦ a) (fun h ↦ h) 0 a 0
+        · apply const_fun_limit
+        · intro ε hε
+          use ε
+          constructor
+          · exact hε
+          · intro x hx1 hx2
+            simp only [sub_zero]
+            simp only [sub_zero] at hx2
+            exact hx2
+      · specialize hD a ha
+        simp only [ne_eq, neg_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
+        exact hD
+    unfold is_lim_fun
+    unfold is_lim_fun at hrecip
+    intro ε hε
+    specialize hrecip ε hε
+    obtain ⟨δ, hδ, hrecip⟩ := hrecip
+    use δ
+    constructor
+    · exact hδ
+    · intro x hx1 hx2
+      specialize hrecip x hx1 hx2
+      simp only
+      simp only at hrecip
+      have heq : 1 / -((a + x) * a) - 1 / -a ^ 2 = (1 / (a + x) - 1 / a) / x - -1 / a ^ 2 := by
+        obtain ⟨hxa, hx0⟩ := hx1
+        rw [← div_neg_eq_neg_div', sub_left_inj, div_sub_div 1 1 ?_ ?_]
+        · rw [one_mul, mul_one, sub_add_cancel_left, div_right_comm, neg_div_self ?_]
+          · rw [← div_neg_eq_neg_div']
+          · exact hx0
+        · exact hD (a + x) hxa
+        · exact hD a ha
+      exact lt_of_eq_of_lt (congrArg abs (id (Eq.symm heq))) hrecip
 
 -- Lemma used to work with limits of functions on different domains
 lemma h_subset (a x : ℝ) (D E : Set ℝ) (f : ℝ → ℝ)
@@ -242,7 +282,22 @@ lemma scale_rule
       simp
     have hprod : is_deriv (D ∩ D) (fun x ↦ f x * r) (fun x ↦ f' x * r + f x * 0) (A ∩ A) := by
       apply product_rule D f f' A hf D (fun y ↦ r) 0 A hconst ?_
-      exact const_cont_on r D A
+      unfold is_cont_on
+      intro a ha
+      unfold is_cont_at
+      have hcont : is_cont_at_ε_δ (fun y ↦ r) D a := by
+        unfold is_cont_at_ε_δ
+        intro haD ε hε
+        simp only [gt_iff_lt, sub_self, abs_zero]
+        use 1
+        constructor
+        · simp
+        · intro x hx hax
+          exact hε
+      constructor
+      · exact hcont
+      · apply cont_ε_δ_imp_cont_seq (fun y ↦ r) D a
+        exact hcont
     simp at hprod
     have h1 : (fun x ↦ r * f x) = (fun x ↦ f x * r) := by
       funext x
