@@ -62,39 +62,35 @@ lemma cont_seq_imp_cont_ε_δ
   (f : ℝ → ℝ)
   (I : Set ℝ)
   (a : ℝ)
-  {hfIa : is_cont_at_seq f I a} :
+  {is_seq : is_cont_at_seq f I a} :
   is_cont_at_ε_δ f I a := by
-    unfold is_cont_at_ε_δ
-    unfold is_cont_at_seq at hfIa
-    intros haI ε hε
-    specialize hfIa haI
-    use ε
-    constructor
-    · exact hε
-    · by_contra h
-      simp at h
-      obtain ⟨x, hx, hxε, hxfε⟩ := h
-      -- FUCKED UP AND EVIL CHEATING:
-      -- let seq : ℕ → ℝ := fun n => x
-      -- NEED TO BE FIXED TO SOMETHING LIKE:
-      let seq : ℕ → ℝ := fun n => a -- + (1/n)
-      have hseqI : ∀ n : ℕ, seq n ∈ I := by
-        intro n
-        unfold seq
-        exact haI
-      have seqlim : is_lim_seq seq a := by
-        unfold is_lim_seq
-        aesop
-      specialize hfIa seq hseqI seqlim
-      unfold is_lim_seq at hfIa
-      specialize hfIa ε hε
-      obtain ⟨N, hfIa⟩ := hfIa
-      unfold seq at hfIa
-      specialize hfIa N
-      simp at hfIa
-      have hxfε' := not_lt_of_ge hxfε
+    by_contra not_ε_δ
+    unfold is_cont_at_ε_δ at not_ε_δ
+    simp at not_ε_δ
+    obtain ⟨ha, ε, hε, not_ε_δ⟩ := not_ε_δ
+    specialize not_ε_δ 1 -- !!! TEMPORARY
+    simp at not_ε_δ
+    obtain ⟨x, hxI, dx, dfx⟩ := not_ε_δ
+    --
+    unfold is_cont_at_seq at is_seq
+    specialize is_seq ha
+    -- let seq : ℕ → ℝ := fun n => a + 1/(n+1) -- !!! TEMPORARY
+    let seq : ℕ → ℝ := fun n => x
+    have in_I : ∀ n : ℕ, seq n ∈ I := by -- !!! TEMPORARY
       sorry
-      -- exact hxfε' hfIa
+    have h_seq_ε : is_lim_seq seq a := by -- !!! TEMPORARY
+      sorry
+    specialize is_seq seq in_I h_seq_ε
+    unfold is_lim_seq at is_seq
+    --
+    specialize is_seq ε hε
+    obtain ⟨Nf, is_seq⟩ := is_seq
+
+    specialize is_seq Nf
+    simp at is_seq
+    unfold seq at is_seq
+
+    sorry
 
 -- Algebra of continuous functions (for sums, products, and quotients)
 lemma cont_sum
