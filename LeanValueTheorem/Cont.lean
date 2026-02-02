@@ -279,10 +279,3 @@ lemma const_cont
     · apply cont_seq_imp_cont_ε_δ
       exact seq_cont
     · exact seq_cont
-
--- needed to avoid significant headache in derivatives file
-lemma const_cont_on
-  (c : ℝ)
-  (I A : Set ℝ) :
-  is_cont_on (fun x => c) I A := by
-    sorry
