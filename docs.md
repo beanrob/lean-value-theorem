@@ -198,10 +198,18 @@ groundwork for the derivatives file.
 
 ### `Misc.lean`
 
-...
+This file is for miscellaneous results with no other obvious home. Most results
+are related to the constant function and are utilised by the sequences file.
 
 #### Formalised:
-- ...
+- `def is_const_fun` - If a function is constant
+- `lemma const_closed_imp_const_open` - A function being constant on a closed
+  interval implies it is constant on the corresponding open interval too
+- `lemma closed_const` - If a function is constant on the closed interval, all
+  its values must be the same as that of the value at the lower boundary
+- `lemma not_const_imp_diff` - Negation of the above
+- `lemma left_le_add_div_two` - ???
+- `lemma add_div_two_le_right` - ???
 
 ### `Sequences.lean`
 
