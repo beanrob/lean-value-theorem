@@ -95,7 +95,7 @@ form factors of functions were proven, such as sums and reciprocals.
   continuity
   - The way that continuity is currently formalised, there were roadblocks in
     proving this notion
-  - The generally accepted method of proof for this is proof by contradiction,
+- The generally accepted method of proof for this is proof by contradiction,
     which is what was attempted, but constructing the sequence needed to do so
     was not possible due to its vague definition
   - The sequence is built as follows:
@@ -170,5 +170,61 @@ sets are also included.
 - `lemma openrw5` - ???
 
 ### `Limits.lean`
+
+This file deals with the notion of limits of functions, which is necessary
+groundwork for the derivatives file.
+
+#### Formalised:
+- `def is_lim_fun` - The limit of a function
+- `lemma const_fun_limit` - The constant function's limit is its value
+- `lemma const_fun_limit_unique` - The constant function's limit is unique
+- `lemma fun_sum` - Algebra of limits for function sums
+- `lemma fun_lim_of_fun_sub_lim` - Reverse of the below
+- `lemma fun_sub_lim_of_fun_lim` - A function minus its limit has limit 0
+- `lemma fun_scalar_prod` - A function multiplied by a scalar has its limit
+  multiplied by that scalar too
+- `lemma fun_prod_special` - ???
+- `lemma fun_prod` - Algebra of limits for function products
+- `lemma fun_neq_zero_of_lim_neq_zero` - Function with non-zero limit is
+  non-zero past a certain point
+- `lemma fun_recip` - Algebra of limits for the reciprocal of a function
+- `lemma fun_quot` - Algebra of limits for function quotients
+- `lemma fun_non_negative` - Non-negative functions have non-negative limits
+- `lemma fun_non_positive` - Non-positive functions have non-positive limits
+- `lemma lim_fun_unique` - The limit of a function is unique
+- `lemma lim_exists_on_subset` - ???
+- `lemma lim_union` - ???
+- `lemma special_lim_fun_unique` - ???
+
 ### `Misc.lean`
+
+...
+
+#### Formalised:
+- ...
+
 ### `Sequences.lean`
+
+This file is concerned with formalising sequences. The project defines sequences
+as functions from the natural numbers to the real numbers, with the input value
+being the index.
+
+#### Formalised:
+- `def is_sequence` - ???
+- `def is_sequence_non_positive` - Non-positive sequences
+- `def is_sequence_non_negative` - Non-negative sequences
+- `def is_lim_seq` - The limit of a sequence
+- `lemma const_seq_limit` - The limit of a constant sequence is its value
+- `lemma seq_sum` - Algebra of limits for sequence sums
+- `lemma seq_lim_of_seq_sub_lim` - ???
+- `lemma seq_sub_lim_of_seq_lim` - ???
+- `lemma seq_scalar_product` - A sequence multiplied by a scalar has its limit
+  multiplied by that scalar too
+- `lemma seq_non_negative` - Non-negative sequences have non-negative limits
+- `lemma seq_non_positive` - Non-positive sequences have non-positive limits
+- `lemma seq_prod_special` - ???
+- `lemma seq_prod` - Algebra of limits for sequence products
+- `lemma seq_neg_zer_of_lim_neq_zero` - Sequence with non-zero limit is non-zero
+  past a certain point
+- `lemma seq_recip` - Algebra of limits for the reciprocal of a function
+- `lemma seq_quot` - Algebra of limits for sequence quotients
