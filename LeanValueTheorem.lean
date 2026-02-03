@@ -30,7 +30,7 @@ theorem rolle {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a 
 
  -- Now suppose f is not constant
  ·  obtain ⟨c, hc⟩ := not_const_imp_diff a b f hab h
-    have hcbounds := cont_closed_attains_bounds f a b hfc
+    have hcbounds := cont_closed_attains_bounds f a b hab hfc
 
     -- Prove that f attains either its upper or lower bound within the open interval
     have hbound:
