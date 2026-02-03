@@ -1,9 +1,5 @@
 import LeanValueTheorem.Intervals
 
--- Temp import for triangle inequality!!!
-import Mathlib.Algebra.Order.Group.Unbundled.Abs
-
-
 -- Definition for f : D → ℝ being a constant function
 def is_const_fun (D : Set ℝ) (f : ℝ → ℝ) : Prop :=
   ∀ x y : ℝ, x ∈ D ∧ y ∈ D → f x = f y
@@ -31,7 +27,7 @@ lemma closed_const (a b : ℝ) (f : ℝ → ℝ) {hab : a < b} :
    have ha : a ∈ (cci a b) := by
     have hz : a ≤ a := by exact Std.IsPreorder.le_refl a
     have hb : a ≤ b := by exact Std.le_of_lt hab
-    exact Set.mem_sep hz hb
+    exact Set.mem_sep (min_le_left a b) (le_max_left a b)
    refine fun x a ↦ ?_
    apply h
    exact ⟨a, ha⟩
@@ -57,3 +53,14 @@ lemma not_const_imp_diff (a b : ℝ) (f : ℝ → ℝ) (hab : a < b) :
    rw [not_and_not_right] at x
    exact x a
  · exact hab
+
+
+lemma left_le_add_div_two {a b : ℝ} (hab : a ≤ b) : a ≤ (a + b) / 2 := by
+    have h2 : 0 < (2:ℝ) := by norm_num
+    have := by simpa [←two_mul, mul_comm] using (add_le_add_left hab a)
+    exact (le_div_iff₀ h2).mpr this
+
+lemma add_div_two_le_right {a b : ℝ} (hab : a ≤ b) : (a + b) / 2 ≤ b := by
+  have h2 : 0 < (2:ℝ) := by norm_num
+  have := by simpa [←two_mul, mul_comm] using add_le_add_right hab b
+  exact (div_le_iff₀ h2).mpr this
