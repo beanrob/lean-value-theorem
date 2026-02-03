@@ -402,16 +402,11 @@ theorem mvt {hab : a < b} {hfc : is_cont f (cci a b)} {hff' : is_deriv (ooi a b)
   exact Eq.symm (div_mul_cancel₀ (f b - f a) hbaz)
 
  -- Finally apply Rolle's theorem to g
- have hg'r : ∃ c ∈ (ooi a b), g' c = 0 := by
-  apply rolle
-  · exact hab
-  · exact hgc
-  · exact hgg'
-  · exact hgba
+ have hg'r := @rolle a b g g' hab hgc hgg' hgba
  unfold g' at hg'r
  obtain ⟨c,hc⟩ := hg'r
  rw [sub_eq_zero] at hc
- exact Exists.intro c hc
+ exact ⟨c,hc⟩
 
 theorem cauchy_mvt (a b : ℝ) (hab : a < b) (f g f' g' : ℝ → ℝ)
   (hfc : is_cont f (cci a b)) (hgc : is_cont g (cci a b))

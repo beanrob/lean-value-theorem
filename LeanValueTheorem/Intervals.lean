@@ -94,7 +94,13 @@ lemma non_empty (a b : ℝ) (hab : a ≠ b) : ∃ c : ℝ, c ∈ (ooi a b) :=
  have h := min_lt_max.mpr hab
  have ha := left_lt_add_div_two.mpr h
  have hb := add_div_two_lt_right.mpr h
- Exists.intro ((min a b + max a b) / 2) (Set.mem_sep ha hb)
+ ⟨((min a b + max a b) / 2), (Set.mem_sep ha hb)⟩
+
+-- Same thing for a closed interval
+lemma non_empty_closed (a b : ℝ) (hab : a ≠ b) : ∃ c : ℝ, c ∈ (cci a b) := by
+ obtain ⟨c, hc⟩ := non_empty a b hab
+ apply open_in_closed a b c at hc
+ exact ⟨c, hc⟩
 
 -- Proof that if c ∈ [a,b] and c ≠ a and c ≠ b then c ∈ (a,b)
 lemma closed_not_bounds_open
