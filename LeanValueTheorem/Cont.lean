@@ -85,12 +85,16 @@ lemma cont_seq_imp_cont_ε_δ
       -- Have all its outputs be members of I
       -- Have limit a
       -- Have a magical value past its convergence point where it takes value x
-    let seq : ℕ → ℝ := fun n => x -- fun n => a + 1/(n+1)
+    let seq : ℕ → ℝ := fun n => a + 1/(n+1) -- fun n => x --
     -- Prove condition 1
     have in_I : ∀ n : ℕ, seq n ∈ I := by
+      intro n
+      unfold seq
       sorry
     -- Prove condition 2
     have h_seq_ε : is_lim_seq seq a := by
+      unfold is_lim_seq
+      intros ε hε
       sorry
     -- Now that we have the magical sequence, we insert it into the hypothesis
     -- regarding sequential continuity
