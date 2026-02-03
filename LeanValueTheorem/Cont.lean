@@ -170,6 +170,15 @@ lemma cont_scalar_prod
     exact seq_scalar_prod
   · exact seq_scalar_prod
 
+lemma cont_on_scalar_prod
+  (f : ℝ → ℝ)
+  (I : Set ℝ)
+  (m : ℝ)
+  (hfI : is_cont f I) :
+  is_cont (fun x => m * f x) I := by
+  unfold is_cont
+  exact fun a a_1 ↦ cont_scalar_prod f I a m (hfI a a_1)
+
 lemma cont_prod
   (f g : ℝ → ℝ)
   (I : Set ℝ)
