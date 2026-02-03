@@ -85,25 +85,42 @@ theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) (hfc : is_cont f (
   have this6 := lt_trans (lt_of_lt_of_le (lt_of_le_of_lt maxf hxn) hn_to_hkn) this1
   exact (not_lt_of_ge this5) this6
 
+lemma bounded_has_GLB_and_LUB (f : ℝ → ℝ) (I : Set ℝ) (hI : I ≠ ∅) (hBA : BddAbove (f '' I))
+ (hBB : BddBelow (f '' I)) : (∃ U, IsLUB (f '' I) U) ∧ (∃ L, IsGLB (f '' I) L) := by
+ constructor
+ · refine Real.exists_isLUB ?_ hBA
+   refine Set.Nonempty.image f ?_
+   rw [Set.nonempty_iff_ne_empty]
+   exact hI
+ · refine Real.exists_isGLB ?_ hBB
+   refine Set.Nonempty.image f ?_
+   rw [Set.nonempty_iff_ne_empty]
+   exact hI
 
-theorem cont_closed_attains_bounds (f : ℝ → ℝ) (a b : ℝ) (cont : is_cont f (cci a b)) :
+theorem cont_closed_attains_bounds (f : ℝ → ℝ) (a b : ℝ) (hab : a < b)
+                                   (cont : is_cont f (cci a b)) :
   (∃ x ∈ (cci a b), IsLUB (f '' (cci a b)) (f x)) ∧
   (∃ x ∈ (cci a b), IsGLB (f '' (cci a b))  (f x)) := by
 
+  have : (cci a b) ≠ ∅ := by
+   have := ne_of_lt hab
+   apply non_empty_closed a b at this
+   exact Ne.symm ((fun {α} {s} ↦ Set.nonempty_iff_empty_ne.mp) this)
   have boundedness := cont_closed_imp_bounded f a b cont
-  unfold BddAbove BddBelow at boundedness
-  obtain ⟨hupper, hlower⟩ := boundedness
+  have bounds := bounded_has_GLB_and_LUB f (cci a b) this boundedness.left boundedness.right
+  obtain ⟨hupper, hlower⟩ := bounds
   obtain ⟨U, hupper⟩ := hupper
   obtain ⟨L, hlower⟩ := hlower
   constructor
-  · use U
-    by_contra h
-    -- apply forall_not_of_not_exists at h
-    -- ...
-    sorry
 
-  · use L
-    by_contra h
-    -- apply forall_not_of_not_exists at h
-    -- ...
-    sorry
+  · have : ∃ x ∈ cci a b, f x = U := by sorry
+    obtain ⟨x, hx⟩ := this
+    rw [← hx.right] at hupper
+    use x
+    exact ⟨hx.left, hupper⟩
+
+  · have : ∃ x ∈ cci a b, f x = L := by sorry
+    obtain ⟨x, hx⟩ := this
+    rw [← hx.right] at hlower
+    use x
+    exact ⟨hx.left, hlower⟩
