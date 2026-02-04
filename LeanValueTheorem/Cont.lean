@@ -1,5 +1,5 @@
 import Mathlib.Data.Real.Basic
-import Mathlib.Algebra.Group.Basic
+import Mathlib.Data.Real.Archimedean
 import LeanValueTheorem.Intervals
 import LeanValueTheorem.Sequences
 import LeanValueTheorem.Limits
@@ -71,43 +71,62 @@ lemma cont_seq_imp_cont_ε_δ
     simp at not_ε_δ
     -- Procure the value of ε from definition
     obtain ⟨ha, ε, hε, not_ε_δ⟩ := not_ε_δ
-    -- Insert a magical δ value then simplify
-    specialize not_ε_δ 1 -- !!! TEMPORARY
-    simp at not_ε_δ
-    -- Now procure the x for which f is discontinuous
-    obtain ⟨x, hxI, dx, dfx⟩ := not_ε_δ
-
-    -- We now wish to extract the magical sequence
-    unfold is_cont_at_seq at is_seq
-    specialize is_seq ha
-    -- We now construct some magical sequence somehow?
-    -- The magical sequence MUST:
-      -- Have all its outputs be members of I
-      -- Have limit a
-      -- Have a magical value past its convergence point where it takes value x
-    let seq : ℕ → ℝ := fun n => a + 1/(n+1) -- fun n => x --
-    -- Prove condition 1
+    -- For each n, choose x_n with |x_n - a| < 1/n
+    -- Then we can use δ = 1/n to get |f x_n - f a| ≥ ε
+    have seq_exists : (n : ℕ) → (∃ xn ∈ I, |xn - a| < 1/(n+1) ∧ |f xn - f a| ≥ ε) := by
+      intro n
+      specialize not_ε_δ (1/(n+1))
+      simp only [ge_iff_le]
+      have: (0 : ℝ) < n + 1 := by exact Nat.cast_add_one_pos n
+      have gt0 : (0 : ℝ) < 1/(n+1) := by exact one_div_pos.mpr this
+      specialize not_ε_δ gt0
+      obtain ⟨x, hxI, l, r⟩ := not_ε_δ
+      use x
+    let seq : ℕ → ℝ := fun n => Classical.choose (seq_exists n)
+    have seq_prop (n : ℕ) := Classical.choose_spec (seq_exists n)
+    -- Prove output of sequence is in I
     have in_I : ∀ n : ℕ, seq n ∈ I := by
       intro n
+      have prop := seq_prop n
+      obtain ⟨l, r⟩ := prop
       unfold seq
-      sorry
-    -- Prove condition 2
+      exact l
+    -- Prove sequence has limit a
     have h_seq_ε : is_lim_seq seq a := by
       unfold is_lim_seq
       intros ε hε
-      sorry
+      let ⟨k, hk⟩ := exists_nat_gt (1/ε)
+      use k
+      intros n hn
+      have ⟨_, prop, _⟩ := seq_prop n
+      have h : 1/(n+1) < ε := by
+        have hn0 : (0 : ℝ) < n + 1 := by exact Nat.cast_add_one_pos n
+        have hk' : (k : ℝ) ≤ n := by exact Nat.cast_le.mpr hn
+        have this := lt_of_lt_of_le hk hk'
+        have this2 : n < n + 1 := by exact lt_add_one n
+        have this3 : (n : ℝ) < n + 1 := by exact_mod_cast this2
+        have this4 := lt_trans this this3
+        have this5 := (one_div_lt hn0  hε).mpr this4
+        exact this5
+      unfold seq
+      exact Std.lt_trans prop h
     -- Now that we have the magical sequence, we insert it into the hypothesis
     -- regarding sequential continuity
-    specialize is_seq seq in_I h_seq_ε
-    unfold is_lim_seq at is_seq
-    -- Insert the value of ε procured from the contraposed goal
-    specialize is_seq ε hε
-    -- Now we extract the convergence point of the sequence
-    obtain ⟨Nf, is_seq⟩ := is_seq
-    specialize is_seq Nf
-    simp at is_seq
-    unfold seq at is_seq
-    sorry
+    unfold is_cont_at_seq at is_seq
+    specialize is_seq ha seq in_I h_seq_ε
+    have not_seq : ¬is_lim_seq (f ∘ seq) (f a) := by
+      unfold is_lim_seq
+      simp
+      use ε
+      constructor
+      · exact hε
+      · intros N
+        use N
+        simp
+        have ⟨_, _, asdf⟩ := seq_prop N
+        unfold seq
+        exact asdf
+    exact not_seq is_seq
 
 -- Algebra of continuous functions (for sums, products, and quotients)
 lemma cont_sum
