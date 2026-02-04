@@ -1,6 +1,13 @@
-# lean-value-theorem
+# Lean Value Theorem
 
-## In Progress
+## Project Goal
+Formalise Lagrange's Mean Value Theorem using only the definition of the real
+numbers and some basic properties
 
-- Proof of Chain Rule (Odysseas)
-- Proof of "sequential continuity implies epsilon delta continuity" (Ben)
+## Code & Documentation
+Most project code can be found in [/LeanValueTheorem/](LeanvalueTheorem/). The
+file [/LeanValueTheorem.lean](LeanValueTheorem.lean) contains formalisations of
+the project's main results.
+
+Documentation can be found in [/docs.md](docs.md), including a full list of
+results and definitions formalised.
