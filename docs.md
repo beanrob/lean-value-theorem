@@ -10,7 +10,8 @@ project, including the mean value theorem itself. We were able to extend the
 project beyond the initial specification to include Cauchy's mean value theorem
 as well as Lagrange's.
 
-### Formalised:
+### Formalised
+
 - `theorem rolle` - Rolle's Theorem
 - `theorem mvt` - Lagrange's Mean Value Theorem
 - `theorem cauchy_mvt` - Cauchy's Mean Value Theorem
@@ -23,9 +24,42 @@ into separate files for improved organisation.
 ### `Bolzano_Weierstrass.lean`
 
 This file contains the pieces needed to prove Bolzano-Weierstrass theorem, which
-is needed to prove that continuous functions are bounded. 
+is needed to prove that continuous functions are bounded.
 
-#### Formalised:
+#### Formalised
+
+- `lemma rw1` - Rewrite for (a, b).1 = a
+- `lemma rw2` - Rewrite for (a, b).2 = b
+- `def in_left_prop` - Decider for x being in the left half of an interval
+- `def in_right_prop` - Decider for x being in the right half of an interval
+- `lemma split_prop` - Every x in an interval is in either the left or right half
+- `def left_int` - Left half of an interval
+- `def right_int` - Right half of an interval
+- `def ab_pair` - Constructs the recursive sequence of intervals needed for deciding
+  the nested intervals that contain an infinite number of points
+- `def a` - Sequence of lower bounds of the nested intervals
+- `def b` - Sequence of upper bounds of the nested intervals
+- `lemma ab_pair_0` - The first interval is the lower and upper bounds of the sequence
+- `lemma ha_val_0` - The first lower bound is the lower bound of the sequence
+- `lemma hb_val_0` - The first upper bound is the upper bound of the sequence
+- `lemma ha_vals` - The n+1 lower bound is either the nth lower bound or the midpoint
+  of the nth interval
+- `lemma hb_vals` - The n+1 upper bound is either the nth upper bound or the midpoint
+  of the nth interval
+- `lemma h_aseq_le_bseq` - The lower bounds are always less than or equal to the
+  upper bounds
+- `lemma a_inc1` - a n <= a (n + 1)
+- `lemma b_dec1` - b (n + 1) <= b n
+- `lemma a_inc2` - a is an increasing sequence
+- `lemma b_dec2` - b is a decreasing sequence
+- `lemma a_bounded_abv` - a is bounded above
+- `lemma b_bounded_below` - b is bounded below
+- `lemma inf_seq_points_ab` - The nth intervals contain infinitely many points of the
+  original sequence
+- `lemma diff_a_b` - The interval width halfs at each recursion
+- `lemma diff2_a_b` - The Closed form of interval width at each recursion
+- `lemma zero_lim_of_one_div_two_k` - The limit of 1/2^k is 0
+- `lemma lim_b_sub_a` - The width of the intervals tends to 0
 - `theorem bolzano_weierstrass` - Bolzano-Weierstrass Theorem
 
 ### `Bounded_Sequences.lean`
@@ -33,11 +67,14 @@ is needed to prove that continuous functions are bounded.
 This file deals with various necessary pieces needed to prove
 Bolzano-Weierstrass theorem, including formalising the Weierstrass criterion.
 
-#### Formalised:
+#### Formalised
+
 - `lemma sequence_in_closed` - A sequence within a closed interval has its limit
   in that same interval
-- `lemma supremum_nearly_attained` - ???
-- `lemma infemum_nearly_attained` - ???
+- `lemma supremum_nearly_attained` - The supremum of a bounded sequence is always 
+  nearly attained
+- `lemma infemum_nearly_attained` - The infemum of a bounded sequence is always nearly
+  attained
 - `lemma weierstrass_criterion_inc` - Weierstrass's Criterion for increasing
   sequences
 - `lemma weierstrass_criterion_dec` - Weierstrass's Criterion for decreasing
@@ -49,7 +86,8 @@ This file deals specifically with bounded _functions_ instead of sequences.
 Knowing that continuous functions are bounded is a key part of proving Rolle's
 Theorem, so it is necessary to formalise notions of functions being bounded.
 
-#### Formalised:
+#### Formalised
+
 - `theorem cont_closed_imp_bounded` - Continuous functions defined on a closed
   set are bounded
 - `lemma bounded_has_GLB_and_LUB` - Bounded functions have a definitive greatest
@@ -63,7 +101,8 @@ This file deals with continuity of functions, defining it in both the
 epsilon-delta sense and the sequential sense. Then, the continuity of various
 form factors of functions were proven, such as sums and reciprocals.
 
-#### Formalised:
+#### Formalised
+
 - `def is_cont_at_ε_δ` - Continuity at one point in the epsilon-delta sense
 - `def is_cont_at_seq` - Continuity at one point in the sequential sense
 - `def is_cont_at` - Overall continuity at one point, requiring both of the
@@ -78,7 +117,8 @@ form factors of functions were proven, such as sums and reciprocals.
   continuous at that same point
 - `lemma cont_on_sum` The sum of functions that are continuous on a set is
   continuous on that same set
-- `lemma cont_scalar_prod` - ???
+- `lemma cont_scalar_prod` - The function multiplied by a scalar that is
+  continuous at a point is continuous at that same point
 - `lemma cont_prod` - The product of functions that are continuous at a point is
   continuous at that same point
 - `lemma cont_prod` - The product of functions that are continuous on a set is
@@ -92,12 +132,15 @@ form factors of functions were proven, such as sums and reciprocals.
 - `lemma id_cont` - The identity function is continuous
 - `lemma const_cont` - The constant function is continuous
 
+
 ### `Derivatives.lean`
+
 This file deals with the formalisation of derivatives and various rule
 surrounding them. Rules for differentiation such as the product and chain rules
 are proven here.
 
-#### Formalised:
+#### Formalised
+
 - `def is_deriv_at` - Derivative of a function at a point
 - `def_is_deriv` - Derivative of a function on its domain
 - `lemma deriv_at_unique` - The value of a derivative at a point is unique
@@ -117,12 +160,13 @@ are proven here.
 - `lemma g_deriv` - The derivative of of a given function with the identity
   multiplied by a constant being subtracted
 
-### Unformalised:
+### Unformalised
+
 - `lemma chain_rule` - The chain rule for differentiation
- - The proof requires chosing several different epsilons and deltas that emerge from the properties of the functions involved. There are also two cases depending on if a certain value is zero or not. Proof of the chain rule was left until late in the project and there was not enough time to complete it.
- - `lemma power_rule_neg` - An analogue of `lemma power_rule` for negative
+  - The proof requires chosing several different epsilons and deltas that emerge from the properties of the functions involved. There are also two cases depending on if a certain value is zero or not. Proof of the chain rule was left until late in the project and there was not enough time to complete it.
+- `lemma power_rule_neg` - An analogue of `lemma power_rule` for negative
   exponents
-   - Almost complete, but the use of the chain rule requires showing that x^n is continuous, a result which was not proved in Cont.lean.
+  - Almost complete, but the use of the chain rule requires showing that x^n is continuous, a result which was not proved in Cont.lean.
 
 ### `Intervals.lean`
 
@@ -130,7 +174,8 @@ The intervals file provides some small definitions for interval sets that can be
 utilised by the other files. Notions of boundedness and openness/closedness of
 sets are also included.
 
-#### Formalised:
+#### Formalised
+
 - `def ooi` - Interval that is open on both ends
 - `def cci` - Interval that is closed on both ends
 - `def oci` - Interval that is closed only on the right
@@ -160,7 +205,8 @@ sets are also included.
 This file deals with the notion of limits of functions, which is necessary
 groundwork for the derivatives file.
 
-#### Formalised:
+#### Formalised
+
 - `def is_lim_fun` - The limit of a function
 - `lemma const_fun_limit` - The constant function's limit is its value
 - `lemma const_fun_limit_unique` - The constant function's limit is unique
@@ -169,7 +215,7 @@ groundwork for the derivatives file.
 - `lemma fun_sub_lim_of_fun_lim` - A function minus its limit has limit 0
 - `lemma fun_scalar_prod` - A function multiplied by a scalar has its limit
   multiplied by that scalar too
-- `lemma fun_prod_special` - ???
+- `lemma fun_prod_special` - The limit of two functions tending to zero is zero
 - `lemma fun_prod` - Algebra of limits for function products
 - `lemma fun_neq_zero_of_lim_neq_zero` - Function with non-zero limit is
   non-zero past a certain point
@@ -187,15 +233,16 @@ groundwork for the derivatives file.
 This file is for miscellaneous results with no other obvious home. Most results
 are related to the constant function and are utilised by the sequences file.
 
-#### Formalised:
+#### Formalised
+
 - `def is_const_fun` - If a function is constant
 - `lemma const_closed_imp_const_open` - A function being constant on a closed
   interval implies it is constant on the corresponding open interval too
 - `lemma closed_const` - If a function is constant on the closed interval, all
   its values must be the same as that of the value at the lower boundary
 - `lemma not_const_imp_diff` - Negation of the above
-- `lemma left_le_add_div_two` - ???
-- `lemma add_div_two_le_right` - ???
+- `lemma left_le_add_div_two` - Given a <= b, a <= (a + b) / 2
+- `lemma add_div_two_le_right` - Given a <= b, (a + b) / 2 <= b
 
 ### `Sequences.lean`
 
@@ -203,22 +250,24 @@ This file is concerned with formalising sequences. The project defines sequences
 as functions from the natural numbers to the real numbers, with the input value
 being the index.
 
-#### Formalised:
-- `def is_sequence` - ???
+#### Formalised
+
+- `def is_sequence` - Defintion of a sequence - in end any function from ℕ to ℝ was decided to be a sequence
 - `def is_sequence_non_positive` - Non-positive sequences
 - `def is_sequence_non_negative` - Non-negative sequences
 - `def is_lim_seq` - The limit of a sequence
 - `lemma const_seq_limit` - The limit of a constant sequence is its value
 - `lemma seq_sum` - Algebra of limits for sequence sums
-- `lemma seq_lim_of_seq_sub_lim` - ???
-- `lemma seq_sub_lim_of_seq_lim` - ???
+- `lemma seq_lim_of_seq_sub_lim` - Given a sequence of the form (sequence - constant) with limit 0 the limit of the sequence is the constant
+- `lemma seq_sub_lim_of_seq_lim` - Given a sequence with some limit, the new sequence formed by (old sequence - limit) has limit 0
 - `lemma seq_scalar_product` - A sequence multiplied by a scalar has its limit
   multiplied by that scalar too
 - `lemma seq_non_negative` - Non-negative sequences have non-negative limits
 - `lemma seq_non_positive` - Non-positive sequences have non-positive limits
-- `lemma seq_prod_special` - ???
+- `lemma seq_prod_special` - The limit of two sequences tending to zero is zero
 - `lemma seq_prod` - Algebra of limits for sequence products
 - `lemma seq_neg_zer_of_lim_neq_zero` - Sequence with non-zero limit is non-zero
   past a certain point
 - `lemma seq_recip` - Algebra of limits for the reciprocal of a function
 - `lemma seq_quot` - Algebra of limits for sequence quotients
+- `lemma sandwich` - Given a sequence bounded above and below by two sequences with the same limit, the sequence has that same limit too
