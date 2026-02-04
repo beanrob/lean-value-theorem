@@ -1,4 +1,4 @@
-import LeanValueTheorem.Bolanzo_Weierstrass
+import LeanValueTheorem.Bolzano_Weierstrass
 
 theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) (hfc : is_cont f (cci a b)) :
   BddAbove (f '' (cci a b)) ∧ BddBelow (f '' (cci a b)) := by
@@ -53,7 +53,7 @@ theorem cont_closed_imp_bounded (f : ℝ → ℝ) (a b : ℝ) (hfc : is_cont f (
     rw [hg]
     exact (g_bounds x).left
 
-  rcases Bolanzo.bolanzo_weierstrass g (by trivial) hgb hgl with ⟨k, mono, lim, hgk_lim⟩
+  rcases Bolzano.Bolzano_weierstrass g (by trivial) hgb hgl with ⟨k, mono, lim, hgk_lim⟩
 
   -- show the limit of subseqeuence lies in cci a b
   have gk_bounds (n : ℕ) : (fun n ↦ g (k n)) n ∈ cci a b := by simpa using g_bounds (k n)

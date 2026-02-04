@@ -5,7 +5,7 @@ import Mathlib.Data.Set.Finite.Basic
 
 noncomputable section
 
-namespace Bolanzo
+namespace Bolzano
 
 lemma rw1 (a b : ℝ) : (a, b).1 = a := by simp only
 lemma rw2 (a b : ℝ) : (a, b).2 = b := by simp only
@@ -214,8 +214,62 @@ lemma inf_seq_point_ab (f : ℕ → ℝ) (L U : ℝ) (hfLU : ∀ n : ℕ, L ≤ 
     · simp [hfn, left_int]
       exact hfn
 
+lemma diff_a_b (f : ℕ → ℝ) (L U : ℝ) (k : ℕ) :
+  (b f L U (k+1)) - (a f L U (k+1)) = ((b f L U k) - (a f L U k)) / 2 := by
 
-theorem bolanzo_weierstrass (f : ℕ → ℝ) (ha : is_sequence f)
+  unfold a b
+  conv_lhs => unfold ab_pair
+  by_cases hn : {n | in_left_prop (f n) (ab_pair f L U k)}.Finite
+  · simp [hn]
+    unfold right_int
+    rw [rw2, rw1]
+    have (a b : ℝ) :  b - ((a + b) / 2) = (b - a) / 2 := by ring
+    rw [this]
+  · simp [hn]
+    unfold left_int
+    rw [rw1, rw2]
+    have (a b : ℝ) :  ((a + b) / 2) - a = (b - a) / 2 := by ring
+    rw [this]
+
+lemma diff2_a_b (f : ℕ → ℝ) (L U : ℝ) (k : ℕ) :
+  (b f L U (k+1)) - (a f L U (k+1)) = (U - L) / (2 ^ (k + 1)) := by
+
+  induction k with
+  | zero =>
+    simp
+    have := diff_a_b f L U 0
+    rw [ha_val_0, hb_val_0] at this
+    exact this
+
+  | succ kk ih =>
+    have step := diff_a_b f L U (kk+1)
+    have : ((U - L) / 2 ^ (kk + 1) / 2) = (U - L) / 2 ^ (kk + 1 + 1) := by ring
+    rw [ih, this] at step
+    exact step
+
+
+-- lemma lim_b_sub_a (f : ℕ → ℝ) (L U : ℝ) :
+--   is_lim_seq (fun n => (b f L U n) - (a f L U n)) 0 := by
+
+--   unfold is_lim_seq
+--   intro ε hε
+--   rcases exists_nat_gt ((U - L) / ε) with ⟨N, hN⟩
+--   use N
+--   intro n hn
+--   unfold a_seq b_seq
+--   simp
+--   have boun : b f L U n - a f L U n ≤ (U - L) / (2 ^ n) := by
+--     cases n with
+--     | zero => simp [ha_val_0, hb_val_0]
+--     | succ kn => exact le_of_eq (diff2_a_b f L U (kn))
+
+--   rw [abs_of_nonneg]
+--   have : (U - L) / 2 ^ n < ε := by
+
+
+
+
+theorem Bolzano_weierstrass (f : ℕ → ℝ) (ha : is_sequence f)
   (hfba : BddAbove (f '' Set.univ)) (hfbb : BddBelow (f '' Set.univ)) :
   ∃ k : ℕ → ℕ, (StrictMono k ∧ ∃ a : ℝ, is_lim_seq (fun n => f (k n)) a) := by
 
@@ -243,7 +297,7 @@ theorem bolanzo_weierstrass (f : ℕ → ℝ) (ha : is_sequence f)
 
   have hfLU (n : ℕ) : L ≤ f n ∧ f n ≤ U := ⟨bounded_below n, bounded_above n⟩
 
-  have (last_k p : ℕ) : ∃n : ℕ, a_seq p ≤ f n ∧ f n ≤ b_seq p ∧ last_k < n := by
+  have hk_exis (last_k p : ℕ) : ∃n : ℕ, a_seq p ≤ f n ∧ f n ≤ b_seq p ∧ last_k < n := by
       have hinf := inf_seq_point_ab f L U hfLU p
       rw [←a_sub, ←b_sub] at hinf
       by_contra h
@@ -265,8 +319,8 @@ theorem bolanzo_weierstrass (f : ℕ → ℝ) (ha : is_sequence f)
 
       exact hinf hSubFin
 
-  set good_k_n := fun (k_p p : ℕ) => Classical.choose (this k_p p) with valsub
-  have prop_big_n (k_p p : ℕ) := Classical.choose_spec (this k_p p)
+  set good_k_n := fun (k_p p : ℕ) => Classical.choose (hk_exis k_p p) with valsub
+  have prop_big_n (k_p p : ℕ) := Classical.choose_spec (hk_exis k_p p)
 
   have prop_big_n2 (k_p p : ℕ) :
     a_seq p ≤ f (good_k_n k_p p) ∧
@@ -296,9 +350,28 @@ theorem bolanzo_weierstrass (f : ℕ → ℝ) (ha : is_sequence f)
     | succ kt ih =>
       exact lt_trans (by simpa [Nat.add_assoc] using ih) (k_inc (a + (kt+1)))
 
-  · sorry
+  · use a_1
+    have hfkn_boun : ∀ n : ℕ, a_seq n ≤ f (k n) ∧ f (k n) ≤ b_seq n := by
+      intro n
+      induction n with
+      | zero =>
+        unfold a_seq b_seq
+        rw [ha_val_0, hb_val_0, k_zero]
+        exact hfLU 1
+      | succ kn ih =>
+        rw [k_succ kn]
+        constructor
+        · exact (prop_big_n2 (k kn) (kn + 1)).1
+        · exact (prop_big_n2 (k kn) (kn + 1)).2.1
 
 
+    have hlim_eq : a_1 = b_1 := sorry
 
-end Bolanzo
+    have final := sandwich
+      a_seq (fun n => f (k n)) b_seq a_1 b_1 (by trivial) (by trivial)
+      (by trivial) a_prop b_prop hfkn_boun hlim_eq
+
+    exact final
+
+end Bolzano
 end

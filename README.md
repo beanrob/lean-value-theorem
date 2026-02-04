@@ -2,7 +2,7 @@
 
 ## Need To Do
 
-- Proof of Bolanzo-Weierstrass Theorem
+- Proof of Bolzano-Weierstrass Theorem
 
 ## In Progress
 

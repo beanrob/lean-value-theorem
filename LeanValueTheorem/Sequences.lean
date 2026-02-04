@@ -326,3 +326,15 @@ lemma seq_quot
   have := seq_prod f (fun n => 1 / g n) a (1 / b) hf this.1 hfa this.2
   have h := by simpa [mul_div_right_comm a 1 b] using this.2
   exact ⟨this.1, h⟩
+
+lemma sandwich
+  (f g k : ℕ → ℝ)
+  (a b : ℝ)
+  (hf : is_sequence f)
+  (hg : is_sequence g)
+  (hg : is_sequence k)
+  (hfa : is_lim_seq f a)
+  (hgb : is_lim_seq k b)
+  (hfgk : ∀ n : ℕ, f n ≤ g n ∧ g n ≤ k n)
+  (hab : a = b) :
+  (is_lim_seq g a) := by sorry
