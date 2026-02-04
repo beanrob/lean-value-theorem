@@ -194,12 +194,12 @@ sets are also included.
 - `lemma non_empty_closed` - The above for closed intervals
 - `lemma closed_not_bounds_open` - A point in a closed interval that is not a
   boundary point is in the corresponding open interval too
-- `lemma huniorw` - ???
-- `lemma openrwl` - ???
-- `lemma openrw2` - ???
-- `lemma openrw3` - ???
-- `lemma openrw4` - ???
-- `lemma openrw5` - ???
+- `lemma huniorw` - This and the 5 openrw lemmas are showing various sets are equivalent and are used mostly in the proof of Rolle's theorem
+- `lemma openrwl` - See above
+- `lemma openrw2` - See above
+- `lemma openrw3` - See above
+- `lemma openrw4` - See above
+- `lemma openrw5` - See above
 
 ### `Limits.lean`
 
@@ -224,10 +224,10 @@ groundwork for the derivatives file.
 - `lemma fun_quot` - Algebra of limits for function quotients
 - `lemma fun_non_negative` - Non-negative functions have non-negative limits
 - `lemma fun_non_positive` - Non-positive functions have non-positive limits
-- `lemma lim_fun_unique` - The limit of a function is unique
-- `lemma lim_exists_on_subset` - ???
-- `lemma lim_union` - ???
-- `lemma special_lim_fun_unique` - ???
+- `lemma lim_fun_unique` - The limit of a function is unique (for functions on open intervals)
+- `lemma lim_exists_on_subset` - If a function has a limit on a set then its restriction to a subset also has a limit
+- `lemma lim_union` - If a limit exists on two open intervals and also on their union, then all those limits are equal
+- `lemma special_lim_fun_unique` lim_fun_unique but for functions on intervals with one point removed
 
 ### `Misc.lean`
 
