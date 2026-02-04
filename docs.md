@@ -72,6 +72,8 @@ form factors of functions were proven, such as sums and reciprocals.
 - `def is_cont` - Continuity of a function on the whole of its domain
 - `lemma cont_ε_δ_imp_cont_seq` - Epsilon-delta continuity implies sequential
   continuity
+- `cont_seq_imp_cont_ε_δ` - Sequential continuity implies epsilon-delta
+  continuity
 - `lemma cont_sum` - The sum of functions that are continuous at a point is
   continuous at that same point
 - `lemma cont_on_sum` The sum of functions that are continuous on a set is
@@ -89,26 +91,6 @@ form factors of functions were proven, such as sums and reciprocals.
   point is continuous at that same point, provided it is non-zero there
 - `lemma id_cont` - The identity function is continuous
 - `lemma const_cont` - The constant function is continuous
-
-#### Unformalised:
-- `cont_seq_imp_cont_ε_δ` - Sequential continuity implies epsilon-delta
-  continuity
-  - The way that continuity is currently formalised, there were roadblocks in
-    proving this notion
-- The generally accepted method of proof for this is proof by contradiction,
-    which is what was attempted, but constructing the sequence needed to do so
-    was not possible due to its vague definition
-  - The sequence is built as follows:
-    > For each $n$ choose a point $x_n$ with $|x_n − a| < \frac{1}{n}$ but $|f(x_n) − f(a)| \geq \epsilon$.
-  - Although such a sequence of points exists, sequences in this project are
-    formalised as functions from naturals to reals, and we could not figure out
-    how to deifne a function that maps the natural numbers onto such a series of
-    points
-  - When seeking an alternative method of proof, a solution was nearly found,
-    but a final roadblock was found, in that the sequence used for the proof
-    would need to have limit $a$ but be equal to a certain point $x$ for some
-    arbitrarily large $n$
-  - The incomplete proof is included in the file
 
 ### `Derivatives.lean`
 This file deals with the formalisation of derivatives and various rule
