@@ -153,6 +153,7 @@ are proven here.
 - `lemma product_rule` - The product rule for differentiation
 - `lemma scale_rule` - The derivative of a function multiplied by a scalar
 - `lemma power_rule` - The derivative of the n-th power function
+- `lemma local_lin` - The derivative yields a local linearisation of the function
 - `lemma quotient_rule` - The quotient rule for differentiation
 - `lemma simple_sum_rule` - Special case of the sum rule
 - `lemma const_x_const_deriv` - The derivative of the identity multiplied by a
