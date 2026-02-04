@@ -62,8 +62,51 @@ lemma cont_seq_imp_cont_ε_δ
   (f : ℝ → ℝ)
   (I : Set ℝ)
   (a : ℝ)
-  {hfIa : is_cont_at_seq f I a} :
+  {is_seq : is_cont_at_seq f I a} :
   is_cont_at_ε_δ f I a := by
+    -- We wish to prove by contradiction
+    by_contra not_ε_δ
+    -- Unfold the definition and simplify
+    unfold is_cont_at_ε_δ at not_ε_δ
+    simp at not_ε_δ
+    -- Procure the value of ε from definition
+    obtain ⟨ha, ε, hε, not_ε_δ⟩ := not_ε_δ
+    -- Insert a magical δ value then simplify
+    specialize not_ε_δ 1 -- !!! TEMPORARY
+    simp at not_ε_δ
+    -- Now procure the x for which f is discontinuous
+    obtain ⟨x, hxI, dx, dfx⟩ := not_ε_δ
+
+    -- We now wish to extract the magical sequence
+    unfold is_cont_at_seq at is_seq
+    specialize is_seq ha
+    -- We now construct some magical sequence somehow?
+    -- The magical sequence MUST:
+      -- Have all its outputs be members of I
+      -- Have limit a
+      -- Have a magical value past its convergence point where it takes value x
+    let seq : ℕ → ℝ := fun n => a + 1/(n+1) -- fun n => x --
+    -- Prove condition 1
+    have in_I : ∀ n : ℕ, seq n ∈ I := by
+      intro n
+      unfold seq
+      sorry
+    -- Prove condition 2
+    have h_seq_ε : is_lim_seq seq a := by
+      unfold is_lim_seq
+      intros ε hε
+      sorry
+    -- Now that we have the magical sequence, we insert it into the hypothesis
+    -- regarding sequential continuity
+    specialize is_seq seq in_I h_seq_ε
+    unfold is_lim_seq at is_seq
+    -- Insert the value of ε procured from the contraposed goal
+    specialize is_seq ε hε
+    -- Now we extract the convergence point of the sequence
+    obtain ⟨Nf, is_seq⟩ := is_seq
+    specialize is_seq Nf
+    simp at is_seq
+    unfold seq at is_seq
     sorry
 
 -- Algebra of continuous functions (for sums, products, and quotients)
@@ -126,6 +169,15 @@ lemma cont_scalar_prod
   · apply cont_seq_imp_cont_ε_δ
     exact seq_scalar_prod
   · exact seq_scalar_prod
+
+lemma cont_on_scalar_prod
+  (f : ℝ → ℝ)
+  (I : Set ℝ)
+  (m : ℝ)
+  (hfI : is_cont f I) :
+  is_cont (fun x => m * f x) I := by
+  unfold is_cont
+  exact fun a a_1 ↦ cont_scalar_prod f I a m (hfI a a_1)
 
 lemma cont_prod
   (f g : ℝ → ℝ)
@@ -279,10 +331,3 @@ lemma const_cont
     · apply cont_seq_imp_cont_ε_δ
       exact seq_cont
     · exact seq_cont
-
--- needed to avoid significant headache in derivatives file
-lemma const_cont_on
-  (c : ℝ)
-  (I A : Set ℝ) :
-  is_cont_on (fun x => c) I A := by
-    sorry
