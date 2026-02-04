@@ -319,7 +319,7 @@ lemma scale_rule
     rw [h1, h2]
     exact hprod
 
---Proof that the derivative of x ^ n is n * x ^ (n + 1) for n ∈ ℕ
+-- Proof that the derivative of x ^ n is n * x ^ (n + 1) for n ∈ ℕ
 lemma power_rule
   (D : Set ℝ) (n : ℕ) :
   is_deriv D (fun x ↦ x ^ n) (fun x ↦ n * x ^ (n - 1)) D := by
@@ -358,15 +358,180 @@ lemma power_rule
     rw [hf1, hf2]
     exact hmul
 
+-- Proof of local linearisation property (used for chain rule)
+lemma local_lin
+  (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) (hf : is_deriv D f f' A) :
+  ∀ c ∈ A, ∃ ε : ℝ → ℝ,  (∀ x ∈ A,
+  (f x) - (f c) = (f' c) * (x - c) + (ε x) * (x - c)) ∧ ε c = 0 ∧ is_cont_at ε D c := by
+    intro c hc
+    use fun x ↦
+      if x = c then 0
+      else ((f x) - (f c)) / (x - c) - (f' c)
+    constructor
+    · intro y hy
+      simp only [ite_mul, zero_mul]
+      by_cases heq : y = c
+      · rw [heq]
+        simp
+      · rw [if_neg heq, ← add_mul]
+        rw [show (f y - f c) / (y - c) - f' c = (f y - f c) / (y - c) + -f' c from rfl]
+        rw [add_add_neg_cancel'_right, div_mul_cancel₀ (f y - f c) ?_]
+        rw [sub_ne_zero]
+        exact heq
+    · constructor
+      · simp
+      · unfold is_cont_at
+        have hcont : is_cont_at_ε_δ
+         (fun x ↦ if x = c then 0 else (f x - f c) / (x - c) - f' c) D c := by
+          unfold is_cont_at_ε_δ
+          intro hc1
+          intro η hη
+          unfold is_deriv at hf
+          specialize hf c hc
+          unfold is_deriv_at at hf
+          specialize hf hc1
+          unfold is_lim_fun at hf
+          specialize hf η hη
+          obtain ⟨δ, hδ, hf⟩ := hf
+          use δ
+          constructor
+          · exact hδ
+          · intro x hx1 hx2
+            by_cases heq : x = c
+            · rw [heq]
+              simp only [↓reduceIte, sub_self, abs_zero]
+              exact hη
+            · simp only [↓reduceIte, sub_zero]
+              rw [if_neg heq]
+              specialize hf (x - c)
+              simp only [ne_eq, Set.mem_setOf_eq, add_sub_cancel, sub_zero, and_imp] at hf
+              specialize hf hx1 ?_
+              · rw [← ne_eq, sub_ne_zero]
+                exact heq
+              · specialize hf hx2
+                exact hf
+        constructor
+        · exact hcont
+        · apply cont_ε_δ_imp_cont_seq
+           (fun x ↦ if x = c then 0 else (f x - f c) / (x - c) - f' c) D c
+          exact hcont
+
 -- Proof that the derivative of g(f) is f' * g'(f)
 lemma chain_rule
+--I ran out of time to complete this as it ended up being much harder to prove than I expected
+--a lot of the proof is here but the final steps are missing
   (D : Set ℝ) (f : ℝ → ℝ) (f' : ℝ → ℝ) (A : Set ℝ) (hf : is_deriv D f f' A)
   (E : Set ℝ) (g : ℝ → ℝ) (g' : ℝ → ℝ) (B : Set ℝ) (hg : is_deriv E g g' B)
-  (hdom : ∀ x ∈ D, (f x) ∈ B) :
+  (hdom : ∀ x ∈ D, (f x) ∈ B) (hdom' : ∀ x ∈ D, (f x) ∈ E) (hfcont : is_cont_on f D A) :
   is_deriv D (fun x ↦ g (f x))
   (fun x ↦ (g' (f x)) * (f' x)) A := by
-    intro a ha _
-    sorry --algebra of limits goes here
+    intro a ha1 ha2
+    simp only
+    have hlin :
+     ∀ c ∈ B, ∃ ε : ℝ → ℝ,  (∀ x ∈ B,
+     (g x) - (g c) = (g' c) * (x - c) + (ε x) * (x - c)) ∧ ε c = 0 ∧ is_cont_at ε E c := by
+      exact local_lin E g g' B hg
+    specialize hlin (f a) ?_
+    · specialize hdom a ha2
+      exact hdom
+    · obtain ⟨ε, hlin⟩ := hlin
+      unfold is_lim_fun
+      intro η hη
+      unfold is_deriv at hf
+      specialize hf a ha1
+      unfold is_deriv_at at hf
+      specialize hf ha2
+      unfold is_lim_fun at hf
+      specialize hf (η / |2 * (g' (f a))|) ?_
+      --from here on there actually need to be two cases, to account for if (g' (f a)) = 0
+      --both work but they need different choices in hf and hcont
+      · refine (div_pos_iff_of_pos_left hη).mpr ?_
+        simp only [abs_mul, Nat.abs_ofNat, Nat.ofNat_pos, mul_pos_iff_of_pos_left, abs_pos, ne_eq]
+        sorry --this is true in case 1
+      · obtain ⟨δ1, hδ1, hf⟩ := hf
+        obtain ⟨hlin, hε, hcont⟩ := hlin
+        obtain ⟨hcont, _⟩ := hcont
+        unfold is_cont_at_ε_δ at hcont
+        specialize hcont ?_
+        · exact hdom' a ha2
+        · specialize hcont (η / ((η / |(g' (f a))|) + 2 * |f' a|)) ?_
+          · refine div_pos_iff.mpr ?_
+            left
+            constructor
+            · exact hη
+            · refine Right.add_pos_of_pos_of_nonneg ?_ ?_
+              · refine div_pos hη ?_
+                simp
+                sorry --this is true in case 1
+              · simp
+          · obtain ⟨δ2, hδ2, hcont⟩ := hcont
+            unfold is_cont_on at hfcont
+            specialize hfcont a ha1
+            unfold is_cont_at at hfcont
+            obtain ⟨hfcont, _⟩ := hfcont
+            unfold is_cont_at_ε_δ at hfcont
+            specialize hfcont ha2 δ2 ?_
+            · exact hδ2
+            obtain ⟨δ3, hδ3, hfcont⟩ := hfcont
+            use min δ1 δ2
+            constructor
+            · sorry --very provable
+            · intro h hh hδ
+              simp only [sub_zero] at hδ
+              specialize hlin (f (a + h)) ?_
+              · apply hdom (a + h) ?_
+                · obtain ⟨h1, h0⟩ := hh
+                  exact h1
+              · simp only
+                rw [hlin]
+                rw [← add_mul, mul_div_assoc]
+                specialize hcont (f (a + h)) ?_
+                · sorry --very provable
+                · specialize hdom' (a + h) ?_
+                  · obtain ⟨h1, h0⟩ := hh
+                    exact h1
+                  · specialize hf h hh
+                    simp only [sub_zero] at hf
+                    specialize hf ?_
+                    · sorry --very provable
+                    · rw [hε] at hcont
+                      simp only [sub_zero] at hcont
+                      specialize hfcont (a + h) ?_
+                      · obtain ⟨h1, h0⟩ := hh
+                        exact h1
+                      · simp at hfcont
+                        specialize hfcont ?_
+                        · sorry --very provable
+                        · specialize hcont hfcont
+                          rw [add_mul]
+                          rw [add_comm]
+                          rw [add_sub_assoc]
+                          rw [← mul_sub]
+                          have htri : |ε (f (a + h)) * ((f (a + h) - f a) / h) +
+                           g' (f a) * ((f (a + h) - f a) / h - f' a)| ≤
+                           |ε (f (a + h)) * ((f (a + h) - f a) / h)|
+                            + |g' (f a) * ((f (a + h) - f a) / h - f' a)| := by
+                            apply abs_add_le
+                          have hans : |ε (f (a + h)) * ((f (a + h) - f a) / h)| +
+                           |g' (f a) * ((f (a + h) - f a) / h - f' a)| < η := by
+                            simp only [abs_mul]
+                            have hright : |g' (f a)| * |(f (a + h) - f a) / h - f' a| < η / 2 := by
+                              rw [← lt_div_iff₀' ?_]
+                              · rw [div_div η 2 |g' (f a)|]
+                                simp only [abs_mul, Nat.abs_ofNat] at hf
+                                exact hf
+                              · sorry --this is true in case 1
+                            have hleft : |ε (f (a + h)) * ((f (a + h) - f a) / h)| < η / 2 := by
+                              simp only [abs_mul]
+                              sorry --this is true but needs a lot of rearranging still
+                            have halm : |ε (f (a + h))| * |(f (a + h) - f a) / h| +
+                             |g' (f a)| * |(f (a + h) - f a) / h - f' a| < (η / 2) + (η / 2) := by
+                              refine Left.add_lt_add ?_ hright
+                              simp only [abs_mul] at hleft
+                              exact hleft
+                            simp at halm
+                            exact halm
+                          exact Std.lt_of_le_of_lt htri hans
 
 -- Proof that the derivative of x ^ -n is -n * x ^ (-n - 1) for n ∈ ℤ
 lemma power_rule_neg
@@ -380,6 +545,9 @@ lemma power_rule_neg
        refine Set.mem_setOf.mpr ?_
        apply hD at hy
        exact zpow_ne_zero n hy
+     · simp only [Set.mem_setOf_eq]
+       exact fun x a ↦ zpow_ne_zero n (hD x a)
+     · sorry --x^n cts
      · have hpos : n = n.toNat := by
         refine Eq.symm (Int.toNat_of_nonneg ?_)
         exact Int.le_of_lt hn
@@ -437,6 +605,11 @@ lemma quotient_rule
     have hch : is_deriv E (fun x ↦ 1 / (g x)) (fun x ↦ (-1 / (g x) ^ 2) * (g' x)) E := by
       apply chain_rule E g g' E hg
        {x : ℝ | x ≠ 0} (fun x ↦ 1 / x) (fun x ↦ -1 / x^2) {x : ℝ | x ≠ 0} _ _
+      · simp only [Set.mem_setOf_eq]
+        exact fun x a ↦ hnz x
+      · unfold is_cont_on
+        unfold is_cont at hcont
+        exact hcont
       · apply recip_deriv
         simp
       · intro y hy
