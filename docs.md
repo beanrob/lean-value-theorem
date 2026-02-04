@@ -123,20 +123,24 @@ are proven here.
 - `lemma const_zero_deriv` - The constant function has zero derivative
 - `lemma x_one_deriv` - The derivative of the identity function is 1
 - `lemma recip_deriv` - The derivative of the reciprocal function
-- `lemma h_subset` - ???
+- `lemma h_subset` - (This is not a "real" result, just needed to simplify working with limits of functions with different domains)
 - `lemma sum_rule` - The sum rule for differentiation
 - `lemma product_rule` - The product rule for differentiation
 - `lemma scale_rule` - The derivative of a function multiplied by a scalar
 - `lemma power_rule` - The derivative of the n-th power function
-- `lemma chain_rule` - The chain rule for differentiation
-- `lemma power_rule_neg` - An analogue of `lemma power_rule` for negative
-  exponents
 - `lemma quotient_rule` - The quotient rule for differentiation
 - `lemma simple_sum_rule` - Special case of the sum rule
 - `lemma const_x_const_deriv` - The derivative of the identity multiplied by a
   constant
 - `lemma g_deriv` - The derivative of of a given function with the identity
   multiplied by a constant being subtracted
+
+### Unformalised:
+- `lemma chain_rule` - The chain rule for differentiation
+ - The proof requires chosing several different epsilons and deltas that emerge from the properties of the functions involved. There are also two cases depending on if a certain value is zero or not. Proof of the chain rule was left until late in the project and there was not enough time to complete it.
+ - `lemma power_rule_neg` - An analogue of `lemma power_rule` for negative
+  exponents
+   - Almost complete, but the use of the chain rule requires showing that x^n is continuous, a result which was not proved in Cont.lean.
 
 ### `Intervals.lean`
 
