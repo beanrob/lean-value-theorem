@@ -326,3 +326,39 @@ lemma seq_quot
   have := seq_prod f (fun n => 1 / g n) a (1 / b) hf this.1 hfa this.2
   have h := by simpa [mul_div_right_comm a 1 b] using this.2
   exact ⟨this.1, h⟩
+
+lemma sandwich
+  (f g k : ℕ → ℝ)
+  (a b : ℝ)
+  (hf : is_sequence f)
+  (hg : is_sequence g)
+  (hk : is_sequence k)
+  (hfa : is_lim_seq f a)
+  (hkb : is_lim_seq k b)
+  (hfgk : ∀ n : ℕ, f n ≤ g n ∧ g n ≤ k n)
+  (hab : a = b) :
+  (is_lim_seq g a) := by
+
+  intro ε hε
+  rcases hfa ε hε with ⟨N1, hf_prop⟩
+  rcases hkb ε hε with ⟨N2, hk_prop⟩
+
+  use max N1 N2
+  intro n hnN
+
+  -- have (ha : |a| < b) : -b < a ∧ a < b := by exact
+
+  have step1 := hf_prop n (le_trans (le_max_left N1 N2) hnN)
+  have left1 : a - ε < f n := sub_lt_of_abs_sub_lt_left step1
+
+  have step2 := (hk_prop n (le_trans (le_max_right N1 N2) hnN))
+  have right1 : k n < b + ε := lt_add_of_tsub_lt_left (abs_lt.mp step2).2
+  rw [←hab] at right1
+
+  have left2 := lt_of_lt_of_le left1 (hfgk n).1
+  have right2 := lt_of_le_of_lt (hfgk n).2 right1
+
+  have left3 : -ε < g n - a := by exact lt_tsub_iff_left.mpr left2
+  have right3 : g n - a < ε := by exact sub_left_lt_of_lt_add right2
+
+  exact abs_lt.mpr ⟨left3, right3⟩
