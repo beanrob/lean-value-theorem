@@ -1,7 +1,5 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Archimedean
-import Mathlib.Algebra.Group.Basic
-import Mathlib.Algebra.Order.Archimedean.Basic
 import LeanValueTheorem.Intervals
 import LeanValueTheorem.Sequences
 import LeanValueTheorem.Limits
