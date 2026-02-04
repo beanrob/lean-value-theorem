@@ -232,41 +232,67 @@ lemma diff_a_b (f : ℕ → ℝ) (L U : ℝ) (k : ℕ) :
     rw [this]
 
 lemma diff2_a_b (f : ℕ → ℝ) (L U : ℝ) (k : ℕ) :
-  (b f L U (k+1)) - (a f L U (k+1)) = (U - L) / (2 ^ (k + 1)) := by
+  (b f L U k) - (a f L U k) = (U - L) / (2 ^ k) := by
 
   induction k with
   | zero =>
     simp
-    have := diff_a_b f L U 0
-    rw [ha_val_0, hb_val_0] at this
-    exact this
+    rw [ha_val_0, hb_val_0]
 
   | succ kk ih =>
-    have step := diff_a_b f L U (kk+1)
-    have : ((U - L) / 2 ^ (kk + 1) / 2) = (U - L) / 2 ^ (kk + 1 + 1) := by ring
+    have step := diff_a_b f L U kk
+    have : ((U - L) / 2 ^ (kk) / 2) = (U - L) / 2 ^ (kk + 1) := by ring
     rw [ih, this] at step
     exact step
 
+lemma zero_lim_of_one_div_two_k :
+  is_lim_seq (fun k => 1 / (2 ^ k)) 0 := by
 
--- lemma lim_b_sub_a (f : ℕ → ℝ) (L U : ℝ) :
---   is_lim_seq (fun n => (b f L U n) - (a f L U n)) 0 := by
+  have hpow (k : ℕ) : (k + 1: ℝ) ≤ (2 : ℝ) ^ k := by
+    induction k with
+    | zero => simp
+    | succ kk ih =>
+      have two_pos : 0 ≤ (2 : ℝ) := by norm_num
+      have two_ih := mul_le_mul_of_nonneg_right ih two_pos
+      rw [←pow_succ] at two_ih
 
---   unfold is_lim_seq
---   intro ε hε
---   rcases exists_nat_gt ((U - L) / ε) with ⟨N, hN⟩
---   use N
---   intro n hn
---   unfold a_seq b_seq
---   simp
---   have boun : b f L U n - a f L U n ≤ (U - L) / (2 ^ n) := by
---     cases n with
---     | zero => simp [ha_val_0, hb_val_0]
---     | succ kn => exact le_of_eq (diff2_a_b f L U (kn))
+      have hn : kk + 1 + 1 ≤ 2 * (kk + 1) := by omega
+      have hk : (kk + 1 + 1 : ℝ) ≤ 2 * (kk + 1 : ℝ) := by exact_mod_cast hn
+      have hk' : (kk + 1 + 1 : ℝ) ≤ (kk + 1 : ℝ) * 2 := by simpa [mul_comm] using hk
+      have hfinal : (↑kk + 1 + 1 : ℝ) ≤ 2 ^ (kk + 1) := le_trans hk' two_ih
+      simpa [Nat.cast_add, Nat.cast_one, add_assoc] using hfinal
 
---   rw [abs_of_nonneg]
---   have : (U - L) / 2 ^ n < ε := by
+  unfold is_lim_seq
+  intro ε hε
+  rcases exists_nat_gt (max 1 (1/ε - 1)) with ⟨N, hNprop⟩
+  use N
+  intro n hnN
+  rw [abs_of_nonneg]
+  · simp only [sub_zero]
+    have hnpos : 0 < (n + 1 : ℝ) := by exact Nat.cast_add_one_pos n
+    have ineq1 := one_div_le_one_div_of_le hnpos (hpow n)
 
+    have step1 : N + 1 ≤ n + 1 := Nat.add_le_add_right hnN 1
+    have step2 : (N + 1 : ℝ) ≤ (n + 1 : ℝ) := by exact_mod_cast step1
+    have ineq2:= one_div_le_one_div_of_le (Nat.cast_add_one_pos N) step2
 
+    have step3 : 1/ε - 1 < N := lt_of_le_of_lt (le_max_right 1 (1/ε - 1)) hNprop
+    have step4 : 1/ε < N + 1 := lt_add_of_tsub_lt_right step3
+    have ineq3 := (one_div_lt hε (Nat.cast_add_one_pos N)).mp step4
+
+    exact lt_of_le_of_lt (le_trans ineq1 ineq2) ineq3
+  · simp
+
+lemma lim_b_sub_a (f : ℕ → ℝ) (L U : ℝ) :
+  is_lim_seq (fun n => (b f L U n) - (a f L U n)) 0 := by
+
+  have : (fun n => (b f L U n) - (a f L U n)) = (fun k => (U - L) / (2 ^ k)) := by
+    funext n
+    exact diff2_a_b f L U n
+
+  rw [this]
+  have := (seq_scalar_prod (fun k => 1 / (2 ^ k)) 0 (U-L) (by trivial) zero_lim_of_one_div_two_k).2
+  simpa
 
 
 theorem Bolzano_weierstrass (f : ℕ → ℝ) (ha : is_sequence f)
@@ -364,12 +390,16 @@ theorem Bolzano_weierstrass (f : ℕ → ℝ) (ha : is_sequence f)
         · exact (prop_big_n2 (k kn) (kn + 1)).1
         · exact (prop_big_n2 (k kn) (kn + 1)).2.1
 
-
-    have hlim_eq : a_1 = b_1 := sorry
+    have lim_b_sub_a := lim_b_sub_a f L U
+    rw [←a_sub, ←b_sub] at lim_b_sub_a
+    have lim_b_eq_a_1:=
+      (seq_sum (fun n ↦ b_seq n - a_seq n) a_seq 0 a_1 (by trivial) (by trivial)
+      lim_b_sub_a a_prop).2
+    simp only [sub_add_cancel, zero_add] at lim_b_eq_a_1
 
     have final := sandwich
-      a_seq (fun n => f (k n)) b_seq a_1 b_1 (by trivial) (by trivial)
-      (by trivial) a_prop b_prop hfkn_boun hlim_eq
+      a_seq (fun n => f (k n)) b_seq a_1 a_1 (by trivial) (by trivial)
+      (by trivial) a_prop lim_b_eq_a_1 hfkn_boun (by trivial)
 
     exact final
 
